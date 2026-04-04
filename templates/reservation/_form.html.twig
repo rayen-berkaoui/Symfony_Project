@@ -1,0 +1,52 @@
+{{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.modePaiement) }}
+            {{ form_widget(form.modePaiement) }}
+            {{ form_errors(form.modePaiement) }}
+        </div>
+        <div>
+            {{ form_label(form.statutPaiement) }}
+            {{ form_widget(form.statutPaiement) }}
+            {{ form_errors(form.statutPaiement) }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.montantTotal) }}
+            {{ form_widget(form.montantTotal) }}
+            {{ form_errors(form.montantTotal) }}
+        </div>
+        <div>
+            {{ form_label(form.codeConfirmation) }}
+            {{ form_widget(form.codeConfirmation) }}
+            {{ form_errors(form.codeConfirmation) }}
+        </div>
+    </div>
+
+    <div class="border-t border-gold-500/10 pt-6">
+        <h3 class="text-lg font-bold text-gold-400 mb-4">Évaluation (optionnel)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                {{ form_label(form.rating) }}
+                {{ form_widget(form.rating) }}
+                {{ form_errors(form.rating) }}
+            </div>
+            <div class="md:col-span-2">
+                {{ form_label(form.reviewComment) }}
+                {{ form_widget(form.reviewComment) }}
+                {{ form_errors(form.reviewComment) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center pt-6 border-t border-gold-500/10">
+        <a href="{{ path('app_reservation_index') }}" class="btn-dark">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Annuler
+        </a>
+        <button type="submit" class="btn-gold">
+            <i class="fa-solid fa-save mr-2"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}

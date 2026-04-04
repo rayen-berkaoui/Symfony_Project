@@ -1,0 +1,62 @@
+{{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.lieuTouristique) }}
+            {{ form_widget(form.lieuTouristique) }}
+            {{ form_errors(form.lieuTouristique) }}
+        </div>
+        <div>
+            {{ form_label(form.typeService) }}
+            {{ form_widget(form.typeService) }}
+            {{ form_errors(form.typeService) }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.dateDebut) }}
+            {{ form_widget(form.dateDebut) }}
+            {{ form_errors(form.dateDebut) }}
+        </div>
+        <div>
+            {{ form_label(form.dateFin) }}
+            {{ form_widget(form.dateFin) }}
+            {{ form_errors(form.dateFin) }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.nbAdultes) }}
+            {{ form_widget(form.nbAdultes) }}
+            {{ form_errors(form.nbAdultes) }}
+        </div>
+        <div>
+            {{ form_label(form.nbEnfants) }}
+            {{ form_widget(form.nbEnfants) }}
+            {{ form_errors(form.nbEnfants) }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            {{ form_label(form.prixEstime) }}
+            {{ form_widget(form.prixEstime) }}
+            {{ form_errors(form.prixEstime) }}
+        </div>
+        <div>
+            {{ form_label(form.statutItem) }}
+            {{ form_widget(form.statutItem) }}
+            {{ form_errors(form.statutItem) }}
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center pt-6 border-t border-gold-500/10">
+        <a href="{{ path('app_panier_index') }}" class="btn-dark">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Annuler
+        </a>
+        <button type="submit" class="btn-gold">
+            <i class="fa-solid fa-save mr-2"></i> {{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}

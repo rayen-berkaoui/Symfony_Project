@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fr" class="bg-black text-white h-full">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Vue d'ensemble</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>T</text></svg>">
+        
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        
+        <!-- Custom Configuration for Black & Gold -->
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            gold: { 400: '#FBBF24', 500: '#FFD700', 600: '#D4AF37' },
+                            dark: { 100: '#2A2A2A', 200: '#1A1A1A', 300: '#121212', 400: '#0A0A0A' }
+                        },
+                        fontFamily: { sans: ['"Segoe UI"', 'Inter', '"Helvetica Neue"', 'sans-serif'] }
+                    }
+                }
+            }
+        </script>
+        
+        <style>
+            body { background-color: #000000; color: #ffffff; }
+            .card { background-color: rgba(10, 10, 10, 0.95); border: 1px solid rgba(255, 215, 0, 0.06); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.06); border-radius: 16px; padding: 1.5rem; }
+            .btn-gold { background-color: #FFD700; color: #000; transition: all 0.3s ease; font-weight: 600; border-radius: 8px; padding: 0.5rem 1.25rem; display: inline-block; }
+            .btn-gold:hover { background-color: #D4AF37; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3); }
+            .btn-dark { background-color: #1A1A1A; color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.2); transition: all 0.3s ease; border-radius: 8px; padding: 0.5rem 1.25rem; display: inline-block; }
+            .btn-dark:hover { background-color: #2A2A2A; border-color: #FFD700; }
+            .input-modern { background-color: rgba(18, 18, 18, 0.9); border: 1px solid rgba(255, 215, 0, 0.08); border-radius: 10px; color: white; padding: 0.75rem 1rem; width: 100%; transition: border-color 0.3s; margin-bottom: 1rem; }
+            .input-modern:focus { outline: none; border-color: rgba(255, 215, 0, 0.5); }
+            label { display: block; color: rgba(255, 215, 0, 0.85); font-size: 0.75rem; font-weight: bold; letter-spacing: 0.05em; margin-bottom: 0.5rem; text-transform: uppercase; }
+            table { width: 100%; border-collapse: separate; border-spacing: 0; }
+            th { text-align: left; padding: 1rem; color: #FFD700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255, 215, 0, 0.1); }
+            td { padding: 1rem; border-bottom: 1px solid rgba(255, 215, 0, 0.05); color: #E5E5E5; }
+            tr:hover td { background-color: rgba(255, 215, 0, 0.02); }
+            
+            /* form overrides */
+            input[type="text"], input[type="number"], input[type="file"], select, textarea {
+                background-color: rgba(18, 18, 18, 0.9) !important;
+                border: 1px solid rgba(255, 215, 0, 0.08) !important;
+                border-radius: 10px !important;
+                color: white !important;
+                transition: all 0.3s ease;
+            }
+            input:focus, select:focus, textarea:focus {
+                border-color: rgba(255, 215, 0, 0.5) !important;
+                outline: none !important;
+                box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.2) !important;
+            }
+
+            /* Custom scrollbar */
+            ::-webkit-scrollbar { width: 8px; height: 8px; }
+            ::-webkit-scrollbar-track { background: rgba(10, 10, 10, 0.8); }
+            ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.2); border-radius: 4px; }
+            ::-webkit-scrollbar-thumb:hover { background: rgba(255, 215, 0, 0.5); }
+        </style>
+
+                            
+<link rel="stylesheet" href="/assets/styles/app-cT2YKNc.css">
+<script type="importmap" data-turbo-track="reload">
+{
+    "imports": {
+        "app": "/assets/app-TNXHCQF.js",
+        "/assets/stimulus_bootstrap.js": "/assets/stimulus_bootstrap-xCO4u8H.js",
+        "/assets/styles/app.css": "data:application/javascript,",
+        "@symfony/stimulus-bundle": "/assets/@symfony/stimulus-bundle/loader-IOzBDLu.js",
+        "@hotwired/stimulus": "/assets/vendor/@hotwired/stimulus/stimulus.index-S4zNcea.js",
+        "/assets/@symfony/stimulus-bundle/controllers.js": "/assets/@symfony/stimulus-bundle/controllers-qoRywO9.js",
+        "/assets/@symfony/ux-turbo/turbo_controller.js": "/assets/@symfony/ux-turbo/turbo_controller-bFCo5ub.js",
+        "/assets/controllers/hello_controller.js": "/assets/controllers/hello_controller-VYgvytJ.js",
+        "@hotwired/turbo": "/assets/vendor/@hotwired/turbo/turbo.index-pT15T6h.js",
+        "/assets/controllers/csrf_protection_controller.js": "/assets/controllers/csrf_protection_controller-6ynUAeX.js"
+    }
+}
+</script><script data-turbo-track="reload">
+if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('importmap')) (function () {
+    const script = document.createElement('script');
+    script.src = 'https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js';
+    script.setAttribute('crossorigin', 'anonymous');
+    script.setAttribute('integrity', 'sha384-ie1x72Xck445i0j4SlNJ5W5iGeL3Dpa0zD48MZopgWsjNB/lt60SuG1iduZGNnJn');
+    script.setAttribute('data-turbo-track', 'reload');
+    document.head.appendChild(script);
+})();
+</script>
+<link rel="modulepreload" href="/assets/app-TNXHCQF.js">
+<link rel="modulepreload" href="/assets/stimulus_bootstrap-xCO4u8H.js">
+<link rel="modulepreload" href="/assets/@symfony/stimulus-bundle/loader-IOzBDLu.js">
+<link rel="modulepreload" href="/assets/vendor/@hotwired/stimulus/stimulus.index-S4zNcea.js">
+<link rel="modulepreload" href="/assets/@symfony/stimulus-bundle/controllers-qoRywO9.js">
+<link rel="modulepreload" href="/assets/@symfony/ux-turbo/turbo_controller-bFCo5ub.js">
+<link rel="modulepreload" href="/assets/controllers/hello_controller-VYgvytJ.js">
+<link rel="modulepreload" href="/assets/vendor/@hotwired/turbo/turbo.index-pT15T6h.js">
+<script type="module" data-turbo-track="reload">import 'app';</script>        
+                    </head>
+    <body class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-dark-400 border-r border-gold-500/10 flex-shrink-0 flex flex-col relative overflow-hidden backdrop-blur-xl bg-opacity-90 bg-gradient-to-b from-dark-400 to-black z-10 shadow-[4px_0_24px_rgba(255,215,0,0.05)]">
+            <!-- decorative blur behind sidebar -->
+            <div class="absolute -top-32 -left-32 w-64 h-64 bg-gold-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="h-20 flex items-center justify-center border-b border-gold-500/10 mt-4 mb-4 relative z-10 group">
+                <h1 class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 drop-shadow-[0_2px_10px_rgba(255,215,0,0.3)] transition-transform duration-300 transform group-hover:scale-105">
+                    <i class="fa-solid fa-compass mr-2 text-gold-500 group-hover:animate-spin-slow"></i> TABAANY
+                </h1>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-6 relative z-10 custom-scrollbar">
+                <ul class="space-y-3 px-4">
+                    <li>
+                        <a href="/" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400">
+                            <i class="fa-solid fa-chart-pie w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Vue d'ensemble</span>
+                            <div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>                        </a>
+                    </li>
+                    <li>
+                        <a href="/lieu/touristique" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden ">
+                            <i class="fa-solid fa-map-location-dot w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Lieux Touristiques</span>
+                                                    </a>
+                    </li>
+                    <li>
+                        <a href="/categorie" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden ">
+                            <i class="fa-solid fa-layer-group w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Catégories</span>
+                                                    </a>
+                    </li>
+                    <li>
+                        <a href="/adresse" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden ">
+                            <i class="fa-solid fa-location-dot w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Adresses</span>
+                                                    </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="mt-auto p-4 border-t border-gold-500/10 relative z-10">
+                <div class="bg-gradient-to-br from-dark-200 to-black border border-gold-500/20 p-4 rounded-xl flex items-center gap-3 shadow-[0_4px_15px_rgba(0,0,0,0.5)] transform hover:-translate-y-1 transition-transform cursor-pointer">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-400 to-amber-600 flex items-center justify-center text-black font-bold shadow-inner">
+                        A
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-white font-bold text-sm truncate">Admin Tabaany</p>
+                        <p class="text-gold-500/70 text-xs truncate">Super Admin</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-[#050505] flex flex-col relative w-full h-full shadow-inner scroll-smooth">
+            <!-- Background Glows -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gold-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <!-- Top Header -->
+            <header class="bg-dark-300/80 backdrop-blur-md border-b border-gold-500/10 px-8 py-4 flex justify-between items-center sticky top-0 z-50">
+                <div class="flex items-center text-gray-400 text-sm font-medium">
+                    <i class="fa-solid fa-home mr-2 text-gold-500"></i>
+                        <span>Vue d'ensemble</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <button class="text-gray-400 hover:text-gold-400 transition-colors relative">
+                        <i class="fa-solid fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
+                        </span>
+                    </button>
+                    <div class="flex items-center gap-3 cursor-pointer group">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 to-amber-700 flex items-center justify-center text-black font-bold border-2 border-transparent group-hover:border-white transition-all">
+                            A
+                        </div>
+                        <div class="hidden md:block text-sm">
+                            <p class="text-white font-semibold group-hover:text-gold-400 transition-colors">Admin Tabaany</p>
+                            <p class="text-gray-500 text-xs">admin@tabaany.com</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs group-hover:text-gold-400"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-8 max-w-7xl mx-auto w-full flex-1 z-10">
+                <!-- Flash Messages Overlay -->
+                <!-- Add fixed container for toasters top right -->
+                <div class="fixed top-24 right-8 z-[100] flex flex-col gap-3 min-w-[320px] max-w-sm pointer-events-none">
+                                </div>
+
+                <style>
+                    @keyframes slide-in-right {
+                        0% { transform: translateX(100%); opacity: 0; }
+                        100% { transform: translateX(0); opacity: 1; }
+                    }
+                </style>
+
+                <div class="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-4 animate-[fade-in_0.5s_ease-out]">
+    <div>
+        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2 drop-shadow-[0_4px_15px_rgba(255,215,0,0.4)]">Vue d'ensemble</h1>
+        <p class="text-gray-400 text-lg">Suivez l'activité et gérez votre base de données touristique de manière intuitive.</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="/dashboard/excel" class="group flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-green-600/10 hover:from-green-500 hover:to-green-600 border border-green-500/30 hover:border-transparent px-4 py-2.5 rounded-xl text-green-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.1)] hover:shadow-[0_4px_20px_rgba(34,197,94,0.4)]">
+            <i class="fa-solid fa-file-excel text-lg transition-transform group-hover:-translate-y-0.5"></i>
+            <span class="font-semibold">Excel</span>
+        </a>
+        <a href="/dashboard/pdf" class="group flex items-center gap-2 bg-gradient-to-r from-red-600/20 to-red-600/10 hover:from-red-500 hover:to-red-600 border border-red-500/30 hover:border-transparent px-4 py-2.5 rounded-xl text-red-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_4px_20px_rgba(239,68,68,0.4)]">
+            <i class="fa-solid fa-file-pdf text-lg transition-transform group-hover:-translate-y-0.5"></i>
+            <span class="font-semibold">PDF</span>
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <!-- Lieux Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-gold-500/10 rounded-2xl p-6 flex flex-col hover:border-gold-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl group-hover:bg-gold-500/10 transition-all duration-500"></div>
+        <div class="flex justify-between items-start mb-6 relative z-10">
+            <div>
+                <p class="text-gold-500/70 text-xs font-bold uppercase tracking-widest mb-2">Lieux Touristiques</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-gold-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">5</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-700/10 flex items-center justify-center text-gold-500 shadow-[0_0_15px_rgba(255,215,0,0.1)] group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-map-location-dot text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto flex gap-2 relative z-10 w-full justify-between items-center bg-black/40 rounded-lg p-2 border border-white/5">
+            <div class="flex items-center gap-1.5 px-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs font-medium text-green-400">3 Actifs</span>
+            </div>
+            <div class="w-px h-6 bg-white/10"></div>
+            <div class="flex items-center gap-1.5 px-2">
+                <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span class="text-xs font-medium text-red-400">2 Inactifs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-blue-500/10 rounded-2xl p-6 flex flex-col hover:border-blue-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+        <div class="flex justify-between items-start mb-6 relative z-10">
+            <div>
+                <p class="text-blue-500/70 text-xs font-bold uppercase tracking-widest mb-2">Catégories</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">5</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-layer-group text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
+            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-tags mr-1.5 text-blue-500/50"></i>Groupes de lieux</p>
+        </div>
+    </div>
+
+    <!-- Adresses Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-purple-500/10 rounded-2xl p-6 flex flex-col hover:border-purple-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>
+        <div class="flex justify-between items-start mb-6 relative z-10">
+            <div>
+                <p class="text-purple-500/70 text-xs font-bold uppercase tracking-widest mb-2">Adresses</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-purple-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">9</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-700/10 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-location-dot text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
+            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-map mr-1.5 text-purple-500/50"></i>Coordonnées complètes</p>
+        </div>
+    </div>
+
+    <!-- Price Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-green-500/10 rounded-2xl p-6 flex flex-col hover:border-green-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-green-500/5 rounded-full blur-2xl group-hover:bg-green-500/10 transition-all duration-500"></div>
+        <div class="flex justify-between items-start mb-6 relative z-10">
+            <div>
+                <p class="text-green-500/70 text-xs font-bold uppercase tracking-widest mb-2">Prix Moyen</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-green-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]"><span class="text-2xl mr-1">DT</span>24.80</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-700/10 flex items-center justify-center text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.1)] group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-money-bill-wave text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
+            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-coins mr-1.5 text-green-500/50"></i>Ticket moyen calculé</p>
+        </div>
+    </div>
+</div>
+
+<!-- Actions Rapides -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+    <a href="/lieu/touristique/new" class="group bg-dark-300 hover:bg-gold-500/10 border border-gold-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 group-hover:bg-gold-500 group-hover:text-black transition">
+                <i class="fa-solid fa-plus text-xl"></i>
+            </div>
+            <span class="font-medium text-white group-hover:text-gold-400">Nouveau Lieu</span>
+        </div>
+        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-gold-500"></i>
+    </a>
+    
+    <a href="/categorie/new" class="group bg-dark-300 hover:bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition">
+                <i class="fa-solid fa-folder-plus text-xl"></i>
+            </div>
+            <span class="font-medium text-white group-hover:text-blue-400">Nouvelle Catégorie</span>
+        </div>
+        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-blue-500"></i>
+    </a>
+
+    <a href="/adresse/new" class="group bg-dark-300 hover:bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition">
+                <i class="fa-solid fa-map-pin text-xl"></i>
+            </div>
+            <span class="font-medium text-white group-hover:text-purple-400">Nouvelle Adresse</span>
+        </div>
+        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-purple-500"></i>
+    </a>
+</div>
+
+<!-- Middle Section: 3 Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-gold-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-gold-500 mr-2"></i>Catégories</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="categoryPieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-purple-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-purple-500 mr-2"></i>Villes (Adresses)</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="adressePieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-green-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-green-500 mr-2"></i>Statut Lieux</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="statutPieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section Grid -->
+<div class="grid grid-cols-1 gap-6">
+    <!-- Recent Places Table -->
+    <div class="card">
+        <h2 class="text-xl font-bold text-gold-400 mb-6 border-b border-gold-500/10 pb-3">Derniers Lieux Ajoutés</h2>
+                    <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Lieu</th>
+                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Catégorie</th>
+                            <th class="pb-3 text-right font-semibold text-gray-400 uppercase tracking-wider">Prix</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gold-500/10">
+                                                    <tr class="hover:bg-dark-300/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="/lieu/touristique/27" class="font-medium text-white hover:text-gold-400 transition-colors">parc national ichkeul</a>
+                                        <span class="text-xs text-gray-500">Tunis</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        Parc Naturel
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">26.00 DT</span>
+                                </td>
+                            </tr>
+                                                    <tr class="hover:bg-dark-300/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="/lieu/touristique/24" class="font-medium text-white hover:text-gold-400 transition-colors">Amphitheatre El Jem</a>
+                                        <span class="text-xs text-gray-500">El Jem</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        Musee
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">18.00 DT</span>
+                                </td>
+                            </tr>
+                                                    <tr class="hover:bg-dark-300/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="/lieu/touristique/23" class="font-medium text-white hover:text-gold-400 transition-colors">Desert Douz</a>
+                                        <span class="text-xs text-gray-500">Douz</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        Desert
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">40.00 DT</span>
+                                </td>
+                            </tr>
+                                                    <tr class="hover:bg-dark-300/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="/lieu/touristique/22" class="font-medium text-white hover:text-gold-400 transition-colors">Medina de Tunis</a>
+                                        <span class="text-xs text-gray-500">tunis</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        Musee
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">15.00 DT</span>
+                                </td>
+                            </tr>
+                                                    <tr class="hover:bg-dark-300/50 transition-colors">
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="/lieu/touristique/21" class="font-medium text-white hover:text-gold-400 transition-colors">Plage Sidi Mahrez</a>
+                                        <span class="text-xs text-gray-500">monastir</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        Plage
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">25.00 DT</span>
+                                </td>
+                            </tr>
+                                            </tbody>
+                </table>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gold-500/10 text-center">
+                <a href="/lieu/touristique" class="text-sm text-gold-500 hover:text-gold-400 font-medium tracking-wide">Voir tout d'un coup d'œil &rarr;</a>
+            </div>
+            </div>
+</div>
+
+<!-- Chart.js CDN & Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { color: '#E5E5E5', font: { family: "'Inter', sans-serif", size: 11 } } },
+            tooltip: { backgroundColor: 'rgba(10, 10, 10, 0.95)', titleColor: '#FFF', bodyColor: '#FFF', borderColor: 'rgba(255, 215, 0, 0.2)', borderWidth: 1 }
+        }
+    };
+
+    // 1. Chart Categories
+    const labelsData = ["Musee","Desert","Plage","Parc Naturel"];
+    const valuesData = [2,1,1,1];
+    if(labelsData && labelsData.length > 0) {
+        new Chart(document.getElementById('categoryPieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    data: valuesData,
+                    backgroundColor: ['rgba(255, 215, 0, 0.8)','rgba(212, 175, 55, 0.8)','rgba(251, 191, 36, 0.8)','rgba(245, 158, 11, 0.8)','rgba(252, 211, 77, 0.8)'],
+                    borderColor: 'rgba(26, 26, 26, 1)', borderWidth: 2, hoverOffset: 4
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('categoryPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+    }
+
+    // 2. Chart Adresses
+    const adresseLabels = ["Tunis","Sousse","Monastir","Sfax"];
+    const adresseValues = [6,1,1,1];
+    if(adresseLabels && adresseLabels.length > 0) {
+        new Chart(document.getElementById('adressePieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: adresseLabels,
+                datasets: [{
+                    data: adresseValues,
+                    backgroundColor: ['rgba(168, 85, 247, 0.8)','rgba(192, 132, 252, 0.8)','rgba(216, 180, 254, 0.8)','rgba(147, 51, 234, 0.8)','rgba(126, 34, 206, 0.8)'],
+                    borderColor: 'rgba(26, 26, 26, 1)', borderWidth: 2, hoverOffset: 4
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('adressePieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+    }
+
+    // 3. Chart Status
+    const activeLieux = 3;
+    const inactiveLieux = 2;
+    if(activeLieux > 0 || inactiveLieux > 0) {
+        new Chart(document.getElementById('statutPieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Actifs', 'Inactifs'],
+                datasets: [{
+                    data: [activeLieux, inactiveLieux],
+                    backgroundColor: ['rgba(34, 197, 94, 0.8)', 'rgba(239, 68, 68, 0.8)'],
+                    borderColor: 'rgba(26, 26, 26, 1)', borderWidth: 2, hoverOffset: 4
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('statutPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+    }
+});
+</script>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="mt-auto border-t border-gold-500/10 py-6 px-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2026 Tabaany Administration. Tous droits réservés.</p>
+            </footer>
+        </main>
+        
+    
+<!-- START of Symfony Web Debug Toolbar --><div class="sf-toolbar sf-toolbar-opened" role="region" aria-label="Symfony Web Debug Toolbar" data-frankenphp-hot-reload-preserve>    <div id="sfwdt4d97d1">        <div id="sfToolbarClearer-4d97d1" class="sf-toolbar-clearer"></div><div id="sfToolbarMainContent-4d97d1" class="sf-toolbarreset notranslate clear-fix" data-no-turbolink data-turbo="false">                                                    <div class="sf-toolbar-block sf-toolbar-block-request sf-toolbar-status-normal " >    <a href="http://127.0.0.1:8000/_profiler/4d97d1?panel=request">        <div class="sf-toolbar-icon">        <svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Symfony" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .9C5.8.9.9 5.8.9 12a11 11 0 1 0 22.2 0A11 11 0 0 0 12 .9zm6.5 6c-.6 0-.9-.3-.9-.8 0-.2 0-.4.2-.6l.2-.4c0-.3-.5-.4-.6-.4-1.8.1-2.3 2.5-2.7 4.4l-.2 1c1 .2 1.8 0 2.2-.3.6-.4-.2-.7-.1-1.2.1-.3.5-.5.7-.6.5 0 .7.5.7.9 0 .7-1 1.8-3 1.8l-.6-.1-.6 2.4c-.4 1.6-.8 3.8-2.4 5.7-1.4 1.7-2.9 1.9-3.5 1.9-1.2 0-1.9-.6-2-1.5 0-.8.7-1.3 1.2-1.3.6 0 1.1.5 1.1 1s-.2.6-.4.6c-.1.1-.3.2-.3.4 0 .1.1.3.4.3.5 0 .8-.3 1.1-.5 1.2-.9 1.6-2.7 2.2-5.7l.1-.7.7-3.2c-.8-.6-1.3-1.4-2.4-1.7-.6-.1-1.1.1-1.5.5-.4.5-.2 1.1.2 1.5l.7.6c.7.8 1.2 1.6 1 2.5-.3 1.5-2 2.6-4 1.9-1.8-.6-2-1.8-1.8-2.5.2-.6.6-.7 1.1-.6.5.2.6.7.6 1.2l-.1.3c-.2.1-.3.3-.3.4-.1.4.4.6.7.7.7.3 1.6-.2 1.8-.8a1 1 0 0 0-.4-1.1l-.7-.8c-.4-.4-1.1-1.4-.7-2.6.1-.5.4-.9.7-1.3a4 4 0 0 1 2.8-.6c1.2.4 1.8 1.1 2.6 1.8.5-1.2 1-2.4 1.8-3.5.9-.9 1.9-1.6 3.1-1.7 1.3.2 2.2.7 2.2 1.6 0 .4-.2 1.1-.9 1.1z"/></svg>        <span class="sf-toolbar-value sf-toolbar-ajax-request-counter">            Loading&hellip;        </span>    </div>    </a>        <div class="sf-toolbar-info">        <div class="sf-toolbar-info-piece">            <b>Loading the web debug toolbar&hellip;</b>        </div>        <div class="sf-toolbar-info-piece">            Attempt #<span id="sfLoadCounter-4d97d1"></span>        </div>        <div class="sf-toolbar-info-piece">            <b>                <button class="sf-cancel-button" type="button" id="sfLoadCancel-4d97d1" title="Cancel loading">Cancel</button>            </b>        </div>    </div></div>                                <button class="sf-toolbar-toggle-button" type="button" id="sfToolbarToggleButton-4d97d1" accesskey="D" aria-expanded="true" aria-controls="sfToolbarMainContent-4d97d1">        <i class="sf-toolbar-icon-opened" title="Close Toolbar"><svg xmlns="http://www.w3.org/2000/svg" data-icon-name="icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>    <line x1="18" y1="6" x2="6" y2="18"></line>    <line x1="6" y1="6" x2="18" y2="18"></line></svg></i>        <i class="sf-toolbar-icon-closed" title="Open Toolbar"><svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Symfony" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .9C5.8.9.9 5.8.9 12a11 11 0 1 0 22.2 0A11 11 0 0 0 12 .9zm6.5 6c-.6 0-.9-.3-.9-.8 0-.2 0-.4.2-.6l.2-.4c0-.3-.5-.4-.6-.4-1.8.1-2.3 2.5-2.7 4.4l-.2 1c1 .2 1.8 0 2.2-.3.6-.4-.2-.7-.1-1.2.1-.3.5-.5.7-.6.5 0 .7.5.7.9 0 .7-1 1.8-3 1.8l-.6-.1-.6 2.4c-.4 1.6-.8 3.8-2.4 5.7-1.4 1.7-2.9 1.9-3.5 1.9-1.2 0-1.9-.6-2-1.5 0-.8.7-1.3 1.2-1.3.6 0 1.1.5 1.1 1s-.2.6-.4.6c-.1.1-.3.2-.3.4 0 .1.1.3.4.3.5 0 .8-.3 1.1-.5 1.2-.9 1.6-2.7 2.2-5.7l.1-.7.7-3.2c-.8-.6-1.3-1.4-2.4-1.7-.6-.1-1.1.1-1.5.5-.4.5-.2 1.1.2 1.5l.7.6c.7.8 1.2 1.6 1 2.5-.3 1.5-2 2.6-4 1.9-1.8-.6-2-1.8-1.8-2.5.2-.6.6-.7 1.1-.6.5.2.6.7.6 1.2l-.1.3c-.2.1-.3.3-.3.4-.1.4.4.6.7.7.7.3 1.6-.2 1.8-.8a1 1 0 0 0-.4-1.1l-.7-.8c-.4-.4-1.1-1.4-.7-2.6.1-.5.4-.9.7-1.3a4 4 0 0 1 2.8-.6c1.2.4 1.8 1.1 2.6 1.8.5-1.2 1-2.4 1.8-3.5.9-.9 1.9-1.6 3.1-1.7 1.3.2 2.2.7 2.2 1.6 0 .4-.2 1.1-.9 1.1z"/></svg></i>    </button></div>    </div>    <link rel="stylesheet" nonce="f4445ad66fa7396ed3e1f5e637191ef6" href="http://127.0.0.1:8000/_wdt/styles" />        <script nonce="5f3ed6d690826ae69b8f8efe89155afe">/*<![CDATA[*/        if (typeof Sfjs === 'undefined' || typeof Sfjs.loadToolbar === 'undefined') {            Sfjs = (function() {                "use strict";                if ('classList' in document.documentElement) {                    var hasClass = function (el, cssClass) { return el.classList.contains(cssClass); };                    var removeClass = function(el, cssClass) { el.classList.remove(cssClass); };                    var addClass = function(el, cssClass) { el.classList.add(cssClass); };                    var toggleClass = function(el, cssClass) { el.classList.toggle(cssClass); };                } else {                    var hasClass = function (el, cssClass) { return el.className.match(new RegExp('\\b' + cssClass + '\\b')); };                    var removeClass = function(el, cssClass) { el.className = el.className.replace(new RegExp('\\b' + cssClass + '\\b'), ' '); };                    var addClass = function(el, cssClass) { if (!hasClass(el, cssClass)) { el.className += " " + cssClass; } };                    var toggleClass = function(el, cssClass) { hasClass(el, cssClass) ? removeClass(el, cssClass) : addClass(el, cssClass); };                }                var noop = function() {};                var profilerStorageKey = 'symfony/profiler/';                var addEventListener;                var el = document.createElement('div');                if (!('addEventListener' in el)) {                    addEventListener = function (element, eventName, callback) {                        element.attachEvent('on' + eventName, callback);                    };                } else {                    addEventListener = function (element, eventName, callback) {                        element.addEventListener(eventName, callback, false);                    };                }                var request = function(url, onSuccess, onError, payload, options, tries) {                    url = new URL(url);                    url.searchParams.set('XDEBUG_IGNORE', '1');                    url = url.toString();                    var xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');                    options = options || {};                    options.retry = options.retry || false;                    tries = tries || 1;                    /* this delays for 125, 375, 625, 875, and 1000, ... */                    var delay = tries < 5 ? (tries - 0.5) * 250 : 1000;                    xhr.open(options.method || 'GET', url, true);                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');                    xhr.onreadystatechange = function(state) {                        if (4 !== xhr.readyState) {                            return null;                        }                        if (xhr.status == 404 && options.retry && !options.stop) {                            setTimeout(function() {                                if (options.stop) {                                    return;                                }                                request(url, onSuccess, onError, payload, options, tries + 1);                            }, delay);                            return null;                        }                        if (200 === xhr.status) {                            (onSuccess || noop)(xhr);                        } else {                            (onError || noop)(xhr);                        }                    };                    if (options.onSend) {                        options.onSend(tries);                    }                    xhr.send(payload || '');                };                var getPreference = function(name) {                    if (!window.localStorage) {                        return null;                    }                    return localStorage.getItem(profilerStorageKey + name);                };                var setPreference = function(name, value) {                    if (!window.localStorage) {                        return null;                    }                    localStorage.setItem(profilerStorageKey + name, value);                };                var requestStack = [];                var extractHeaders = function(xhr, stackElement) {                    /* Here we avoid to call xhr.getResponseHeader in order to */                    /* prevent polluting the console with CORS security errors */                    var allHeaders = xhr.getAllResponseHeaders();                    var ret;                    if (ret = allHeaders.match(/^x-debug-token:\s+(.*)$/im)) {                        stackElement.profile = ret[1];                    }                    if (ret = allHeaders.match(/^x-debug-token-link:\s+(.*)$/im)) {                        stackElement.profilerUrl = ret[1];                    }                    if (ret = allHeaders.match(/^Symfony-Debug-Toolbar-Replace:\s+(.*)$/im)) {                        stackElement.toolbarReplaceFinished = false;                        stackElement.toolbarReplace = '1' === ret[1];                    }                };                var successStreak = 4;                var pendingRequests = 0;                var renderAjaxRequests = function() {                    var requestCounter = document.querySelector('.sf-toolbar-ajax-request-counter');                    if (!requestCounter) {                        return;                    }                    requestCounter.textContent = requestStack.length;                    var infoSpan = document.querySelector(".sf-toolbar-ajax-info");                    if (infoSpan) {                        infoSpan.textContent = requestStack.length + ' AJAX request' + (requestStack.length !== 1 ? 's' : '');                    }                    var ajaxToolbarPanel = document.querySelector('.sf-toolbar-block-ajax');                    if (requestStack.length) {                        ajaxToolbarPanel.style.display = '';                    } else {                        ajaxToolbarPanel.style.display = 'none';                    }                    if (pendingRequests > 0) {                        addClass(ajaxToolbarPanel, 'sf-ajax-request-loading');                    } else if (successStreak < 4) {                        addClass(ajaxToolbarPanel, 'sf-toolbar-status-red');                        removeClass(ajaxToolbarPanel, 'sf-ajax-request-loading');                    } else {                        removeClass(ajaxToolbarPanel, 'sf-ajax-request-loading');                        removeClass(ajaxToolbarPanel, 'sf-toolbar-status-red');                    }                };                var startAjaxRequest = function(index) {                    var tbody = document.querySelector('.sf-toolbar-ajax-request-list');                    if (!tbody) {                        return;                    }                    var nbOfAjaxRequest = tbody.rows.length;                    if (nbOfAjaxRequest >= 100) {                        tbody.deleteRow(0);                    }                    var request = requestStack[index];                    pendingRequests++;                    var row = document.createElement('tr');                    request.DOMNode = row;                    var requestNumberCell = document.createElement('td');                    requestNumberCell.textContent = index + 1;                    row.appendChild(requestNumberCell);                    var profilerCell = document.createElement('td');                    profilerCell.textContent = 'n/a';                    row.appendChild(profilerCell);                    var methodCell = document.createElement('td');                    methodCell.textContent = request.method;                    row.appendChild(methodCell);                    var typeCell = document.createElement('td');                    typeCell.textContent = request.type;                    row.appendChild(typeCell);                    var statusCodeCell = document.createElement('td');                    var statusCode = document.createElement('span');                    statusCode.textContent = 'n/a';                    statusCodeCell.appendChild(statusCode);                    row.appendChild(statusCodeCell);                    var pathCell = document.createElement('td');                    pathCell.className = 'sf-ajax-request-url';                    if ('GET' === request.method) {                        var pathLink = document.createElement('a');                        pathLink.setAttribute('href', request.url);                        pathLink.textContent = request.url;                        pathCell.appendChild(pathLink);                    } else {                        pathCell.textContent = request.url;                    }                    pathCell.setAttribute('title', request.url);                    row.appendChild(pathCell);                    var durationCell = document.createElement('td');                    durationCell.className = 'sf-ajax-request-duration';                    durationCell.textContent = 'n/a';                    row.appendChild(durationCell);                    request.liveDurationHandle = setInterval(function() {                        durationCell.textContent = (new Date() - request.start) + ' ms';                    }, 100);                    row.className = 'sf-ajax-request sf-ajax-request-loading';                    tbody.insertBefore(row, null);                    var toolbarInfo = document.querySelector('.sf-toolbar-block-ajax .sf-toolbar-info');                    toolbarInfo.scrollTop = toolbarInfo.scrollHeight;                    renderAjaxRequests();                };                var finishAjaxRequest = function(index) {                    var request = requestStack[index];                    clearInterval(request.liveDurationHandle);                    if (!request.DOMNode) {                        return;                    }                    if (request.toolbarReplace && !request.toolbarReplaceFinished && request.profile) {                        /* Flag as complete because finishAjaxRequest can be called multiple times. */                        request.toolbarReplaceFinished = true;                        /* Search up through the DOM to find the toolbar's container ID. */                        for (var elem = request.DOMNode; elem && elem !== document; elem = elem.parentNode) {                            if (elem.id.match(/^sfwdt/)) {                                Sfjs.loadToolbar(elem.id.replace(/^sfwdt/, ''), request.profile);                                break;                            }                        }                    }                    if (pendingRequests > 0) {                        pendingRequests--;                    }                    var row = request.DOMNode;                    /* Unpack the children from the row */                    var profilerCell = row.children[1];                    var methodCell = row.children[2];                    var statusCodeCell = row.children[4];                    var statusCodeElem = statusCodeCell.children[0];                    var durationCell = row.children[6];                    if (request.error) {                        row.className = 'sf-ajax-request sf-ajax-request-error';                        methodCell.className = 'sf-ajax-request-error';                        successStreak = 0;                    } else {                        row.className = 'sf-ajax-request sf-ajax-request-ok';                        successStreak++;                    }                    if (request.statusCode) {                        if (request.statusCode < 300) {                            statusCodeElem.setAttribute('class', 'sf-toolbar-status');                        } else if (request.statusCode < 400) {                            statusCodeElem.setAttribute('class', 'sf-toolbar-status sf-toolbar-status-yellow');                        } else {                            statusCodeElem.setAttribute('class', 'sf-toolbar-status sf-toolbar-status-red');                        }                        statusCodeElem.textContent = request.statusCode;                    } else {                        statusCodeElem.setAttribute('class', 'sf-toolbar-status sf-toolbar-status-red');                    }                    if (request.duration) {                        durationCell.textContent = request.duration + ' ms';                    }                    if (request.profilerUrl) {                        profilerCell.textContent = '';                        var profilerLink = document.createElement('a');                        profilerLink.setAttribute('href', request.profilerUrl);                        profilerLink.textContent = request.profile;                        profilerCell.appendChild(profilerLink);                    }                    renderAjaxRequests();                };                                if (window.EventSource) {                    var oldEventSource = window.EventSource;                    function patchedEventSource(url, options) {                        var es = new oldEventSource(url, options);                        if (!url.toString().match(new RegExp("^\/((index|app(_[\\w]+)?)\\.php\/)?_wdt"))) {                            var stackElement = {                                error: false,                                url: url,                                method: 'GET',                                type: 'event-stream',                                start: new Date()                            };                            var idx = requestStack.push(stackElement) - 1;                            startAjaxRequest(idx);                            addEventListener(es, 'error', function () {                                stackElement.error = true;                                finishAjaxRequest(idx);                            });                            addEventListener(es, 'open', function () {                                stackElement.statusCode = 200;                                stackElement.toolbarReplaceFinished = false;                                stackElement.toolbarReplace = true;                            });                            addEventListener(es, 'symfony:debug:started', function (event) {                                var items = event.data.split('\n');                                stackElement.profile = items[0];                                stackElement.profilerUrl = items[1];                            });                            addEventListener(es, 'symfony:debug:error', function (event) {                                stackElement.error = true;                                stackElement.statusCode = event.data;                                finishAjaxRequest(idx);                            });                            addEventListener(es, 'symfony:debug:finished', function () {                                stackElement.duration = new Date() - stackElement.start;                                stackElement.toolbarReplaceFinished = false;                                stackElement.toolbarReplace = true;                                finishAjaxRequest(idx);                            });                        }                        return es;                    };                    Object.defineProperties(patchedEventSource, Object.getOwnPropertyDescriptors(oldEventSource));                    window.EventSource = patchedEventSource;                }                if (window.fetch && window.fetch.polyfill === undefined) {                    var oldFetch = window.fetch;                    window.fetch = function () {                        var promise = oldFetch.apply(this, arguments);                        var url = arguments[0];                        var params = arguments[1];                        var paramType = Object.prototype.toString.call(arguments[0]);                        if (paramType === '[object Request]') {                            url = arguments[0].url;                            params = {                                method: arguments[0].method,                                credentials: arguments[0].credentials,                                headers: arguments[0].headers,                                mode: arguments[0].mode,                                redirect: arguments[0].redirect                            };                        } else {                            url = String(url);                        }                        if (!url.match(new RegExp("^\/((index|app(_[\\w]+)?)\\.php\/)?_wdt"))) {                            var method = 'GET';                            if (params && params.method !== undefined) {                                method = params.method;                            }                            var stackElement = {                                error: false,                                url: url,                                method: method,                                type: 'fetch',                                start: new Date()                            };                            var idx = requestStack.push(stackElement) - 1;                            promise.then(function (r) {                                stackElement.duration = new Date() - stackElement.start;                                stackElement.error = r.status < 200 || r.status >= 400;                                stackElement.statusCode = r.status;                                stackElement.profile = r.headers.get('x-debug-token');                                stackElement.profilerUrl = r.headers.get('x-debug-token-link');                                stackElement.toolbarReplaceFinished = false;                                stackElement.toolbarReplace = '1' === r.headers.get('Symfony-Debug-Toolbar-Replace');                                finishAjaxRequest(idx);                            }, function (e){                                stackElement.error = true;                                finishAjaxRequest(idx);                            });                            startAjaxRequest(idx);                        }                        return promise;                    };                }                if (window.XMLHttpRequest && XMLHttpRequest.prototype.addEventListener) {                    var proxied = XMLHttpRequest.prototype.open;                    XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {                        var self = this;                        /* prevent logging AJAX calls to static and inline files, like templates */                        var path = url;                        if (url.slice(0, 1) === '/') {                            if (0 === url.indexOf('')) {                                path = url.slice(0);                            }                        }                        else if (0 === url.indexOf('http\u003A\/\/127.0.0.1\u003A8000')) {                            path = url.slice(21);                        }                        if (!path.match(new RegExp("^\/((index|app(_[\\w]+)?)\\.php\/)?_wdt"))) {                            var stackElement = {                                error: false,                                url: url,                                method: method,                                type: 'xhr',                                start: new Date()                            };                            var idx = requestStack.push(stackElement) - 1;                            this.addEventListener('readystatechange', function() {                                if (self.readyState == 4) {                                    stackElement.duration = new Date() - stackElement.start;                                    stackElement.error = self.status < 200 || self.status >= 400;                                    stackElement.statusCode = self.status;                                    extractHeaders(self, stackElement);                                    finishAjaxRequest(idx);                                }                            }, false);                            startAjaxRequest(idx);                        }                        proxied.apply(this, Array.prototype.slice.call(arguments));                    };                }                                return {                    hasClass: hasClass,                    removeClass: removeClass,                    addClass: addClass,                    toggleClass: toggleClass,                    getPreference: getPreference,                    setPreference: setPreference,                    addEventListener: addEventListener,                    request: request,                    renderAjaxRequests: renderAjaxRequests,                    getSfwdt: function(token) {                        return document.getElementById('sfwdt' + token);                    },                    load: function(selector, url, onSuccess, onError, options) {                        var el = document.getElementById(selector);                        if (el && el.getAttribute('data-sfurl') !== url) {                            request(                                url,                                function(xhr) {                                    el.innerHTML = xhr.responseText;                                    el.setAttribute('data-sfurl', url);                                    removeClass(el, 'loading');                                    var pending = pendingRequests;                                    for (var i = 0; i < requestStack.length; i++) {                                        startAjaxRequest(i);                                        if (requestStack[i].duration || requestStack[i].error) {                                            finishAjaxRequest(i);                                        }                                    }                                    /* Revert the pending state in case there was a start called without a finish above. */                                    pendingRequests = pending;                                    (onSuccess || noop)(xhr, el);                                },                                function(xhr) { (onError || noop)(xhr, el); },                                '',                                options                            );                        }                        return this;                    },                    showToolbar: function(token) {                        var sfwdt = this.getSfwdt(token);                        if ('closed' === getPreference('toolbar/displayState')) {                            addClass(sfwdt.parentNode, 'sf-toolbar-closed');                            removeClass(sfwdt.parentNode, 'sf-toolbar-opened');                        } else {                            addClass(sfwdt.parentNode, 'sf-toolbar-opened');                            removeClass(sfwdt.parentNode, 'sf-toolbar-closed');                        }                    },                    hideToolbar: function(token) {                        var sfwdt = this.getSfwdt(token);                        addClass(sfwdt.parentNode, 'sf-toolbar-closed');                        removeClass(sfwdt.parentNode, 'sf-toolbar-opened');                    },                    initToolbar: function(token) {                        this.showToolbar(token);                        var toggleButton = document.querySelector(`#sfToolbarToggleButton-${token}`);                        addEventListener(toggleButton, 'click', function (event) {                            event.preventDefault();                            const newState = 'closed' === getPreference('toolbar/displayState') ? 'opened' : 'closed';                            setPreference('toolbar/displayState', newState);                            'opened' === newState ? Sfjs.showToolbar(token) : Sfjs.hideToolbar(token);                        });                    },                    loadToolbar: function(token, newToken) {                        var that = this;                        var triesCounter = document.getElementById('sfLoadCounter-' + token);                        var options = {                            retry: true,                            onSend: function (count) {                                if (count === 3) {                                    that.initToolbar(token);                                }                                if (triesCounter) {                                    triesCounter.textContent = count;                                }                            },                        };                        var cancelButton = document.getElementById('sfLoadCancel-' + token);                        if (cancelButton) {                            addEventListener(cancelButton, 'click', function (event) {                                event.preventDefault();                                options.stop = true;                                that.hideToolbar(token);                            });                        }                        newToken = (newToken || token);                        this.load(                            'sfwdt' + token,                            'http\u003A\/\/127.0.0.1\u003A8000\/_wdt\/xxxxxx'.replace(/xxxxxx/, newToken),                            function(xhr, el) {                                var toolbarContent = document.getElementById('sfToolbarMainContent-' + newToken);                                /* Do nothing in the edge case where the toolbar has already been replaced with a new one */                                if (!toolbarContent) {                                    return;                                }                                /* Replace the ID, it has to match the new token */                                toolbarContent.parentElement.id = 'sfwdt' + newToken;                                /* Evaluate in global scope scripts embedded inside the toolbar */                                var i, scripts = [].slice.call(el.querySelectorAll('script'));                                for (i = 0; i < scripts.length; ++i) {                                    if (scripts[i].firstChild) {                                        eval.call({}, scripts[i].firstChild.nodeValue);                                    }                                }                                el.style.display = -1 !== xhr.responseText.indexOf('sf-toolbarreset') ? 'block' : 'none';                                if (el.style.display == 'none') {                                    return;                                }                                that.initToolbar(newToken);                                /* Handle toolbar-info position */                                var toolbarBlocks = [].slice.call(el.querySelectorAll('.sf-toolbar-block'));                                for (i = 0; i < toolbarBlocks.length; ++i) {                                    toolbarBlocks[i].onmouseover = function () {                                        var toolbarInfo = this.querySelectorAll('.sf-toolbar-info')[0];                                        var pageWidth = document.body.clientWidth;                                        var elementWidth = toolbarInfo.offsetWidth;                                        var leftValue = (elementWidth + this.offsetLeft) - pageWidth;                                        var rightValue = (elementWidth + (pageWidth - this.offsetLeft)) - pageWidth;                                        /* Reset right and left value, useful on window resize */                                        toolbarInfo.style.right = '';                                        toolbarInfo.style.left = '';                                        if (elementWidth > pageWidth) {                                            toolbarInfo.style.left = 0;                                        }                                        else if (leftValue > 0 && rightValue > 0) {                                            toolbarInfo.style.right = (rightValue * -1) + 'px';                                        } else if (leftValue < 0) {                                            toolbarInfo.style.left = 0;                                        } else {                                            toolbarInfo.style.right = '0px';                                        }                                    };                                }                                renderAjaxRequests();                                addEventListener(document.querySelector('.sf-toolbar-ajax-clear'), 'click', function() {                                    requestStack = [];                                    renderAjaxRequests();                                    successStreak = 4;                                    document.querySelector('.sf-toolbar-ajax-request-list').innerHTML = '';                                });                                addEventListener(document.querySelector('.sf-toolbar-block-ajax'), 'mouseenter', function (event) {                                    var elem = document.querySelector('.sf-toolbar-block-ajax .sf-toolbar-info');                                    elem.scrollTop = elem.scrollHeight;                                });                                addEventListener(document.querySelector('.sf-toolbar-block-ajax > .sf-toolbar-icon'), 'click', function (event) {                                    event.preventDefault();                                    toggleClass(this.parentNode, 'hover');                                });                                var dumpInfo = document.querySelector('.sf-toolbar-block-dump .sf-toolbar-info');                                if (null !== dumpInfo) {                                    addEventListener(dumpInfo, 'sfbeforedumpcollapse', function () {                                        dumpInfo.style.minHeight = dumpInfo.getBoundingClientRect().height+'px';                                    });                                    addEventListener(dumpInfo, 'mouseleave', function () {                                        dumpInfo.style.minHeight = '';                                    });                                }                            },                            function(xhr) {                                if (xhr.status !== 0 && !options.stop) {                                    var sfwdt = that.getSfwdt(token);                                    sfwdt.innerHTML = '\                                    <div class="sf-toolbarreset notranslate">\                                        <div class="sf-toolbar-icon"><svg width="26" height="28" xmlns="http://www.w3.org/2000/svg" version="1.1" x="0px" y="0px" viewBox="0 0 26 28" enable-background="new 0 0 26 28" xml:space="preserve"><path fill="#FFFFFF" d="M13 0C5.8 0 0 5.8 0 13c0 7.2 5.8 13 13 13c7.2 0 13-5.8 13-13C26 5.8 20.2 0 13 0z M20 7.5 c-0.6 0-1-0.3-1-0.9c0-0.2 0-0.4 0.2-0.6c0.1-0.3 0.2-0.3 0.2-0.4c0-0.3-0.5-0.4-0.7-0.4c-2 0.1-2.5 2.7-2.9 4.8l-0.2 1.1 c1.1 0.2 1.9 0 2.4-0.3c0.6-0.4-0.2-0.8-0.1-1.3C18 9.2 18.4 9 18.7 8.9c0.5 0 0.8 0.5 0.8 1c0 0.8-1.1 2-3.3 1.9 c-0.3 0-0.5 0-0.7-0.1L15 14.1c-0.4 1.7-0.9 4.1-2.6 6.2c-1.5 1.8-3.1 2.1-3.8 2.1c-1.3 0-2.1-0.6-2.2-1.6c0-0.9 0.8-1.4 1.3-1.4 c0.7 0 1.2 0.5 1.2 1.1c0 0.5-0.2 0.6-0.4 0.7c-0.1 0.1-0.3 0.2-0.3 0.4c0 0.1 0.1 0.3 0.4 0.3c0.5 0 0.9-0.3 1.2-0.5 c1.3-1 1.7-2.9 2.4-6.2l0.1-0.8c0.2-1.1 0.5-2.3 0.8-3.5c-0.9-0.7-1.4-1.5-2.6-1.8c-0.8-0.2-1.3 0-1.7 0.4C8.4 10 8.6 10.7 9 11.1 l0.7 0.7c0.8 0.9 1.3 1.7 1.1 2.7c-0.3 1.6-2.1 2.8-4.3 2.1c-1.9-0.6-2.2-1.9-2-2.7c0.2-0.6 0.7-0.8 1.2-0.6 c0.5 0.2 0.7 0.8 0.6 1.3c0 0.1 0 0.1-0.1 0.3C6 15 5.9 15.2 5.9 15.3c-0.1 0.4 0.4 0.7 0.8 0.8c0.8 0.3 1.7-0.2 1.9-0.9 c0.2-0.6-0.2-1.1-0.4-1.2l-0.8-0.9c-0.4-0.4-1.2-1.5-0.8-2.8c0.2-0.5 0.5-1 0.9-1.4c1-0.7 2-0.8 3-0.6c1.3 0.4 1.9 1.2 2.8 1.9 c0.5-1.3 1.1-2.6 2-3.8c0.9-1 2-1.7 3.3-1.8C20 4.8 21 5.4 21 6.3C21 6.7 20.8 7.5 20 7.5z"/></svg></div>\                                        An error occurred while loading the web debug toolbar. <a href="http\u003A\/\/127.0.0.1\u003A8000\/_profiler\/' + newToken + '">Open the web profiler.</a>\                                    </div>\                                ';                                    sfwdt.parentElement.setAttribute('class', 'sf-toolbar sf-error-toolbar');                                }                            },                            options                        );                        return this;                    },                    toggle: function(selector, elOn, elOff) {                        var tmp = elOn.style.display,                            el = document.getElementById(selector);                        elOn.style.display = elOff.style.display;                        elOff.style.display = tmp;                        if (el) {                            el.style.display = 'none' === tmp ? 'none' : 'block';                        }                        return this;                    },                };            })();        }        Sfjs.loadToolbar('4d97d1');    /*]]>*/</script></div><!-- END of Symfony Web Debug Toolbar -->
+</body>
+</html>

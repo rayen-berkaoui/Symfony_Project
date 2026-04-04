@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Réservation {{ reservation.codeConfirmation }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{{ path('app_reservation_index') }}" class="hover:text-gold-400 transition-colors">Réservations</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <span>Modifier {{ reservation.codeConfirmation }}</span>
+{% endblock %}
+
+{% block body %}
+<div class="mb-8">
+    <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2">Modifier la Réservation</h1>
+    <p class="text-gray-400">Code: <span class="text-gold-500 font-semibold font-mono">{{ reservation.codeConfirmation }}</span></p>
+</div>
+
+<div class="card max-w-3xl">
+    {{ include('reservation/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+</div>
+{% endblock %}

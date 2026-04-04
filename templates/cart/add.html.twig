@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter au Panier - {{ lieu.nom }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{{ path('app_lieu_touristique_index') }}" class="hover:text-gold-400 transition-colors">Lieux</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <a href="{{ path('app_lieu_touristique_show', {'id': lieu.id}) }}" class="hover:text-gold-400 transition-colors">{{ lieu.nom }}</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <span>Ajouter au Panier</span>
+{% endblock %}
+
+{% block body %}
+<div class="mb-8">
+    <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 mb-2">Ajouter au Panier</h1>
+    <p class="text-gray-400">Configurez votre visite pour <span class="text-gold-500 font-semibold">{{ lieu.nom }}</span></p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Lieu Info -->
+    <div class="card p-0 overflow-hidden">
+        {% if lieu.image %}
+            <img src="{{ asset(lieu.image) }}" alt="{{ lieu.nom }}" class="w-full h-64 object-cover">
+        {% else %}
+            <div class="w-full h-64 bg-dark-300 flex items-center justify-center">
+                <i class="fa-solid fa-image text-4xl text-gray-600"></i>
+            </div>
+        {% endif %}
+        <div class="p-6">
+            <h2 class="text-2xl font-bold text-white mb-2">{{ lieu.nom }}</h2>
+            <p class="text-gray-400 mb-4">
+                <i class="fa-solid fa-location-dot mr-2 text-gold-500/50"></i>
+                {{ lieu.ville }}
+            </p>
+            <p class="text-gray-300 text-sm mb-4">{{ lieu.description|slice(0, 200) }}{% if lieu.description|length > 200 %}...{% endif %}</p>
+
+            <div class="flex items-center justify-between pt-4 border-t border-gold-500/10">
+                <span class="text-gold-500/70 text-xs uppercase tracking-widest">Prix par personne/jour</span>
+                <span class="text-2xl font-black text-gold-500">{{ lieu.prix|number_format(2) }} <span class="text-sm">TND</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <h2 class="text-xl font-bold text-gold-400 mb-6 pb-4 border-b border-gold-500/10">
+            <i class="fa-solid fa-calendar-plus mr-2"></i>
+            Détails de la Réservation
+        </h2>
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'cart-form'}}) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    {{ form_label(form.dateDebut) }}
+                    {{ form_widget(form.dateDebut) }}
+                    {{ form_errors(form.dateDebut) }}
+                </div>
+                <div>
+                    {{ form_label(form.dateFin) }}
+                    {{ form_widget(form.dateFin) }}
+                    {{ form_errors(form.dateFin) }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    {{ form_label(form.nbAdultes) }}
+                    {{ form_widget(form.nbAdultes, {'attr': {'id': 'nbAdultes', 'oninput': 'updatePrice()'}}) }}
+                    {{ form_errors(form.nbAdultes) }}
+                </div>
+                <div>
+                    {{ form_label(form.nbEnfants) }}
+                    {{ form_widget(form.nbEnfants, {'attr': {'id': 'nbEnfants', 'oninput': 'updatePrice()'}}) }}
+                    {{ form_errors(form.nbEnfants) }}
+                </div>
+            </div>
+
+            <!-- Price Estimate -->
+            <div class="bg-dark-300/50 rounded-xl p-6 border border-gold-500/10">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-400">Prix unitaire</span>
+                    <span class="text-white">{{ lieu.prix|number_format(2) }} TND / pers / jour</span>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-400">Personnes</span>
+                    <span class="text-white" id="displayPersons">1</span>
+                </div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-400">Jours</span>
+                    <span class="text-white" id="displayDays">1</span>
+                </div>
+                <div class="border-t border-gold-500/10 pt-4 flex items-center justify-between">
+                    <span class="text-gold-500 font-bold uppercase tracking-widest">Estimation</span>
+                    <span class="text-3xl font-black text-green-400" id="estimatedPrice">{{ lieu.prix|number_format(2) }} TND</span>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-6 border-t border-gold-500/10">
+                <a href="{{ path('app_lieu_touristique_show', {'id': lieu.id}) }}" class="btn-dark">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Retour
+                </a>
+                <button type="submit" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-green-500/30 font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-cart-plus"></i>
+                    Ajouter au Panier
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+    const unitPrice = {{ lieu.prix }};
+
+    function updatePrice() {
+        const nbAdultes = parseInt(document.getElementById('nbAdultes').value) || 1;
+        const nbEnfants = parseInt(document.getElementById('nbEnfants').value) || 0;
+        const dateDebut = document.querySelector('input[name*="dateDebut"]').value;
+        const dateFin = document.querySelector('input[name*="dateFin"]').value;
+
+        const totalPersons = nbAdultes + nbEnfants;
+        let days = 1;
+
+        if (dateDebut && dateFin) {
+            const start = new Date(dateDebut);
+            const end = new Date(dateFin);
+            const diffTime = Math.abs(end - start);
+            days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+        }
+
+        const total = unitPrice * totalPersons * days;
+
+        document.getElementById('displayPersons').textContent = totalPersons;
+        document.getElementById('displayDays').textContent = days;
+        document.getElementById('estimatedPrice').textContent = total.toFixed(2) + ' TND';
+    }
+
+    document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+        input.addEventListener('change', updatePrice);
+    });
+
+    updatePrice();
+</script>
+{% endblock %}
