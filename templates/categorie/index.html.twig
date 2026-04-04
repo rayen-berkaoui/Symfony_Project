@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Catégories{% endblock %}
+
+{% block body %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6 animate-fade-in-up"> 
+    <div>
+        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600 drop-shadow-[0_2px_10px_rgba(255,215,0,0.3)] mb-2">Catégories</h1>
+        <p class="text-gray-400 font-medium tracking-wide">Gérez les catégories de vos lieux touristiques.</p>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto"> 
+        <form method="get" action="{{ path('app_categorie_index') }}" class="relative w-full sm:w-72 group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-search text-gray-500 group-focus-within:text-gold-500 transition-colors"></i>
+            </div>
+            <input type="text" name="search" value="{{ searchQuery|default('') }}" placeholder="Rechercher une catégorie..." 
+                   class="w-full bg-dark-200/50 backdrop-blur-md text-white border border-white/10 rounded-xl pl-10 pr-4 py-2.5 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] placeholder-gray-500 font-medium">
+        </form>
+        <div class="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+            <a href="{{ path('app_categorie_pdf') }}" target="_blank" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-br from-red-500/20 to-red-600/10 hover:from-red-500/30 hover:to-red-600/20 text-red-400 font-semibold py-2.5 px-5 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]" title="Exporter en PDF">
+                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">PDF</span>
+            </a>
+            <a href="{{ path('app_categorie_new') }}" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-dark-300 font-black py-2.5 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(251,191,36,0.3)] whitespace-nowrap">
+                <i class="fa-solid fa-plus text-lg"></i> Créer
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="bg-dark-200/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.5)] relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute -top-24 -right-24 w-64 h-64 bg-gold-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center sm:items-start mb-6 gap-4 relative z-10">
+        <div class="text-gray-400 text-sm flex gap-3 items-center bg-dark-300/50 py-2 px-4 rounded-xl border border-white/5">
+            <span class="text-gold-500 font-semibold uppercase tracking-wider text-xs"><i class="fa-solid fa-sort mr-2"></i>Trier par</span>
+            <div class="flex gap-4 font-medium">
+                <span class="hover:text-white transition-colors cursor-pointer">{{ knp_pagination_sortable(categories, 'Nom', 'c.nomCategorie') }}</span>
+                <span class="text-white/20">|</span>
+                <span class="hover:text-white transition-colors cursor-pointer">{{ knp_pagination_sortable(categories, 'Date', 'c.dateCreation') }}</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" class="w-10 h-10 rounded-xl bg-dark-300/50 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 flex items-center justify-center border border-white/5 hover:border-gold-500/30 transition-all duration-300" data-carousel-prev="categorie-carousel" aria-label="Précédent">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="w-10 h-10 rounded-xl bg-dark-300/50 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 flex items-center justify-center border border-white/5 hover:border-gold-500/30 transition-all duration-300" data-carousel-next="categorie-carousel" aria-label="Suivant">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    {% if categories is empty %}
+        <div class="flex flex-col items-center justify-center py-20 text-center relative z-10">
+            <div class="w-24 h-24 bg-dark-300/50 rounded-full flex items-center justify-center mb-6 border border-white/5">
+                <i class="fa-solid fa-layer-group text-4xl text-gray-600"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Aucune catégorie</h3>
+            <p class="text-gray-500 max-w-md">Ajoutez votre première catégorie pour organiser les lieux.</p>
+        </div>
+    {% else %}
+        <div id="categorie-carousel" class="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scroll-smooth relative z-10">
+            {% for categorie in categories %}
+                <article class="min-w-[85vw] sm:min-w-[380px] lg:min-w-[420px] max-w-[85vw] sm:max-w-[380px] lg:max-w-[420px] snap-start bg-gradient-to-br from-dark-200 to-dark-300 border border-white/5 hover:border-gold-500/30 rounded-2xl p-6 flex flex-col group transition-all duration-500 hover:-translate-y-2 shadow-[0_4px_15px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                    
+                    <div class="absolute inset-0 bg-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+                    <div class="flex items-center justify-between mb-5 relative z-10">        
+                        <span class="text-gold-500/70 font-bold text-xs uppercase tracking-widest bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20">Ref #{{ categorie.id }}</span>
+                        <span class="text-xs text-blue-400 font-semibold bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 flex items-center">
+                            <i class="fa-regular fa-calendar-alt mr-1.5"></i>{{ categorie.dateCreation ? categorie.dateCreation|date('d M Y') : '-' }}
+                        </span>
+                    </div>
+                    
+                    <h2 class="text-2xl font-black text-white mb-3 group-hover:text-gold-400 transition-colors drop-shadow relative z-10">{{ categorie.nomCategorie }}</h2>
+                    <p class="text-sm text-gray-400 flex-1 leading-relaxed font-medium relative z-10">{{ categorie.description ?: 'Aucune description disponible pour cette catégorie.' }}</p>
+                    
+                    <div class="mt-6 pt-5 border-t border-white/10 flex justify-end gap-3 relative z-10">
+                        <a href="{{ path('app_categorie_show', {'id': categorie.id}) }}" class="w-10 h-10 rounded-xl bg-dark-300 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-gold-500/30" title="Détails">
+                            <i class="fa-solid fa-eye"></i>
+                        </a> 
+                        <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}" class="w-10 h-10 rounded-xl bg-dark-300 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-blue-500/30" title="Modifier">
+                            <i class="fa-solid fa-pen"></i>
+                        </a> 
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6 flex justify-center relative z-10">
+            {{ knp_pagination_render(categories) }}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.querySelectorAll('[data-carousel-prev], [data-carousel-next]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-carousel-prev') || btn.getAttribute('data-carousel-next');
+            const target = document.getElementById(id);
+            if (!target) return;
+            const step = target.clientWidth * 0.8;
+            const direction = btn.hasAttribute('data-carousel-next') ? 1 : -1;
+            target.scrollBy({ left: direction * step, behavior: 'smooth' });
+        });
+    });
+</script>
+
+<style>
+    /* Custom Scrollbar for Carousel */
+    .snap-x::-webkit-scrollbar {
+        height: 12px;
+    }
+    .snap-x::-webkit-scrollbar-track {
+        background: rgba(30, 41, 59, 0.5); /* dark-200 / slate-800 equivalent */
+        border-radius: 9999px;
+    }
+    .snap-x::-webkit-scrollbar-thumb {
+        background: linear-gradient(to right, #fbbf24, #b45309); /* gold gradient */
+        border-radius: 9999px;
+        border: 3px solid rgba(15, 23, 42, 1); /* dark-300 / slate-900 border to create padding effect */
+    }
+    .snap-x::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(to right, #f59e0b, #92400e);
+    }
+</style>
+{% endblock %}
