@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier utilisateur{% endblock %}
+
+{% block body %}
+<div class="container auth">
+    <div class="auth-card">
+        <h1>Modifier l'utilisateur</h1>
+        <p class="muted">Laissez le mot de passe vide pour ne pas le changer.</p>
+        {% include 'utilisateur/_form.html.twig' with { form: form, button_label: 'Enregistrer' } %}
+        <div style="margin-top: 16px;">
+            <a class="btn ghost" href="{{ path('utilisateur_show', { id: utilisateur.id }) }}">Retour</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

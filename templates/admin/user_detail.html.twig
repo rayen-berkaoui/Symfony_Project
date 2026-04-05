@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.nom }} {{ user.prenom }} - User Details{% endblock %}
+
+{% block body %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; margin: -2rem -2rem 2rem -2rem; border-radius: 0 0 20px 20px;">
+        <a href="{{ path('app_admin_users') }}" style="color: white; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+            ← Back to Users
+        </a>
+        <h1 style="margin: 0;">User Details</h1>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
+        <div style="background: white; color: #111; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; height: fit-content;">
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 700; margin: 0 auto 1.5rem auto;">
+                {{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}
+            </div>
+            <h2 style="margin: 0;">{{ user.nom }} {{ user.prenom }}</h2>
+            <p style="color: #6b7280; margin: 0.5rem 0 1rem 0;">{{ user.role.nom }}</p>
+            <span style="padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; display: inline-block; background: {% if user.statut == 'ACTIF' %}#d1fae5; color: #065f46{% elseif user.statut == 'BLOQUE' %}#fee2e2; color: #991b1b{% else %}#fef3c7; color: #92400e{% endif %};">
+                {{ user.statut }}
+            </span>
+        </div>
+        
+        <div style="background: white; color: #111; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h2 style="margin: 0 0 1.5rem 0; font-size: 1.5rem;">Personal Information</h2>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">ID</div>
+                <div>{{ user.id }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">First Name</div>
+                <div>{{ user.prenom }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">Last Name</div>
+                <div>{{ user.nom }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">Email</div>
+                <div>{{ user.email }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">Phone</div>
+                <div>{{ user.numTel ?? 'N/A' }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">Language</div>
+                <div>{{ user.language ?? 'fr' }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #6b7280;">Loyalty Points</div>
+                <div>{{ user.loyaltyPoints ?? 0 }}</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0;">
+                <div style="font-weight: 600; color: #6b7280;">Joined</div>
+                <div>{{ user.dateCreation|date('F d, Y at H:i') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

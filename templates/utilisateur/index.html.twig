@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="hero-card">
+        <h1>Utilisateurs</h1>
+        <p class="muted">Gestion des comptes.</p>
+        <a class="btn solid" href="{{ path('utilisateur_new') }}">Nouveau utilisateur</a>
+    </div>
+
+    <div style="margin-top: 24px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prenom</th>
+                    <th>Email</th>
+                    <th>Telephone</th>
+                    <th>Role</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for utilisateur in utilisateurs %}
+                    <tr>
+                        <td>{{ utilisateur.id }}</td>
+                        <td>{{ utilisateur.nom }}</td>
+                        <td>{{ utilisateur.prenom }}</td>
+                        <td>{{ utilisateur.email }}</td>
+                        <td>{{ utilisateur.numTel }}</td>
+                        <td><span class="pill">{{ utilisateur.role ? utilisateur.role.nom : '-' }}</span></td>
+                        <td><span class="pill">{{ utilisateur.statut }}</span></td>
+                        <td>
+                            <a href="{{ path('utilisateur_show', { id: utilisateur.id }) }}">Voir</a>
+                            <a href="{{ path('utilisateur_edit', { id: utilisateur.id }) }}">Editer</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="muted">Aucun utilisateur.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
