@@ -1,0 +1,135 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block body %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #f3f4f6; padding: 3rem 2rem; margin: -2rem -2rem 2rem -2rem; border-radius: 0 0 20px 20px; border-bottom: 1px solid #FFD700;">
+        <a href="{{ path('app_admin_dashboard') }}" style="color: #9ca3af; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+            &larr; Back to Dashboard
+        </a>
+        <h1 style="margin: 0 0 0.5rem 0; font-size: 2.5rem; color: #FFD700;">
+            <i class="fa-solid fa-users mr-2"></i> Manage Users
+        </h1>
+        <p style="margin: 0; color: #9ca3af;">Search, filter, and manage all application users</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <h3 style="margin: 0 0 0.5rem 0; color: #FFD700;">Filters & Search</h3>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ path('app_admin_users', {sort: sort == 'alpha' ? 'date' : 'alpha', search: search, status: status, role: role}) }}"
+                   class="btn-dark" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-sort"></i>
+                    Sort: {{ sort == 'alpha' ? 'A-Z �' : 'Date' }}
+                </a>
+                <a href="{{ path('app_admin_users_export') }}"
+                   style="padding: 0.5rem 1.25rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    Export PDF
+                </a>
+            </div>
+        </div>
+
+        <form method="get" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem;">
+            <input type="hidden" name="sort" value="{{ sort }}">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search by name or email..." class="input-modern" style="margin-bottom: 0;">
+
+            <select name="status" class="input-modern" style="margin-bottom: 0;">
+                <option value="">All Statuses</option>
+                <option value="ACTIF" {{ status == 'ACTIF' ? 'selected' : '' }}>Active</option>
+                <option value="BLOQUE" {{ status == 'BLOQUE' ? 'selected' : '' }}>Blocked</option>
+                <option value="EN_ATTENTE" {{ status == 'EN_ATTENTE' ? 'selected' : '' }}>Pending</option>
+            </select>
+
+            <select name="role" class="input-modern" style="margin-bottom: 0;">
+                <option value="">All Roles</option>
+                <option value="ADMIN" {{ role == 'ADMIN' ? 'selected' : '' }}>Admin</option>
+                <option value="TOURISTE" {{ role == 'TOURISTE' ? 'selected' : '' }}>Tourist</option>
+            </select>
+
+            <button type="submit" class="btn-gold" style="margin-bottom: 0px;">Search</button>
+        </form>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <strong>{{ user.nom }} {{ user.prenom }}</strong>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role.nom }}</td>
+                    <td>
+                        <select onchange="updateStatus({{ user.id }}, this.value)" style="padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; border: none; outline: none; cursor: pointer; background: {% if user.statut == 'ACTIF' %}#d1fae5; color: #065f46{% elseif user.statut == 'BLOQUE' %}#fee2e2; color: #991b1b{% else %}#fef3c7; color: #92400e{% endif %};">
+                            <option value="ACTIF" {% if user.statut == 'ACTIF' %}selected{% endif %}>ACTIF</option>
+                            <option value="BLOQUE" {% if user.statut == 'BLOQUE' %}selected{% endif %}>BLOQUE</option>
+                            <option value="EN_ATTENTE" {% if user.statut == 'EN_ATTENTE' %}selected{% endif %}>EN ATTENTE</option>
+                        </select>
+                    </td>
+                    <td>{{ user.dateCreation|date('d/m/Y') }}</td>
+                    <td>
+                        <a href="{{ path('app_admin_user_view', {id: user.id}) }}" style="color: #FFD700; text-decoration: none;">View</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: #6b7280;">
+                        No users found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function updateStatus(userId, newStatus) {
+    const defaultColors = {
+        'ACTIF': { bg: '#d1fae5', text: '#065f46' },
+        'BLOQUE': { bg: '#fee2e2', text: '#991b1b' },
+        'EN_ATTENTE': { bg: '#fef3c7', text: '#92400e' }
+    };
+
+    fetch(/admin/users/\/status, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the select background colors dynamically
+            const selectElement = event.target;
+            selectElement.style.background = defaultColors[newStatus].bg;
+            selectElement.style.color = defaultColors[newStatus].text;
+        } else {
+            alert('Failed to update status: ' + data.message);
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating status.');
+    });
+}
+</script>
+{% endblock %}

@@ -113,13 +113,23 @@
             </div>
             <nav class="flex-1 overflow-y-auto py-6 relative z-10 custom-scrollbar">
                 <ul class="space-y-3 px-4">
+                    {% if is_granted('ROLE_ADMIN') %}
                     <li>
-                        <a href="{{ path('app_home') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') == 'app_home' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                        <a href="{{ path('app_dashboard') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') == 'app_dashboard' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
                             <i class="fa-solid fa-chart-pie w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
                             <span class="font-semibold tracking-wide">Vue d'ensemble</span>
-                            {% if app.request.attributes.get('_route') == 'app_home' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                            {% if app.request.attributes.get('_route') == 'app_dashboard' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
                         </a>
                     </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ path('app_user_accueil') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') == 'app_user_accueil' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <i class="fa-solid fa-house w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Accueil</span>
+                            {% if app.request.attributes.get('_route') == 'app_user_accueil' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                        </a>
+                    </li>
+                    {% endif %}
                     <li>
                         <a href="{{ path('app_lieu_touristique_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_lieu_touristique' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
                             <i class="fa-solid fa-map-location-dot w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
@@ -134,11 +144,35 @@
                             {% if app.request.attributes.get('_route') starts with 'app_categorie' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
                         </a>
                     </li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <li>
+                        <a href="{{ path('utilisateur_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') == 'utilisateur_index' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <div class="p-2 rounded-lg bg-dark-400/50 group-hover:bg-gold-500/20 group-hover:text-gold-400 transition-colors shadow-inner {% if app.request.attributes.get('_route') == 'utilisateur_index' %}bg-gradient-to-br from-gold-500/20 to-yellow-600/20 text-gold-400 shadow-[inset_0_0_10px_rgba(255,215,0,0.2)]{% endif %}">
+                                <i class="fa-solid fa-users w-5 text-center"></i>
+                            </div>
+                            <span class="font-medium tracking-wide">Utilisateurs</span>
+                        </a>
+                    </li>
+                    {% endif %}
                     <li>
                         <a href="{{ path('app_adresse_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_adresse' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
                             <i class="fa-solid fa-location-dot w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
                             <span class="font-semibold tracking-wide">Adresses</span>
                             {% if app.request.attributes.get('_route') starts with 'app_adresse' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_panier_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_panier' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <i class="fa-solid fa-cart-shopping w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Paniers</span>
+                            {% if app.request.attributes.get('_route') starts with 'app_panier' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_reservation_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_reservation' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <i class="fa-solid fa-ticket w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Réservations</span>
+                            {% if app.request.attributes.get('_route') starts with 'app_reservation' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
                         </a>
                     </li>
                 </ul>
@@ -147,11 +181,11 @@
             <div class="mt-auto p-4 border-t border-gold-500/10 relative z-10">
                 <div class="bg-gradient-to-br from-dark-200 to-black border border-gold-500/20 p-4 rounded-xl flex items-center gap-3 shadow-[0_4px_15px_rgba(0,0,0,0.5)] transform hover:-translate-y-1 transition-transform cursor-pointer">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-400 to-amber-600 flex items-center justify-center text-black font-bold shadow-inner">
-                        A
+                        {{ app.user ? app.user.nom|first|upper : 'A' }}
                     </div>
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-white font-bold text-sm truncate">Admin Tabaany</p>
-                        <p class="text-gold-500/70 text-xs truncate">Super Admin</p>
+                        <p class="text-white font-bold text-sm truncate">{{ app.user ? app.user.nom : 'Admin Tabaany' }}</p>
+                        <p class="text-gold-500/70 text-xs truncate">{{ app.user and app.user.role ? app.user.role.nom : 'Super Admin' }}</p>
                     </div>
                 </div>
             </div>
@@ -180,15 +214,23 @@
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-gold-500"></span>
                         </span>
                     </button>
-                    <div class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative flex items-center gap-3 cursor-pointer group">  
                         <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 to-amber-700 flex items-center justify-center text-black font-bold border-2 border-transparent group-hover:border-white transition-all">
-                            A
+                            {{ app.user ? app.user.nom|first|upper : 'A' }}
                         </div>
                         <div class="hidden md:block text-sm">
-                            <p class="text-white font-semibold group-hover:text-gold-400 transition-colors">Admin Tabaany</p>
-                            <p class="text-gray-500 text-xs">admin@tabaany.com</p>
+                            <p class="text-white font-semibold group-hover:text-gold-400 transition-colors">{{ app.user ? app.user.nom : 'Admin Tabaany' }}</p>
+                            <p class="text-gray-500 text-xs">{{ app.user ? app.user.email : 'admin@tabaany.com' }}</p>
                         </div>
                         <i class="fa-solid fa-chevron-down text-gray-500 text-xs group-hover:text-gold-400"></i>
+
+                        <!-- Dropdown Menu -->
+                          <div class="absolute right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-gold-500/20 rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pointer-events-none group-hover:pointer-events-auto before:content-[''] before:absolute before:-top-4 before:left-0 before:w-full before:h-4">
+                            <a href="{{ path('app_logout') }}" class="flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors">
+                                <i class="fa-solid fa-sign-out-alt"></i>
+                                Se déconnecter
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>

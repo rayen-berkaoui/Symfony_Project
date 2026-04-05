@@ -1,0 +1,17 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Nouvel utilisateur{% endblock %}
+
+{% block body %}
+<div class="container auth">
+    <div class="auth-card">
+        <h1>Nouvel utilisateur</h1>
+        <p class="muted">Creation manuelle d'un utilisateur.</p>
+        {% include 'utilisateur/_form.html.twig' with { form: form, button_label: 'Creer' } %}
+        
+        <div style="margin-top: 16px;">
+            <a class="btn ghost" href="{{ path('utilisateur_index') }}">Retour</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

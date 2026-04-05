@@ -152,6 +152,9 @@
                             <p class="text-white font-black text-xl"><span class="text-gold-500 text-sm font-medium mr-1">DT</span>{{ lieu_touristique.prix ?: '0.00' }}</p>
 
                             <div class="flex gap-2">
+                                <a href="{{ path('app_cart_add', {'id': lieu_touristique.id}) }}" class="w-10 h-10 rounded-xl bg-gradient-to-r from-gold-500 to-yellow-600 hover:from-gold-400 hover:to-yellow-500 text-black flex items-center justify-center border border-white/5 transition-all duration-300 shadow-[0_0_10px_rgba(255,215,0,0.2)] hover:shadow-[0_4px_15px_rgba(255,215,0,0.4)]" title="Ajouter au panier">
+                                    <i class="fa-solid fa-cart-plus"></i>
+                                </a>
                                 <a href="{{ path('app_lieu_touristique_show', {'id': lieu_touristique.id}) }}" class="w-10 h-10 rounded-xl bg-dark-200 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-gold-500/30" title="Voir plus">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>

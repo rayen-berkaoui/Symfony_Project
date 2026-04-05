@@ -84,6 +84,10 @@ final class PanierController extends AbstractController
     {
         $panier = new Panier();
         $panier->setSessionId($request->getSession()->getId());
+        
+        if ($this->getUser()) {
+            $panier->setUtilisateur($this->getUser());
+        }
 
         $form = $this->createForm(PanierType::class, $panier);
         $form->handleRequest($request);
@@ -91,7 +95,12 @@ final class PanierController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculate total persons
             $panier->setNbPersonnes($panier->getNbAdultes() + $panier->getNbEnfants());
-
+            // Auto-calculate price if lieu is set and no explicit price is provided
+            if ($panier->getLieuTouristique() && empty($panier->getPrixEstime())) {
+                $lieuPrice = (float) $panier->getLieuTouristique()->getPrix();
+                $prixEstime = $lieuPrice * $panier->getNbPersonnes() * $panier->getNbJours();
+                $panier->setPrixEstime((string) $prixEstime);
+            }
             $entityManager->persist($panier);
             $entityManager->flush();
 
@@ -122,7 +131,12 @@ final class PanierController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculate total persons
             $panier->setNbPersonnes($panier->getNbAdultes() + $panier->getNbEnfants());
-
+            // Auto-recalculate price if needed
+            if ($panier->getLieuTouristique() && empty($panier->getPrixEstime())) {
+                $lieuPrice = (float) $panier->getLieuTouristique()->getPrix();
+                $prixEstime = $lieuPrice * $panier->getNbPersonnes() * $panier->getNbJours();
+                $panier->setPrixEstime((string) $prixEstime);
+            }
             $entityManager->flush();
 
             $this->addFlash('success', 'Le panier a été modifié avec succès.');

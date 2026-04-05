@@ -18,6 +18,10 @@ class Panier
     #[ORM\Column(name: 'id_panier', type: 'integer')]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'paniers')]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?Utilisateur $utilisateur = null;
+
     #[ORM\ManyToOne(targetEntity: LieuTouristique::class)]
     #[ORM\JoinColumn(name: 'id_lieu', referencedColumnName: 'id_lieu', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'Veuillez sélectionner un lieu touristique')]
@@ -77,6 +81,18 @@ class Panier
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
     }
 
     public function getLieuTouristique(): ?LieuTouristique

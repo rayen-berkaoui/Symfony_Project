@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Tabaany{% endblock %}
+
+{% block breadcrumb %}
+    <span>Accueil</span>
+{% endblock %}
+
+{% block body %}
+<div class="px-6 py-8">
+    <div class="mb-10">
+        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2 drop-shadow-[0_4px_15px_rgba(255,215,0,0.4)]">Bienvenue {{ app.user.nom }} !</h1>
+        <p class="text-gray-400 text-lg">PrÃªt pour votre prochaine aventure ?</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <a href="{{ path('app_lieu_touristique_index') }}" class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-gold-500/10 rounded-2xl p-6 flex flex-col hover:border-gold-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+            <div class="absolute -right-6 -top-6 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl group-hover:bg-gold-500/10 transition-all duration-500"></div>
+            <div class="flex items-center gap-6 relative z-10">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-700/10 flex items-center justify-center text-gold-500 shadow-[0_0_15px_rgba(255,215,0,0.1)] group-hover:scale-110 transition-transform duration-500">
+                    <i class="fa-solid fa-map-location-dot text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white group-hover:text-gold-400 transition-colors mb-1">Explorer les Lieux</h3>
+                    <p class="text-gray-400 text-sm">DÃ©couvrez de nouvelles destinations et activitÃ©s.</p>
+                </div>
+            </div>
+            <div class="mt-6 flex items-center text-gold-500 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                Commencer l'exploration <i class="fa-solid fa-arrow-right ml-2"></i>
+            </div>
+        </a>
+
+        <a href="{{ path('app_panier_index') }}" class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-blue-500/10 rounded-2xl p-6 flex flex-col hover:border-blue-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+            <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+            <div class="flex items-center gap-6 relative z-10">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:scale-110 transition-transform duration-500">
+                    <i class="fa-solid fa-cart-shopping text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors mb-1">Mon Panier</h3>
+                    <p class="text-gray-400 text-sm">GÃ©rez vos rÃ©servations en cours.</p>
+                </div>
+            </div>
+             <div class="mt-6 flex items-center text-blue-400 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                Voir mon panier <i class="fa-solid fa-arrow-right ml-2"></i>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

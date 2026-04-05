@@ -55,6 +55,11 @@ final class CartController extends AbstractController
             $panier = new Panier();
             $panier->setLieuTouristique($lieu);
             $panier->setSessionId($request->getSession()->getId());
+            
+            if ($this->getUser()) {
+                $panier->setUtilisateur($this->getUser());
+            }
+            
             $panier->setTypeService('Visite');
             $panier->setDateDebut($data['dateDebut']);
             $panier->setDateFin($data['dateFin']);

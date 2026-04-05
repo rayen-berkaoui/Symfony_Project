@@ -54,7 +54,7 @@ class LieuTouristique
     #[ORM\Column(name: 'statut', type: 'boolean', nullable: true, options: ['default' => 1])]
     private ?bool $statut = true;
 
-    #[ORM\ManyToOne(targetEntity: Categorie::class)]
+    #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: 'lieuxTouristiques')]
     #[ORM\JoinColumn(name: 'id_categorie', referencedColumnName: 'id_categorie', nullable: false)]
     #[Assert\NotNull(message: 'Veuillez sélectionner une catégorie')]
     private ?Categorie $categorie = null;

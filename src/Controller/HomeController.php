@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Repository\AdresseRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\LieuTouristiqueRepository;
+use App\Repository\PanierRepository;
+use App\Repository\ReservationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,33 +22,49 @@ final class HomeController extends AbstractController
     private function getStats(
         LieuTouristiqueRepository $lieuRepository,
         CategorieRepository $categorieRepository,
-        AdresseRepository $adresseRepository
+        AdresseRepository $adresseRepository,
+        PanierRepository $panierRepository,
+        ReservationRepository $reservationRepository
     ): array {
         $stats = [
             'total_lieux' => $lieuRepository->count([]),
             'total_categories' => $categorieRepository->count([]),
             'total_adresses' => $adresseRepository->count([]),
+            'total_paniers' => $panierRepository->count([]),
+            'total_reservations' => $reservationRepository->count([]),
+            'revenue_total' => 0
         ];
+
+        // get revenue total
+        $revenueTotal = $reservationRepository->createQueryBuilder('r')
+            ->select('SUM(r.montantTotal)')
+            ->where('r.statutPaiement = :statut')
+            ->setParameter('statut', 'PayÃ©')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $stats['revenue_total'] = $revenueTotal ? round((float)$revenueTotal, 2) : 0;
 
         $avgPrice = $lieuRepository->createQueryBuilder('l')
             ->select('AVG(l.prix)')
             ->getQuery()
             ->getSingleScalarResult();
-        $stats['avg_price'] = $avgPrice ? round((float)$avgPrice, 2) : 0;
+        $stats['avg_price'] = $avgPrice ? round((float)$avgPrice, 2) : 0;       
 
-        $stats['active_lieux'] = $lieuRepository->count(['statut' => true]);
+        $stats['active_lieux'] = $lieuRepository->count(['statut' => true]);    
         $stats['inactive_lieux'] = $stats['total_lieux'] - $stats['active_lieux'];
 
         return $stats;
     }
 
-    #[Route('/', name: 'app_home', methods: ['GET'])]
+    #[Route('/dashboard', name: 'app_dashboard', methods: ['GET'])]
     public function index(
         LieuTouristiqueRepository $lieuRepository,
         CategorieRepository $categorieRepository,
-        AdresseRepository $adresseRepository
+        AdresseRepository $adresseRepository,
+        PanierRepository $panierRepository,
+        ReservationRepository $reservationRepository
     ): Response {
-        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository);
+        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository, $panierRepository, $reservationRepository);
 
         // Places by Category Data for Pie Chart
         $lieuxParCategorie = $lieuRepository->createQueryBuilder('l')
@@ -96,9 +114,11 @@ final class HomeController extends AbstractController
     public function exportPdf(
         LieuTouristiqueRepository $lieuRepository,
         CategorieRepository $categorieRepository,
-        AdresseRepository $adresseRepository
+        AdresseRepository $adresseRepository,
+        PanierRepository $panierRepository,
+        ReservationRepository $reservationRepository
     ): Response {
-        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository);
+        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository, $panierRepository, $reservationRepository);
         $recentLieux = $lieuRepository->findBy([], ['id' => 'DESC'], 10); // Fetch up to 10 for report
 
         $pdfOptions = new Options();
@@ -111,7 +131,9 @@ final class HomeController extends AbstractController
         $html .= "<li>Total des Lieux Touristiques : {$stats['total_lieux']} (Actifs: {$stats['active_lieux']}, Inactifs: {$stats['inactive_lieux']})</li>";
         $html .= "<li>Total des Catégories : {$stats['total_categories']}</li>";
         $html .= "<li>Total des Adresses : {$stats['total_adresses']}</li>";
-        $html .= "<li>Prix Moyen : {$stats['avg_price']} DT</li>";
+        $html .= "<li>Total des Paniers : {$stats['total_paniers']}</li>";
+        $html .= "<li>Total des RÃ©servations : {$stats['total_reservations']}</li>";
+        $html .= "<li>Chiffre d'affaires : {$stats['revenue_total']} DT</li>";
         $html .= "</ul>";
 
         $html .= "<h2>Derniers Lieux Ajoutés</h2>";
@@ -137,9 +159,11 @@ final class HomeController extends AbstractController
     public function exportExcel(
         LieuTouristiqueRepository $lieuRepository,
         CategorieRepository $categorieRepository,
-        AdresseRepository $adresseRepository
+        AdresseRepository $adresseRepository,
+        PanierRepository $panierRepository,
+        ReservationRepository $reservationRepository
     ): Response {
-        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository);
+        $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository, $panierRepository, $reservationRepository);
         $recentLieux = $lieuRepository->findBy([], ['id' => 'DESC'], 20);
 
         $response = new StreamedResponse(function () use ($stats, $recentLieux) {
@@ -155,6 +179,9 @@ final class HomeController extends AbstractController
             $writer->addRow(Row::fromValues(['Lieux Inactifs', $stats['inactive_lieux']]));
             $writer->addRow(Row::fromValues(['Total des Catégories', $stats['total_categories']]));
             $writer->addRow(Row::fromValues(['Total des Adresses', $stats['total_adresses']]));
+            $writer->addRow(Row::fromValues(['Total des Paniers', $stats['total_paniers']]));
+            $writer->addRow(Row::fromValues(['Total des RÃ©servations', $stats['total_reservations']]));
+            $writer->addRow(Row::fromValues(['Chiffre d\'affaires (DT)', $stats['revenue_total']]));
             $writer->addRow(Row::fromValues(['Prix Moyen (DT)', $stats['avg_price']]));
             
             $writer->addRow(Row::fromValues(['']));

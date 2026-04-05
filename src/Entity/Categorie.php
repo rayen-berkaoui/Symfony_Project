@@ -38,7 +38,13 @@ class Categorie
     #[Assert\NotBlank(message: 'La date de création est obligatoire')]
     #[Assert\Type("\DateTimeInterface")]
     private ?\DateTimeInterface $dateCreation = null;
+    #[ORM\OneToMany(mappedBy: 'categorie', targetEntity: LieuTouristique::class, cascade: ['remove'])]
+    private \Doctrine\Common\Collections\Collection $lieuxTouristiques;
 
+    public function __construct()
+    {
+        $this->lieuxTouristiques = new \Doctrine\Common\Collections\ArrayCollection();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -83,5 +89,35 @@ class Categorie
     public function __toString(): string
     {
         return (string) $this->nomCategorie;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, LieuTouristique>
+     */
+    public function getLieuxTouristiques(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->lieuxTouristiques;
+    }
+
+    public function addLieuxTouristique(LieuTouristique $lieuxTouristique): static
+    {
+        if (!$this->lieuxTouristiques->contains($lieuxTouristique)) {
+            $this->lieuxTouristiques->add($lieuxTouristique);
+            $lieuxTouristique->setCategorie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLieuxTouristique(LieuTouristique $lieuxTouristique): static
+    {
+        if ($this->lieuxTouristiques->removeElement($lieuxTouristique)) {
+            // set the owning side to null (unless already changed)
+            if ($lieuxTouristique->getCategorie() === $this) {
+                $lieuxTouristique->setCategorie(null);
+            }
+        }
+
+        return $this;
     }
 }

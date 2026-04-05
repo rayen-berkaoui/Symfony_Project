@@ -10,7 +10,7 @@
 <div class="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-4 animate-[fade-in_0.5s_ease-out]">
     <div>
         <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2 drop-shadow-[0_4px_15px_rgba(255,215,0,0.4)]">Vue d'ensemble</h1>
-        <p class="text-gray-400 text-lg">Suivez l'activité et gérez votre base de données touristique de manière intuitive.</p>
+        <p class="text-gray-400 text-lg">Suivez l'activitÃ© et gÃ©rez votre base de donnÃ©es touristique de maniÃ¨re intuitive.</p>
     </div>
     <div class="flex gap-3">
         <a href="{{ path('app_dashboard_excel') }}" class="group flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-green-600/10 hover:from-green-500 hover:to-green-600 border border-green-500/30 hover:border-transparent px-4 py-2.5 rounded-xl text-green-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.1)] hover:shadow-[0_4px_20px_rgba(34,197,94,0.4)]">
@@ -25,16 +25,16 @@
 </div>
 
 <!-- Stats Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">        
     <!-- Lieux Card -->
     <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-gold-500/10 rounded-2xl p-6 flex flex-col hover:border-gold-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
-        <div class="absolute -right-6 -top-6 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl group-hover:bg-gold-500/10 transition-all duration-500"></div>
-        <div class="flex justify-between items-start mb-6 relative z-10">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl group-hover:bg-gold-500/10 transition-all duration-500"></div>       
+        <div class="flex justify-between items-start mb-6 relative z-10">       
             <div>
                 <p class="text-gold-500/70 text-xs font-bold uppercase tracking-widest mb-2">Lieux Touristiques</p>
                 <h3 class="text-4xl font-black text-white group-hover:text-gold-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_lieux }}</h3>
             </div>
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-700/10 flex items-center justify-center text-gold-500 shadow-[0_0_15px_rgba(255,215,0,0.1)] group-hover:scale-110 transition-transform duration-500">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-700/10 flex items-center justify-center text-gold-500 shadow-[0_0_15px_rgba(255,215,0,0.1)] group-hover:scale-110 transition-transform duration-500">  
                 <i class="fa-solid fa-map-location-dot text-2xl"></i>
             </div>
         </div>
@@ -51,95 +51,45 @@
         </div>
     </div>
 
-    <!-- Categories Card -->
+    <!-- Paniers Card -->
     <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-blue-500/10 rounded-2xl p-6 flex flex-col hover:border-blue-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
-        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
-        <div class="flex justify-between items-start mb-6 relative z-10">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>       
+        <div class="flex justify-between items-start mb-6 relative z-10">       
             <div>
-                <p class="text-blue-500/70 text-xs font-bold uppercase tracking-widest mb-2">Catégories</p>
-                <h3 class="text-4xl font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_categories }}</h3>
+                <p class="text-blue-500/70 text-xs font-bold uppercase tracking-widest mb-2">Paniers / Carts</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_paniers }}</h3>
             </div>
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:scale-110 transition-transform duration-500">
-                <i class="fa-solid fa-layer-group text-2xl"></i>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:scale-110 transition-transform duration-500"> 
+                <i class="fa-solid fa-cart-shopping text-2xl"></i>
             </div>
         </div>
         <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
-            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-tags mr-1.5 text-blue-500/50"></i>Groupes de lieux</p>
+            <a href="{{ path('app_panier_index') }}" class="text-[11px] uppercase tracking-wider text-gray-400 hover:text-blue-400 font-semibold transition-colors"><i class="fa-solid fa-eye mr-1.5 text-blue-500/50"></i>GÃ©rer les paniers</a>
         </div>
     </div>
 
-    <!-- Adresses Card -->
+    <!-- Reservations Card -->
     <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-purple-500/10 rounded-2xl p-6 flex flex-col hover:border-purple-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
-        <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>
-        <div class="flex justify-between items-start mb-6 relative z-10">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>   
+        <div class="flex justify-between items-start mb-6 relative z-10">       
             <div>
-                <p class="text-purple-500/70 text-xs font-bold uppercase tracking-widest mb-2">Adresses</p>
-                <h3 class="text-4xl font-black text-white group-hover:text-purple-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_adresses }}</h3>
+                <p class="text-purple-500/70 text-xs font-bold uppercase tracking-widest mb-2">RÃ©servations</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-purple-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_reservations }}</h3>
             </div>
             <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-700/10 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:scale-110 transition-transform duration-500">
-                <i class="fa-solid fa-location-dot text-2xl"></i>
+                <i class="fa-solid fa-ticket text-2xl"></i>
             </div>
         </div>
         <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
-            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-map mr-1.5 text-purple-500/50"></i>Coordonnées complètes</p>
+            <a href="{{ path('app_reservation_index') }}" class="text-[11px] uppercase tracking-wider text-gray-400 hover:text-purple-400 font-semibold transition-colors"><i class="fa-solid fa-eye mr-1.5 text-purple-500/50"></i>GÃ©rer les RÃ©servations</a>
         </div>
     </div>
-
-    <!-- Price Card -->
-    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-green-500/10 rounded-2xl p-6 flex flex-col hover:border-green-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
-        <div class="absolute -right-6 -top-6 w-32 h-32 bg-green-500/5 rounded-full blur-2xl group-hover:bg-green-500/10 transition-all duration-500"></div>
-        <div class="flex justify-between items-start mb-6 relative z-10">
-            <div>
-                <p class="text-green-500/70 text-xs font-bold uppercase tracking-widest mb-2">Prix Moyen</p>
-                <h3 class="text-4xl font-black text-white group-hover:text-green-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]"><span class="text-2xl mr-1">DT</span>{{ stats.avg_price|number_format(2, '.', ' ') }}</h3>
-            </div>
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-green-700/10 flex items-center justify-center text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.1)] group-hover:scale-110 transition-transform duration-500">
-                <i class="fa-solid fa-money-bill-wave text-2xl"></i>
-            </div>
-        </div>
-        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
-            <p class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold"><i class="fa-solid fa-coins mr-1.5 text-green-500/50"></i>Ticket moyen calculé</p>
-        </div>
-    </div>
-</div>
-
-<!-- Actions Rapides -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-    <a href="{{ path('app_lieu_touristique_new') }}" class="group bg-dark-300 hover:bg-gold-500/10 border border-gold-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 group-hover:bg-gold-500 group-hover:text-black transition">
-                <i class="fa-solid fa-plus text-xl"></i>
-            </div>
-            <span class="font-medium text-white group-hover:text-gold-400">Nouveau Lieu</span>
-        </div>
-        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-gold-500"></i>
-    </a>
-    
-    <a href="{{ path('app_categorie_new') }}" class="group bg-dark-300 hover:bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition">
-                <i class="fa-solid fa-folder-plus text-xl"></i>
-            </div>
-            <span class="font-medium text-white group-hover:text-blue-400">Nouvelle Catégorie</span>
-        </div>
-        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-blue-500"></i>
-    </a>
-
-    <a href="{{ path('app_adresse_new') }}" class="group bg-dark-300 hover:bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl flex items-center justify-between transition-colors shadow-lg">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition">
-                <i class="fa-solid fa-map-pin text-xl"></i>
-            </div>
-            <span class="font-medium text-white group-hover:text-purple-400">Nouvelle Adresse</span>
-        </div>
-        <i class="fa-solid fa-arrow-right text-gray-500 group-hover:text-purple-500"></i>
-    </a>
 </div>
 
 <!-- Middle Section: 3 Charts -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">        
     <div class="card flex flex-col items-center justify-center border-t-2 border-t-gold-500">
-        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-gold-500 mr-2"></i>Catégories</h2>
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-gold-500 mr-2"></i>CatÃ©gories</h2>
         <div class="relative w-full h-[200px] flex justify-center items-center">
             <canvas id="categoryPieChart"></canvas>
         </div>
@@ -164,7 +114,7 @@
 <div class="grid grid-cols-1 gap-6">
     <!-- Recent Places Table -->
     <div class="card">
-        <h2 class="text-xl font-bold text-gold-400 mb-6 border-b border-gold-500/10 pb-3">Derniers Lieux Ajoutés</h2>
+        <h2 class="text-xl font-bold text-gold-400 mb-6 border-b border-gold-500/10 pb-3">Derniers Lieux AjoutÃ©s</h2>
         {% if recent_lieux is empty %}
             <p class="text-gray-500 py-4 text-center">Aucun lieu touristique existant.</p>
         {% else %}
@@ -173,17 +123,17 @@
                     <thead>
                         <tr>
                             <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Lieu</th>
-                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Catégorie</th>
+                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">CatÃ©gorie</th>
                             <th class="pb-3 text-right font-semibold text-gray-400 uppercase tracking-wider">Prix</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gold-500/10">
                         {% for lieu in recent_lieux %}
-                            <tr class="hover:bg-dark-300/50 transition-colors">
+                            <tr class="hover:bg-dark-300/50 transition-colors"> 
                                 <td class="py-3">
                                     <div class="flex flex-col">
                                         <a href="{{ path('app_lieu_touristique_show', {id: lieu.id}) }}" class="font-medium text-white hover:text-gold-400 transition-colors">{{ lieu.nom }}</a>
-                                        <span class="text-xs text-gray-500">{{ lieu.ville ?: 'Ville non spécifiée' }}</span>
+                                        <span class="text-xs text-gray-500">{{ lieu.ville ?: 'Ville non spÃ©cifiÃ©e' }}</span>
                                     </div>
                                 </td>
                                 <td class="py-3">
@@ -199,8 +149,8 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-4 pt-3 border-t border-gold-500/10 text-center">
-                <a href="{{ path('app_lieu_touristique_index') }}" class="text-sm text-gold-500 hover:text-gold-400 font-medium tracking-wide">Voir tout d'un coup d'œil &rarr;</a>
+            <div class="mt-4 pt-3 border-t border-gold-500/10 text-center">     
+                <a href="{{ path('app_lieu_touristique_index') }}" class="text-sm text-gold-500 hover:text-gold-400 font-medium tracking-wide">Voir tout d'un coup d'Å“il &rarr;</a>
             </div>
         {% endif %}
     </div>
@@ -238,7 +188,7 @@ function initCharts() {
             options: chartOptions
         });
     } else {
-        document.getElementById('categoryPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+        document.getElementById('categoryPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnÃ©es</p>';        
     }
 
     // 2. Chart Adresses
@@ -258,14 +208,14 @@ function initCharts() {
             options: chartOptions
         });
     } else {
-        document.getElementById('adressePieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+        document.getElementById('adressePieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnÃ©es</p>';
     }
 
     // 3. Chart Status
     const activeLieux = {{ stats.active_lieux }};
     const inactiveLieux = {{ stats.inactive_lieux }};
     if(activeLieux > 0 || inactiveLieux > 0) {
-        new Chart(document.getElementById('statutPieChart').getContext('2d'), {
+        new Chart(document.getElementById('statutPieChart').getContext('2d'), { 
             type: 'doughnut',
             data: {
                 labels: ['Actifs', 'Inactifs'],
@@ -278,11 +228,11 @@ function initCharts() {
             options: chartOptions
         });
     } else {
-        document.getElementById('statutPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de données</p>';
+        document.getElementById('statutPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnÃ©es</p>';
     }
 }
 document.addEventListener('turbo:load', initCharts);
 document.addEventListener('DOMContentLoaded', initCharts);
 initCharts();
-</script>
-{% endblock %}
+</script>{% endblock %}
+

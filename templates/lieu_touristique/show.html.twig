@@ -7,8 +7,7 @@
     <h1 class="text-3xl font-bold text-gold-500 drop-shadow-[0_2px_10px_rgba(255,215,0,0.3)]">
         <i class="fa-solid fa-map-location-dot mr-2"></i> {{ lieu_touristique.nom }}
     </h1>
-    <div class="space-x-3 flex">
-        <a href="{{ path('app_lieu_touristique_index') }}" class="btn-dark"><i class="fa-solid fa-arrow-left mr-2"></i>Retour</a>
+    <div class="space-x-3 flex">        <a href="{{ path('app_cart_add', {'id': lieu_touristique.id}) }}" class="btn-gold"><i class="fa-solid fa-cart-plus mr-2"></i>Réserver</a>        <a href="{{ path('app_lieu_touristique_index') }}" class="btn-dark"><i class="fa-solid fa-arrow-left mr-2"></i>Retour</a>
         <a href="{{ path('app_lieu_touristique_edit', {'id': lieu_touristique.id}) }}" class="btn-gold"><i class="fa-solid fa-pen mr-2"></i>Modifier</a>
     </div>
 </div>

@@ -1,0 +1,33 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+<div class="container auth">
+    <div class="auth-card">
+        <h1 class="gradient-text">Connexion</h1>
+        <p class="muted">Nom, email ou numero de telephone</p>
+
+        {% if error %}
+            <div class="alert bounce-in">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <form method="post" class="form js-validate" novalidate>
+            <div class="form-row">
+                <label for="identifier">Nom, email ou numero</label>
+                <input type="text" name="identifier" id="identifier" value="{{ last_username }}" autocomplete="username" data-validate="required|minlength:2" data-label="Identifiant" required>
+            </div>
+            <div class="form-row">
+                <label for="password">Mot de passe</label>
+                <div class="password-field">
+                    <input type="password" name="password" id="password" autocomplete="current-password" data-validate="required|minlength:6" data-label="Mot de passe" required>
+                </div>
+            </div>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <button type="submit" class="btn solid">Se connecter</button>
+        </form>
+
+        <p class="muted small">Pas de compte? <a href="{{ path('app_signup') }}">Creer un compte</a></p>
+    </div>
+</div>
+{% endblock %}

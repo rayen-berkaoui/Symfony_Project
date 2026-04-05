@@ -1,0 +1,90 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Utilisateurs{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="hero-card">
+        <h1>Utilisateurs</h1>
+        <p class="muted">Gestion des comptes.</p>
+        <div class="nav" style="display: flex; gap: 10px; margin-top: 20px;">
+            <a class="btn solid" href="{{ path('utilisateur_new') }}">Nouveau utilisateur</a>
+            <a class="btn ghost" href="{{ path('app_admin_dashboard') }}">Retour au Dashboard</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prenom</th>
+                    <th>Email</th>
+                    <th>Telephone</th>
+                    <th>Role</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for utilisateur in utilisateurs %}
+                    <tr>
+                        <td>{{ utilisateur.id }}</td>
+                        <td>{{ utilisateur.nom }}</td>
+                        <td>{{ utilisateur.prenom }}</td>
+                        <td>{{ utilisateur.email }}</td>
+                        <td>{{ utilisateur.numTel }}</td>
+                        <td><span class="pill">{{ utilisateur.role ? utilisateur.role.nom : '-' }}</span></td>
+                        <td>
+                            <select class="pill" style="cursor: pointer; border: 1px solid #ccc; outline: none; background: transparent;" onchange="updateUserStatus({{ utilisateur.id }}, this.value, event)">
+                                <option value="ACTIF" {% if utilisateur.statut == 'ACTIF' %}selected{% endif %}>ACTIF</option>
+                                <option value="BLOQUE" {% if utilisateur.statut == 'BLOQUE' %}selected{% endif %}>BLOQUE</option>
+                                <option value="EN_ATTENTE" {% if utilisateur.statut == 'EN_ATTENTE' %}selected{% endif %}>EN ATTENTE</option>
+                            </select>
+                        </td>
+                        <td>
+                            <a href="{{ path('utilisateur_show', { id: utilisateur.id }) }}">Voir</a>
+                            <a href="{{ path('utilisateur_edit', { id: utilisateur.id }) }}">Editer</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="muted">Aucun utilisateur.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function updateUserStatus(userId, newStatus, event) {
+    const selectEl = event.target;
+    const oldVal = selectEl.getAttribute('data-original') || newStatus; // Wait, actually easier just to reset if fails
+    
+    fetch(`/admin/users/${userId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Erreur: ' + data.message);
+            window.location.reload();
+        } else {
+            // Optional: visual indication of success, but keeping it simple as it succeeded.
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur lors de la modification du statut.');
+        window.location.reload();
+    });
+}
+</script>
+{% endblock %}

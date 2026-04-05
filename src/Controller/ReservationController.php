@@ -79,6 +79,36 @@ final class ReservationController extends AbstractController
         );
     }
 
+    #[Route('/new', name: 'app_reservation_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $reservation = new Reservation();
+        $reservation->setDatePaiement(new \DateTime());
+        $reservation->setCodeConfirmation(strtoupper(substr(uniqid('RES-'), 0, 10)));
+
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($reservation);
+            $entityManager->flush();
+
+            // Auto update Panier status if Paid
+            if ($reservation->getPanier() && $reservation->getStatutPaiement() === 'PayÃ©') {
+                $reservation->getPanier()->setStatutItem('confirmÃ©');
+                $entityManager->flush();
+            }
+
+            $this->addFlash('success', 'La rÃ©servation a Ã©tÃ© crÃ©Ã©e avec succÃ¨s.');
+            return $this->redirectToRoute('app_reservation_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/new.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form,
+        ]);
+    }
+
     #[Route('/{id}', name: 'app_reservation_show', methods: ['GET'])]
     public function show(Reservation $reservation): Response
     {
