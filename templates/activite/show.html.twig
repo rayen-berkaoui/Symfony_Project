@@ -1,0 +1,237 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails Activité{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bg: #0d0d0d;
+        --surface: #161616;
+        --surface-2: #1d1d1d;
+        --border: rgba(255,255,255,.08);
+        --accent: #f5c518;
+        --text: #f3efe7;
+        --muted: #8b8b8b;
+        --radius: 18px;
+    }
+
+    body {
+        margin: 0;
+        background:
+            radial-gradient(circle at top left, rgba(245,197,24,.08), transparent 28%),
+            radial-gradient(circle at top right, rgba(245,197,24,.05), transparent 24%),
+            var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+
+    .page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 28px 24px 56px;
+    }
+
+    .head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .eyebrow {
+        color: var(--accent);
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .title {
+        margin: 0;
+        font-size: clamp(2rem, 2.5vw, 3rem);
+        line-height: 1.05;
+    }
+
+    .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        max-width: 720px;
+    }
+
+    .back {
+        display: inline-flex;
+        align-items: center;
+        padding: 11px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        text-decoration: none;
+        background: rgba(255,255,255,.02);
+    }
+
+    .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+        gap: 24px;
+    }
+
+    .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)), var(--surface);
+        overflow: hidden;
+    }
+
+    .section {
+        padding: 24px 26px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .section:last-child { border-bottom: 0; }
+
+    .section h3 {
+        margin: 0 0 14px;
+        font-size: .78rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .kv {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .item {
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .item span {
+        display: block;
+        font-size: .76rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .item strong { font-size: .92rem; }
+
+    .description {
+        color: var(--text);
+        line-height: 1.6;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .btn {
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 10px 14px;
+        text-decoration: none;
+        color: var(--muted);
+        background: rgba(255,255,255,.02);
+    }
+
+    .btn.primary {
+        color: #111;
+        background: linear-gradient(135deg, #f5c518, #ffd54f);
+        border-color: transparent;
+        font-weight: 700;
+    }
+
+    .summary-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        background: var(--surface-2);
+    }
+
+    .summary-item span { color: var(--muted); font-size: .82rem; }
+
+    @media (max-width: 980px) {
+        .layout { grid-template-columns: 1fr; }
+        .kv { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page">
+    <div class="head">
+        <div>
+            <div class="eyebrow">Activités</div>
+            <h1 class="title">{{ activite.nomActivite }}</h1>
+            <p class="subtitle">Consultez les détails complets de cette activité dans une interface premium.</p>
+        </div>
+        <a class="back" href="{{ path('app_activite_index') }}">← Retour à la liste</a>
+    </div>
+
+    <div class="layout">
+        <section class="card">
+            <div class="section">
+                <h3>Informations principales</h3>
+                <div class="kv">
+                    <div class="item"><span>ID</span><strong>{{ activite.idActivite }}</strong></div>
+                    <div class="item"><span>Etablissement</span><strong>{{ activite.etablissement ? activite.etablissement.nom : '-' }}</strong></div>
+                    <div class="item"><span>Catégorie</span><strong>{{ activite.categorie ?: '-' }}</strong></div>
+                    <div class="item"><span>Niveau</span><strong>{{ activite.niveau ?: '-' }}</strong></div>
+                    <div class="item"><span>Durée</span><strong>{{ activite.duree ? activite.duree ~ ' min' : '-' }}</strong></div>
+                    <div class="item"><span>Prix</span><strong>{{ activite.prix ?: '-' }} {{ activite.devise ?: '' }}</strong></div>
+                    <div class="item"><span>Date début</span><strong>{{ activite.dateDebut ? activite.dateDebut|date('Y-m-d H:i') : '-' }}</strong></div>
+                    <div class="item"><span>Date fin</span><strong>{{ activite.dateFin ? activite.dateFin|date('Y-m-d H:i') : '-' }}</strong></div>
+                    <div class="item"><span>Places</span><strong>{{ activite.placesDispo ?: 0 }}/{{ activite.nbPlaces ?: 0 }}</strong></div>
+                    <div class="item"><span>Age minimum</span><strong>{{ activite.ageMin ?: '-' }}</strong></div>
+                    <div class="item"><span>Adresse départ</span><strong>{{ activite.adresseDepart ?: '-' }}</strong></div>
+                    <div class="item"><span>Statut</span><strong>{{ activite.statut|default('-')|upper }}</strong></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Description et contraintes</h3>
+                <p class="description">{{ activite.description ?: 'Aucune description fournie.' }}</p>
+                <p class="description"><strong>Equipement inclus:</strong> {{ activite.equipementInclus ?: '-' }}</p>
+                <p class="description"><strong>Conditions annulation:</strong> {{ activite.conditionsAnnulation ?: '-' }}</p>
+
+                <div class="actions">
+                    <a class="btn" href="{{ path('app_activite_index') }}">Retour</a>
+                    <a class="btn primary" href="{{ path('app_activite_edit', {'idActivite': activite.idActivite}) }}">Modifier</a>
+                    {{ include('activite/_delete_form.html.twig') }}
+                </div>
+            </div>
+        </section>
+
+        <aside class="card">
+            <div class="section">
+                <h3>Résumé</h3>
+                <div class="summary-list">
+                    <div class="summary-item"><span>Nom</span><strong>{{ activite.nomActivite }}</strong></div>
+                    <div class="summary-item"><span>Catégorie</span><strong>{{ activite.categorie ?: '-' }}</strong></div>
+                    <div class="summary-item"><span>Niveau</span><strong>{{ activite.niveau ?: '-' }}</strong></div>
+                    <div class="summary-item"><span>Statut</span><strong>{{ activite.statut|default('-')|upper }}</strong></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

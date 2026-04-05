@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+        {% block stylesheets %}
+        {% endblock %}
+
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+
+    </head>
+    <body>
+        <div class="app-shell">
+            <header class="topbar">
+                <div class="brand">Premium Dashboard</div>
+                <nav class="topnav">
+                    <a href="{{ path('app_etablissement_index') }}" class="{{ app.request.attributes.get('_route') == 'app_etablissement_index' ? 'is-active' : '' }}">Galerie Etablissements</a>
+                    <a href="{{ path('app_activite_index') }}" class="{{ app.request.attributes.get('_route') == 'app_activite_index' ? 'is-active' : '' }}">Galerie Activites</a>
+                    <a href="{{ path('app_etablissement_dashboard') }}" class="topnav-cta {{ app.request.attributes.get('_route') == 'app_etablissement_dashboard' ? 'is-active' : '' }}">Dashboard Etablissements</a>
+                    <a href="{{ path('app_activite_dashboard') }}" class="topnav-cta {{ app.request.attributes.get('_route') == 'app_activite_dashboard' ? 'is-active' : '' }}">Dashboard Activites</a>
+                </nav>
+            </header>
+
+            <main class="app-main">
+                {% block body %}{% endblock %}
+            </main>
+        </div>
+    </body>
+</html>

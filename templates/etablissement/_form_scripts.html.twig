@@ -1,0 +1,469 @@
+﻿<script>
+    (function () {
+        const bootFormScripts = function () {
+            const mapContainer = document.getElementById('map-picker');
+            const mapStatus = document.getElementById('map-status');
+            const latInput = document.getElementById('etablissement_latitude');
+            const lngInput = document.getElementById('etablissement_longitude');
+            const governorateInput = document.getElementById('etablissement_gouvernorat');
+            const cityInput = document.getElementById('etablissement_ville');
+            const addressInput = document.getElementById('etablissement_adresse');
+            const descriptionInput = document.getElementById('etablissement_description');
+            const scheduleMode = document.getElementById('etablissement_horairesMode');
+            const scheduleInput = document.getElementById('etablissement_horaires');
+            const aiButton = document.getElementById('ai-description-btn');
+            const imageInput = document.getElementById('etablissement_images');
+            const imagePreview = document.getElementById('image-preview');
+            const mapSearchInput = document.getElementById('map-search-input');
+            const mapSearchBtn = document.getElementById('map-search-btn');
+
+            const tunisiaBounds = {
+                latMin: 30.0,
+                latMax: 38.3,
+                lngMin: 7.0,
+                lngMax: 12.2,
+            };
+
+            const governorateCenters = {
+                'Tunis': { lat: 36.80, lng: 10.18 },
+                'Ariana': { lat: 36.86, lng: 10.16 },
+                'Ben Arous': { lat: 36.75, lng: 10.22 },
+                'Manouba': { lat: 36.81, lng: 10.09 },
+                'Nabeul': { lat: 36.46, lng: 10.74 },
+                'Zaghouan': { lat: 36.40, lng: 10.14 },
+                'Bizerte': { lat: 37.27, lng: 9.87 },
+                'Béja': { lat: 36.73, lng: 9.18 },
+                'Jendouba': { lat: 36.50, lng: 8.78 },
+                'Le Kef': { lat: 36.18, lng: 8.71 },
+                'Siliana': { lat: 36.08, lng: 9.37 },
+                'Sousse': { lat: 35.83, lng: 10.64 },
+                'Monastir': { lat: 35.78, lng: 10.83 },
+                'Mahdia': { lat: 35.50, lng: 11.06 },
+                'Sfax': { lat: 34.74, lng: 10.76 },
+                'Kairouan': { lat: 35.68, lng: 10.10 },
+                'Kasserine': { lat: 35.17, lng: 8.84 },
+                'Sidi Bouzid': { lat: 35.04, lng: 9.48 },
+                'Gabès': { lat: 33.88, lng: 10.10 },
+                'Médenine': { lat: 33.35, lng: 10.50 },
+                'Tataouine': { lat: 32.93, lng: 10.45 },
+                'Gafsa': { lat: 34.43, lng: 8.78 },
+                'Tozeur': { lat: 33.92, lng: 8.13 },
+                'Kébili': { lat: 33.70, lng: 8.97 },
+            };
+
+            const cityCatalog = {
+                'Tunis': ['Tunis', 'Le Bardo', 'La Marsa', 'Carthage', 'Sidi Bou Saïd', 'La Goulette', 'Le Kram'],
+                'Ariana': ['Ariana', 'La Soukra', 'Raoued', 'Ettadhamen', 'Kalaat Landlous'],
+                'Ben Arous': ['Ben Arous', 'Hammam Lif', 'Hammam Chott', 'Radès', 'Mégrine', 'Fouchana', 'Mornag'],
+                'Manouba': ['Manouba', 'Den Den', 'Douar Hicher', 'Oued Ellil', 'Tebourba'],
+                'Nabeul': ['Nabeul', 'Hammamet', 'Kelibia', 'Korba', 'Menzel Temime', 'Dar Chaabane', 'Soliman'],
+                'Zaghouan': ['Zaghouan', 'Zriba', 'Bir Mcherga', 'El Fahs'],
+                'Bizerte': ['Bizerte', 'Menzel Bourguiba', 'Mateur', 'Ras Jebel', 'Sejnane'],
+                'Béja': ['Béja', 'Testour', 'Medjez el Bab', 'Nefza', 'Amdoun'],
+                'Jendouba': ['Jendouba', 'Tabarka', 'Ain Draham', 'Fernana', 'Ghardimaou'],
+                'Le Kef': ['Le Kef', 'Tajerouine', 'Kalaat Senan', 'Dahmani'],
+                'Siliana': ['Siliana', 'Bouarada', 'Gaafour', 'Makthar'],
+                'Sousse': ['Sousse', 'Hammam Sousse', 'Akouda', 'Msaken', 'Kantaoui'],
+                'Monastir': ['Monastir', 'Skanes', 'Jemmal', 'Moknine', 'Ksar Hellal'],
+                'Mahdia': ['Mahdia', 'El Jem', 'Chebba', 'Ksour Essef'],
+                'Sfax': ['Sfax', 'Sakiet Ezzit', 'Sakiet Eddaier', 'Mahres', 'Kerkennah'],
+                'Kairouan': ['Kairouan', 'Haffouz', 'Chebika', 'Sbikha'],
+                'Kasserine': ['Kasserine', 'Sbeitla', 'Thala', 'Feriana'],
+                'Sidi Bouzid': ['Sidi Bouzid', 'Regueb', 'Meknassi', 'Jilma'],
+                'Gabès': ['Gabès', 'Métouia', 'Mareth', 'Ghannouch'],
+                'Médenine': ['Médenine', 'Djerba', 'Zarzis', 'Ben Guerdane'],
+                'Tataouine': ['Tataouine', 'Ghomrassen', 'Bir Lahmar', 'Remada'],
+                'Gafsa': ['Gafsa', 'Metlaoui', 'Redeyef', 'Moulares'],
+                'Tozeur': ['Tozeur', 'Nefta', 'Degache'],
+                'Kébili': ['Kébili', 'Douz', 'Souk Lahad'],
+            };
+
+            let pin = null;
+
+            const normalize = function (value) {
+                return (value || '')
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .trim();
+            };
+
+            const clamp = function (value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            };
+
+            const ensurePin = function () {
+                if (!mapContainer || pin) {
+                    return;
+                }
+
+                pin = document.createElement('span');
+                pin.className = 'map-pin';
+                pin.setAttribute('aria-hidden', 'true');
+                mapContainer.appendChild(pin);
+            };
+
+            const renderPin = function (lat, lng) {
+                if (!mapContainer || Number.isNaN(lat) || Number.isNaN(lng)) {
+                    return;
+                }
+
+                ensurePin();
+
+                const x = ((lng - tunisiaBounds.lngMin) / (tunisiaBounds.lngMax - tunisiaBounds.lngMin)) * 100;
+                const y = ((tunisiaBounds.latMax - lat) / (tunisiaBounds.latMax - tunisiaBounds.latMin)) * 100;
+
+                pin.style.left = clamp(x, 0, 100) + '%';
+                pin.style.top = clamp(y, 0, 100) + '%';
+            };
+
+            const setStatus = function (text) {
+                if (mapStatus) {
+                    mapStatus.textContent = text;
+                }
+            };
+
+            const setCoordinates = function (lat, lng, source) {
+                if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                    return;
+                }
+
+                const safeLat = clamp(lat, tunisiaBounds.latMin, tunisiaBounds.latMax);
+                const safeLng = clamp(lng, tunisiaBounds.lngMin, tunisiaBounds.lngMax);
+
+                if (latInput) {
+                    latInput.value = safeLat.toFixed(7);
+                }
+                if (lngInput) {
+                    lngInput.value = safeLng.toFixed(7);
+                }
+
+                renderPin(safeLat, safeLng);
+                setStatus('Position mise a jour depuis ' + source + ': ' + safeLat.toFixed(5) + ', ' + safeLng.toFixed(5));
+            };
+
+            const inferGovernorateFromCity = function (cityValue) {
+                const target = normalize(cityValue);
+                if (!target) {
+                    return '';
+                }
+
+                const entries = Object.entries(cityCatalog);
+                for (let i = 0; i < entries.length; i += 1) {
+                    const [governorate, cities] = entries[i];
+                    if (cities.some(function (city) { return normalize(city) === target; })) {
+                        return governorate;
+                    }
+                }
+
+                return '';
+            };
+
+            const findCity = function (term) {
+                const target = normalize(term);
+                if (!target) {
+                    return null;
+                }
+
+                const entries = Object.entries(cityCatalog);
+                for (let i = 0; i < entries.length; i += 1) {
+                    const [governorate, cities] = entries[i];
+                    for (let j = 0; j < cities.length; j += 1) {
+                        const city = cities[j];
+                        if (normalize(city) === target || normalize(city).includes(target) || target.includes(normalize(city))) {
+                            return { governorate, city, index: j };
+                        }
+                    }
+                }
+
+                return null;
+            };
+
+            const estimateCityCoordinates = function (governorate, city, cityIndex) {
+                const center = governorateCenters[governorate] || { lat: 34.0, lng: 9.0 };
+                const index = typeof cityIndex === 'number' ? cityIndex : 0;
+                const latOffset = ((index % 3) - 1) * 0.06;
+                const lngOffset = ((index % 4) - 1.5) * 0.05;
+
+                return {
+                    lat: center.lat + latOffset,
+                    lng: center.lng + lngOffset,
+                    city,
+                    governorate,
+                };
+            };
+
+            const rebuildCityOptions = function () {
+                if (!cityInput) {
+                    return;
+                }
+
+                const governorate = governorateInput ? governorateInput.value : '';
+                const currentValue = cityInput.value;
+                const cities = cityCatalog[governorate] || [];
+
+                cityInput.innerHTML = '';
+
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = governorate ? 'Choisir ville' : 'Choisir gouvernorat d\'abord';
+                cityInput.appendChild(placeholderOption);
+
+                cities.forEach(function (city) {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    if (city === currentValue) {
+                        option.selected = true;
+                    }
+                    cityInput.appendChild(option);
+                });
+
+                cityInput.disabled = cities.length === 0;
+            };
+
+            const applyCityToMap = function () {
+                const governorate = governorateInput ? governorateInput.value : '';
+                const cityValue = cityInput ? cityInput.value : '';
+                const cities = cityCatalog[governorate] || [];
+                const cityIndex = cities.findIndex(function (city) {
+                    return city === cityValue;
+                });
+
+                if (governorate && cityValue && cityIndex >= 0) {
+                    const estimate = estimateCityCoordinates(governorate, cityValue, cityIndex);
+                    setCoordinates(estimate.lat, estimate.lng, 'la ville selectionnee');
+                }
+            };
+
+            const initLocalAddressAutocomplete = function () {
+                if (!addressInput) {
+                    return;
+                }
+
+                const dataListId = 'etablissement-address-suggestions';
+                let dataList = document.getElementById(dataListId);
+                if (!dataList) {
+                    dataList = document.createElement('datalist');
+                    dataList.id = dataListId;
+                    document.body.appendChild(dataList);
+                }
+                addressInput.setAttribute('list', dataListId);
+
+                const allEntries = Object.entries(cityCatalog).flatMap(function (entry) {
+                    const governorate = entry[0];
+                    const cities = entry[1];
+                    return cities.map(function (city) {
+                        return city + ', ' + governorate + ', Tunisie';
+                    });
+                });
+
+                const refreshSuggestions = function (query) {
+                    dataList.innerHTML = '';
+                    const target = normalize(query);
+                    if (target.length < 2) {
+                        return;
+                    }
+
+                    allEntries
+                        .filter(function (entry) { return normalize(entry).includes(target); })
+                        .slice(0, 8)
+                        .forEach(function (entry) {
+                            const option = document.createElement('option');
+                            option.value = entry;
+                            dataList.appendChild(option);
+                        });
+                };
+
+                const syncFromAddress = function (rawValue) {
+                    const text = rawValue || '';
+                    const cityMatch = findCity(text);
+                    if (!cityMatch) {
+                        return;
+                    }
+
+                    if (governorateInput) {
+                        governorateInput.value = cityMatch.governorate;
+                    }
+                    rebuildCityOptions();
+                    if (cityInput) {
+                        cityInput.value = cityMatch.city;
+                    }
+                    applyCityToMap();
+                };
+
+                addressInput.addEventListener('input', function () {
+                    refreshSuggestions(this.value);
+                });
+
+                addressInput.addEventListener('change', function () {
+                    syncFromAddress(this.value);
+                });
+
+                addressInput.addEventListener('blur', function () {
+                    syncFromAddress(this.value);
+                });
+            };
+
+            const initVirtualMap = function () {
+                if (!mapContainer) {
+                    return;
+                }
+
+                mapContainer.addEventListener('click', function (event) {
+                    const rect = mapContainer.getBoundingClientRect();
+                    const xRatio = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+                    const yRatio = clamp((event.clientY - rect.top) / rect.height, 0, 1);
+
+                    const lng = tunisiaBounds.lngMin + (xRatio * (tunisiaBounds.lngMax - tunisiaBounds.lngMin));
+                    const lat = tunisiaBounds.latMax - (yRatio * (tunisiaBounds.latMax - tunisiaBounds.latMin));
+
+                    setCoordinates(lat, lng, 'un clic carte');
+                });
+
+                const currentLat = parseFloat(latInput ? latInput.value : '');
+                const currentLng = parseFloat(lngInput ? lngInput.value : '');
+
+                if (!Number.isNaN(currentLat) && !Number.isNaN(currentLng)) {
+                    renderPin(currentLat, currentLng);
+                    setStatus('Position existante chargee.');
+                } else {
+                    setCoordinates(34.0, 9.0, 'la position par defaut');
+                }
+
+                const updateFromManualInputs = function () {
+                    const lat = parseFloat(latInput ? latInput.value : '');
+                    const lng = parseFloat(lngInput ? lngInput.value : '');
+                    if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+                        setCoordinates(lat, lng, 'la saisie manuelle');
+                    }
+                };
+
+                if (latInput) {
+                    latInput.addEventListener('change', updateFromManualInputs);
+                }
+                if (lngInput) {
+                    lngInput.addEventListener('change', updateFromManualInputs);
+                }
+            };
+
+            if (mapSearchInput && mapSearchBtn) {
+                const runMapSearch = function () {
+                    const query = mapSearchInput.value.trim();
+                    if (!query) {
+                        return;
+                    }
+
+                    const match = findCity(query);
+                    if (!match) {
+                        setStatus('Lieu non trouve localement. Essaie avec une ville tunisienne.');
+                        return;
+                    }
+
+                    if (governorateInput) {
+                        governorateInput.value = match.governorate;
+                    }
+                    rebuildCityOptions();
+                    if (cityInput) {
+                        cityInput.value = match.city;
+                    }
+
+                    const estimate = estimateCityCoordinates(match.governorate, match.city, match.index);
+                    setCoordinates(estimate.lat, estimate.lng, 'la recherche locale');
+
+                    if (addressInput && !addressInput.value.trim()) {
+                        addressInput.value = match.city + ', ' + match.governorate + ', Tunisie';
+                    }
+                };
+
+                mapSearchBtn.addEventListener('click', runMapSearch);
+                mapSearchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        runMapSearch();
+                    }
+                });
+            }
+
+            if (governorateInput && cityInput && !governorateInput.value && cityInput.value) {
+                const inferredGovernorate = inferGovernorateFromCity(cityInput.value);
+                if (inferredGovernorate) {
+                    governorateInput.value = inferredGovernorate;
+                }
+            }
+
+            initVirtualMap();
+            initLocalAddressAutocomplete();
+
+            rebuildCityOptions();
+            applyCityToMap();
+
+            if (governorateInput && cityInput) {
+                governorateInput.addEventListener('change', function () {
+                    rebuildCityOptions();
+
+                    const governorate = this.value;
+                    const firstCity = (cityCatalog[governorate] || [])[0];
+                    if (firstCity) {
+                        cityInput.value = firstCity;
+                    }
+
+                    applyCityToMap();
+                });
+
+                cityInput.addEventListener('change', applyCityToMap);
+            }
+
+            if (scheduleMode && scheduleInput) {
+                scheduleMode.addEventListener('change', function () {
+                    if (this.value && this.value !== 'custom') {
+                        scheduleInput.value = this.value;
+                    }
+                });
+            }
+
+            if (aiButton && descriptionInput) {
+                aiButton.addEventListener('click', function () {
+                    const nameInput = document.getElementById('etablissement_nom');
+                    const typeInput = document.getElementById('etablissement_type');
+                    const cityValue = cityInput ? cityInput.value : '';
+                    const nameValue = nameInput ? nameInput.value.trim() : '';
+                    const typeValue = typeInput ? typeInput.options[typeInput.selectedIndex]?.text || '' : '';
+
+                    const generated = [
+                        nameValue || 'Cet établissement',
+                        typeValue ? 'est un ' + typeValue.toLowerCase() : 'accueille les visiteurs',
+                        cityValue ? 'situe a ' + cityValue : '',
+                        'avec une experience moderne, confortable et conviviale.'
+                    ].filter(Boolean).join(' ');
+
+                    descriptionInput.value = generated.slice(0, 200);
+                });
+            }
+
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function () {
+                    imagePreview.innerHTML = '';
+                    const files = Array.from(this.files || []);
+
+                    if (!files.length) {
+                        return;
+                    }
+
+                    files.slice(0, 4).forEach(function (file) {
+                        const card = document.createElement('div');
+                        card.className = 'image-chip';
+                        card.textContent = file.name;
+                        imagePreview.appendChild(card);
+                    });
+                });
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bootFormScripts);
+        } else {
+            bootFormScripts();
+        }
+    })();
+</script>
