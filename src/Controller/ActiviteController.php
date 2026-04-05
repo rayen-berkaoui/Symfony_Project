@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Activite;
 use App\Form\ActiviteType;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -184,6 +186,91 @@ class ActiviteController extends AbstractController
             'nextUrl' => $this->generateUrl('app_activite_dashboard'),
             'nextLabel' => 'Aller au dashboard activités',
         ]);
+    }
+
+    #[Route('/{idActivite}/export-pdf', name: 'app_activite_export_pdf', methods: ['GET'])]
+    public function exportPdf(Activite $activite): Response
+    {
+        $html = (string) $this->runPdfSafely(function () use ($activite): string {
+            return $this->renderView('activite/pdf.html.twig', [
+                'activite' => $activite,
+            ]);
+        });
+        $html = $this->sanitizeUtf8($html);
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->setDefaultFont('Helvetica');
+
+        $dompdf = new Dompdf($options);
+        $this->runPdfSafely(static function () use ($dompdf, $html): void {
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+        });
+
+        $safeName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($activite->getNomActivite() ?? 'activite'));
+        $fileName = sprintf('activite-%s.pdf', trim((string) $safeName, '-'));
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
+            ]
+        );
+    }
+
+    private function sanitizeUtf8(string $value): string
+    {
+        if (preg_match('//u', $value) === 1) {
+            return $value;
+        }
+
+        $converted = $this->safeIconv('UTF-8', 'UTF-8//IGNORE', $value);
+        if ($converted !== false && preg_match('//u', $converted) === 1) {
+            return $converted;
+        }
+
+        $converted = $this->safeIconv('Windows-1252', 'UTF-8//IGNORE', $value);
+        if ($converted !== false && preg_match('//u', $converted) === 1) {
+            return $converted;
+        }
+
+        $converted = $this->safeIconv('ISO-8859-1', 'UTF-8//IGNORE', $value);
+        if ($converted !== false && preg_match('//u', $converted) === 1) {
+            return $converted;
+        }
+
+        return preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $value) ?? '';
+    }
+
+    private function safeIconv(string $fromEncoding, string $toEncoding, string $value): string|false
+    {
+        return $this->runPdfSafely(static function () use ($fromEncoding, $toEncoding, $value): string|false {
+            return iconv($fromEncoding, $toEncoding, $value);
+        });
+    }
+
+    private function runPdfSafely(callable $callback): mixed
+    {
+        set_error_handler(static function (int $severity, string $message): bool {
+            if (
+                ($severity === E_NOTICE || $severity === E_WARNING)
+                && str_contains(strtolower($message), 'incomplete multibyte character')
+            ) {
+                return true;
+            }
+
+            return false;
+        });
+
+        try {
+            return $callback();
+        } finally {
+            restore_error_handler();
+        }
     }
 
     #[Route('/{idActivite}', name: 'app_activite_show', methods: ['GET'])]
