@@ -162,6 +162,20 @@
                         </a>
                     </li>
                     <li>
+                        <a href="{{ path('app_etablissement_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_etablissement' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <i class="fa-solid fa-building w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Etablissements</span>
+                            {% if app.request.attributes.get('_route') starts with 'app_etablissement' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_activite_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_activite' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
+                            <i class="fa-solid fa-person-running w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
+                            <span class="font-semibold tracking-wide">Activités</span>
+                            {% if app.request.attributes.get('_route') starts with 'app_activite' %}<div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gold-500/20 to-transparent"></div>{% endif %}
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ path('app_panier_index') }}" class="group flex items-center space-x-3 px-4 py-3.5 rounded-xl text-gray-400 hover:bg-gradient-to-r hover:from-gold-500/10 hover:to-transparent hover:text-gold-400 transition-all duration-300 relative overflow-hidden {% if app.request.attributes.get('_route') starts with 'app_panier' %}bg-gradient-to-r from-gold-500/20 to-dark-200/50 text-gold-400 shadow-[0_0_15px_rgba(255,215,0,0.1)] border-l-2 border-gold-400{% endif %}">
                             <i class="fa-solid fa-cart-shopping w-6 text-center text-lg transition-transform group-hover:scale-110"></i>
                             <span class="font-semibold tracking-wide">Paniers</span>

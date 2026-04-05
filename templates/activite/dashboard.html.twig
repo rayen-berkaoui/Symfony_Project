@@ -1,0 +1,395 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Premium - Activites{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --bg: #070707;
+        --surface: #101114;
+        --surface-2: #17191e;
+        --surface-3: #1f2228;
+        --border: rgba(255, 194, 0, 0.18);
+        --accent: #ffc200;
+        --text: #ece9df;
+        --muted: #9d9d98;
+        --danger: #e45a5a;
+        --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        color: var(--text);
+        background:
+            radial-gradient(circle at 18% -5%, rgba(255, 194, 0, 0.2), transparent 32%),
+            #070707;
+        font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    .dash-shell {
+        max-width: 1360px;
+        margin: 18px auto;
+        padding: 0 12px 22px;
+    }
+
+    .topbar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .brand {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1.05rem;
+        text-decoration: none;
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .nav a {
+        color: var(--muted);
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 8px 12px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: color .2s, border-color .2s, background .2s;
+    }
+
+    .nav a.active {
+        color: var(--accent);
+        border-color: var(--border);
+        background: rgba(255, 194, 0, 0.07);
+        font-weight: 700;
+    }
+
+    .btn-new {
+        text-decoration: none;
+        color: #111;
+        background: var(--accent);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .filters {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr 1fr auto auto;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px;
+        margin-bottom: 16px;
+    }
+
+    .filters input,
+    .filters select,
+    .filters button,
+    .filters a {
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        padding: 0 12px;
+        font-size: 0.85rem;
+    }
+
+    .filters input::placeholder { color: var(--muted); }
+
+    .filters button {
+        cursor: pointer;
+        font-weight: 700;
+        background: rgba(255, 194, 0, 0.14);
+        color: var(--accent);
+    }
+
+    .filters a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: var(--muted);
+    }
+
+    .board-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 10px;
+    }
+
+    .board-title h1 {
+        margin: 0;
+        color: var(--accent);
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .board-title p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .table-wrap {
+        overflow: auto;
+        max-height: 62vh;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 980px;
+    }
+
+    thead th {
+        color: var(--accent);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: left;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    tbody td {
+        padding: 13px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .name-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(135deg, #4ca7ff, #5d5fff);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .muted { color: var(--muted); }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .badge.disponible { background: rgba(94, 214, 137, 0.18); color: #7ce5a4; }
+    .badge.complete { background: rgba(255, 182, 74, 0.18); color: #ffcf7f; }
+    .badge.annulee { background: rgba(228, 90, 90, 0.18); color: #ff9393; }
+
+    .price { color: var(--accent); font-weight: 700; }
+
+    .actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .action-link,
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: var(--surface-3);
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .action-btn.danger { color: var(--danger); }
+
+    .empty {
+        padding: 28px;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .page-btn {
+        text-decoration: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+        background: var(--surface-2);
+        border-radius: 9px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+    }
+
+    .page-btn.disabled {
+        opacity: .35;
+        pointer-events: none;
+    }
+
+    .page-info { color: var(--muted); font-size: 0.82rem; }
+
+    @media (max-width: 1024px) {
+        .filters { grid-template-columns: 1fr 1fr; }
+        .filters .full { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 680px) {
+        .topbar { flex-wrap: wrap; }
+        .nav { width: 100%; }
+        .board-title h1 { font-size: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dash-shell">
+    <header class="topbar">
+        <a href="{{ path('app_etablissement_dashboard') }}" class="brand">🔥 Premium Dashboard</a>
+
+        <nav class="nav">
+            <a href="{{ path('app_etablissement_dashboard') }}">Tableau Etab.</a>
+            <a href="{{ path('app_activite_dashboard') }}" class="active">Tableau Activ.</a>
+            <a href="{{ path('app_etablissement_index') }}">Galerie Etab.</a>
+            <a href="{{ path('app_activite_index') }}">Galerie Activ.</a>
+        </nav>
+
+        <a class="btn-new" href="{{ path('app_activite_new') }}">+ Nouveau</a>
+    </header>
+
+    <form method="get" class="filters">
+        <input class="full" type="text" name="q" value="{{ filters.q }}" placeholder="Rechercher par nom, catégorie, niveau...">
+
+        <select name="statut">
+            <option value="">Tous les statuts</option>
+            {% for statut in statuts %}
+                <option value="{{ statut }}" {{ filters.statut == statut ? 'selected' : '' }}>{{ statut|capitalize }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="categorie">
+            <option value="">Toutes les catégories</option>
+            {% for categorie in categories %}
+                <option value="{{ categorie }}" {{ filters.categorie == categorie ? 'selected' : '' }}>{{ categorie|capitalize }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filtrer</button>
+        <a href="{{ path('app_activite_dashboard') }}">↻</a>
+    </form>
+
+    <div class="board-title">
+        <h1>📊 Tableau Premium</h1>
+        <p>{{ pagination.total }} résultats - Page {{ pagination.page }}/{{ pagination.totalPages }}</p>
+    </div>
+
+    <section class="table-card">
+        {% if activites is empty %}
+            <div class="empty">Aucune activité trouvée.</div>
+        {% else %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Catégorie</th>
+                            <th>Statut</th>
+                            <th>Prix</th>
+                            <th>Niveau</th>
+                            <th>Etablissement</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activite in activites %}
+                            {% set statutSlug = (activite.statut|default('disponible'))|lower %}
+                            <tr>
+                                <td>
+                                    <div class="name-cell">
+                                        <span class="avatar">{{ (activite.nomActivite|default('AC'))|slice(0, 2)|upper }}</span>
+                                        <strong>{{ activite.nomActivite }}</strong>
+                                    </div>
+                                </td>
+                                <td class="muted">{{ activite.categorie ?: '-' }}</td>
+                                <td><span class="badge {{ statutSlug }}">{{ activite.statut ?: 'disponible' }}</span></td>
+                                <td class="price">{{ activite.prix is not null ? activite.prix ~ ' ' ~ (activite.devise ?: 'TND') : '-' }}</td>
+                                <td class="muted">{{ activite.niveau ?: '-' }}</td>
+                                <td class="muted">{{ activite.etablissement ? activite.etablissement.nom : '-' }}</td>
+                                <td>
+                                    <div class="actions">
+                                        <a class="action-link" href="{{ path('app_activite_edit', {'idActivite': activite.idActivite}) }}" title="Modifier">✎</a>
+                                        <form method="post" action="{{ path('app_activite_delete', {'idActivite': activite.idActivite}) }}" onsubmit="return confirm('Confirmer la suppression ?');" style="margin:0;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activite.idActivite) }}">
+                                            <button class="action-btn danger" type="submit" title="Supprimer">🗑</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a class="page-btn {{ pagination.page <= 1 ? 'disabled' : '' }}" href="{{ pagination.page > 1 ? path('app_activite_dashboard', filters|merge({'page': pagination.page - 1})) : '#' }}">Précédent</a>
+                <span class="page-info">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+                <a class="page-btn {{ pagination.page >= pagination.totalPages ? 'disabled' : '' }}" href="{{ pagination.page < pagination.totalPages ? path('app_activite_dashboard', filters|merge({'page': pagination.page + 1})) : '#' }}">Suivant</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

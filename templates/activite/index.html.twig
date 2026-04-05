@@ -1,0 +1,557 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Galerie Premium – Activités{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --bg: #0e0e0e;
+        --surface: #1a1a1a;
+        --surface2: #242424;
+        --border: rgba(255,255,255,.07);
+        --accent: #f5c518;
+        --text: #f0ece4;
+        --muted: #888;
+        --radius: 18px;
+        --sidebar-w: 260px;
+        --font-body: "Segoe UI", Tahoma, Arial, sans-serif;
+        --font-display: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        min-height: 100vh;
+    }
+
+    .prem-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .prem-sidebar {
+        width: var(--sidebar-w);
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 28px 20px 20px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+
+    .sidebar-title {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        letter-spacing: .03em;
+    }
+    .sidebar-title::before {
+        content: '';
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent);
+    }
+
+    .filter-section { margin-bottom: 22px; }
+
+    .filter-label {
+        display: block;
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+    }
+
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: .88rem;
+        padding: 10px 14px;
+        outline: none;
+        transition: border-color .2s;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+    .filter-input::placeholder { color: var(--muted); }
+    .filter-input:focus,
+    .filter-select:focus { border-color: var(--accent); }
+
+    .select-wrapper { position: relative; }
+    .select-wrapper::after {
+        content: '▾';
+        position: absolute;
+        right: 12px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+        pointer-events: none;
+        font-size: .75rem;
+    }
+
+    .btn-apply {
+        width: 100%;
+        background: var(--accent);
+        color: #111;
+        border: none;
+        border-radius: 10px;
+        font-family: var(--font-display);
+        font-size: .85rem;
+        font-weight: 700;
+        padding: 11px;
+        cursor: pointer;
+        transition: opacity .2s;
+        margin-top: 4px;
+    }
+    .btn-apply:hover { opacity: .88; }
+
+    .btn-refresh {
+        width: 100%;
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font-family: var(--font-body);
+        font-size: .82rem;
+        padding: 10px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        transition: border-color .2s, color .2s;
+    }
+    .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+    .prem-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 36px 48px 60px;
+        overflow: hidden;
+    }
+
+    .gallery-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 36px;
+    }
+
+    .gallery-eyebrow {
+        color: var(--accent);
+        font-size: .78rem;
+        font-weight: 600;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .gallery-title {
+        font-family: var(--font-display);
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        line-height: 1.1;
+    }
+
+    .gallery-stats {
+        color: var(--muted);
+        font-size: .83rem;
+        margin-top: 6px;
+    }
+
+    .btn-new {
+        background: var(--accent);
+        color: #111;
+        border: none;
+        border-radius: 12px;
+        font-family: var(--font-display);
+        font-size: .85rem;
+        font-weight: 700;
+        padding: 12px 22px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: opacity .2s, transform .2s;
+        white-space: nowrap;
+    }
+    .btn-new:hover { opacity: .85; transform: translateY(-1px); }
+
+    .carousel-outer {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1;
+    }
+
+    .carousel-track-wrap { overflow: hidden; flex: 1; }
+
+    .carousel-track {
+        display: flex;
+        gap: 20px;
+        transition: transform .45s cubic-bezier(.4,0,.2,1);
+    }
+
+    .etab-card {
+        flex: 0 0 calc(33.333% - 14px);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        transition: transform .3s, box-shadow .3s;
+    }
+    .etab-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 24px 50px rgba(0,0,0,.6);
+    }
+
+    .card-visual {
+        min-height: 220px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg,
+            hsl(calc(var(--hue,260) * 1deg) 40% 22%),
+            hsl(calc(var(--hue,260) * 1deg + 45) 50% 12%)
+        );
+    }
+    .card-visual::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom, transparent 35%, rgba(0,0,0,.72) 100%);
+    }
+
+    .card-badge {
+        position: absolute; top: 14px; left: 14px; z-index: 2;
+        background: var(--accent); color: #111;
+        font-family: var(--font-display);
+        font-size: .65rem; font-weight: 800;
+        letter-spacing: .1em; text-transform: uppercase;
+        padding: 5px 12px; border-radius: 30px;
+    }
+
+    .card-city {
+        position: absolute; top: 14px; right: 14px; z-index: 2;
+        background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
+        color: var(--text); font-size: .7rem;
+        padding: 4px 10px; border-radius: 30px;
+        border: 1px solid var(--border);
+    }
+
+    .card-name-overlay {
+        position: absolute; bottom: 14px; left: 14px; right: 14px; z-index: 2;
+    }
+    .card-name {
+        font-family: var(--font-display);
+        font-size: 1.4rem; font-weight: 800; color: #fff;
+        line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,.7);
+    }
+    .card-stars { display: flex; gap: 3px; margin-top: 5px; }
+    .star { color: var(--accent); font-size: .7rem; }
+
+    .card-body {
+        padding: 16px; display: flex;
+        flex-direction: column; gap: 10px; flex: 1;
+    }
+
+    .card-address { font-size: .8rem; color: var(--muted); line-height: 1.4; }
+
+    .card-meta {
+        display: flex; justify-content: space-between;
+        font-size: .78rem; color: var(--muted);
+    }
+    .card-meta span:first-child {
+        background: var(--surface2); padding: 3px 10px; border-radius: 20px;
+    }
+
+    .card-actions { display: flex; gap: 8px; margin-top: auto; }
+
+    .btn-voir {
+        flex: 1; background: var(--surface2); color: var(--text);
+        border: 1px solid var(--border); border-radius: 10px;
+        font-size: .82rem; padding: 9px 14px;
+        text-decoration: none; text-align: center;
+        transition: border-color .2s, color .2s;
+    }
+    .btn-voir:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-icon {
+        width: 38px; height: 38px;
+        background: var(--surface2); color: var(--accent);
+        border: 1px solid var(--border); border-radius: 10px;
+        display: grid; place-items: center;
+        cursor: pointer; font-size: .95rem;
+        text-decoration: none; transition: opacity .2s;
+    }
+    .btn-icon:hover {
+        opacity: 1;
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #111;
+    }
+
+    .btn-icon-pdf {
+        font-size: .67rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+    }
+
+    .carousel-arrow {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: var(--surface2); border: 1px solid var(--border);
+        color: var(--text); font-size: 1.1rem; cursor: pointer;
+        display: grid; place-items: center;
+        transition: background .2s, color .2s;
+        flex-shrink: 0; position: absolute; top: 50%; z-index: 5;
+    }
+    .carousel-arrow.prev { left: -22px; transform: translateY(-50%); }
+    .carousel-arrow.next { right: -22px; transform: translateY(-50%); }
+    .carousel-arrow:hover { background: var(--accent); border-color: var(--accent); color: #111; }
+    .carousel-arrow:disabled { opacity: .25; cursor: default; }
+
+    .carousel-dots {
+        display: flex; justify-content: center;
+        align-items: center; gap: 8px; margin-top: 24px;
+    }
+    .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--surface2); border: 1px solid var(--border);
+        cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.3); }
+
+    .slide-indicator {
+        text-align: center; margin-top: 10px;
+        font-size: .8rem; color: var(--muted); letter-spacing: .06em;
+    }
+
+    .gallery-pagination {
+        display: flex; align-items: center;
+        gap: 12px; margin-top: 32px; justify-content: center;
+    }
+    .btn-page {
+        background: var(--surface2); color: var(--text);
+        border: 1px solid var(--border); border-radius: 10px;
+        padding: 9px 20px; font-size: .83rem; text-decoration: none;
+        transition: border-color .2s, color .2s;
+    }
+    .btn-page:hover:not(.is-disabled) { border-color: var(--accent); color: var(--accent); }
+    .btn-page.is-disabled { opacity: .3; pointer-events: none; }
+    .page-indicator { font-size: .83rem; color: var(--muted); }
+
+    .empty-state {
+        text-align: center; padding: 60px 40px;
+        border: 1px dashed var(--border); border-radius: var(--radius); color: var(--muted);
+    }
+    .empty-state h3 { font-family: var(--font-display); font-size: 1.3rem; color: var(--text); margin-bottom: 8px; }
+
+    .fab {
+        position: fixed; bottom: 30px; right: 30px;
+        width: 52px; height: 52px; border-radius: 50%;
+        background: var(--accent); color: #111;
+        font-size: 1.6rem; font-weight: 700;
+        display: grid; place-items: center;
+        text-decoration: none;
+        box-shadow: 0 8px 24px rgba(245,197,24,.35);
+        transition: transform .2s, box-shadow .2s;
+        z-index: 100;
+    }
+    .fab:hover { transform: scale(1.08); box-shadow: 0 14px 32px rgba(245,197,24,.55); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="prem-layout">
+    <aside class="prem-sidebar">
+        <div class="sidebar-title">Filtres &amp; Tri</div>
+
+        <form method="get">
+            <div class="filter-section">
+                <label class="filter-label" for="q">Recherche</label>
+                <input class="filter-input" id="q" type="text" name="q" value="{{ filters.q }}" placeholder="Nom, catégorie, niveau, établissement...">
+            </div>
+
+            <div class="filter-section">
+                <label class="filter-label" for="statut">Statut</label>
+                <div class="select-wrapper">
+                    <select class="filter-select" id="statut" name="statut">
+                        <option value="">Tous</option>
+                        {% for statut in statuts %}
+                            <option value="{{ statut }}" {{ filters.statut == statut ? 'selected' : '' }}>{{ statut|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <label class="filter-label" for="categorie">Catégorie</label>
+                <div class="select-wrapper">
+                    <select class="filter-select" id="categorie" name="categorie">
+                        <option value="">Toutes</option>
+                        {% for categorie in categories %}
+                            <option value="{{ categorie }}" {{ filters.categorie == categorie ? 'selected' : '' }}>{{ categorie|capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-apply">Appliquer</button>
+            <a class="btn-refresh" href="{{ path('app_activite_index') }}">↺ Rafraîchir</a>
+        </form>
+    </aside>
+
+    <main class="prem-main">
+        <header class="gallery-header">
+            <div>
+                <p class="gallery-eyebrow">✦ Galerie Premium</p>
+                <h1 class="gallery-title">Activités</h1>
+                <p class="gallery-stats">
+                    {{ pagination.total }} activités trouvées &bull;
+                    page {{ pagination.page }}/{{ pagination.totalPages }}
+                </p>
+            </div>
+            <a class="btn-new" href="{{ path('app_activite_new') }}">+ Nouvelle activité</a>
+        </header>
+
+        {% if activites is empty %}
+            <div class="empty-state">
+                <h3>Aucune activité trouvée</h3>
+                <p>Modifiez les filtres ou ajoutez une nouvelle activité.</p>
+            </div>
+        {% else %}
+            <div class="carousel-outer" id="carousel">
+                <button class="carousel-arrow prev" id="prevBtn" aria-label="Précédent">←</button>
+
+                <div class="carousel-track-wrap">
+                    <div class="carousel-track" id="carouselTrack">
+                        {% for activite in activites %}
+                            {% set hue = ((activite.idActivite ?? loop.index) * 53 + 190) % 360 %}
+                            <article class="etab-card" style="--hue:{{ hue }}">
+                                <div class="card-visual">
+                                    <span class="card-badge">{{ activite.categorie ?: 'Sans catégorie' }}</span>
+                                    <span class="card-city">{{ activite.statut ?: 'Statut inconnu' }}</span>
+                                    <div class="card-name-overlay">
+                                        <h3 class="card-name">{{ activite.nomActivite }}</h3>
+                                        {% if activite.niveau %}
+                                            <div class="card-stars">
+                                                <span class="star">★</span>
+                                                <span class="star">★</span>
+                                                <span class="star">★</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-body">
+                                    <p class="card-address">{{ activite.description ?: 'Aucune description disponible.' }}</p>
+                                    <div class="card-meta">
+                                        <span>{{ activite.prix ?: 'Prix NC' }} {{ activite.devise ?: '' }}</span>
+                                        <span>{{ activite.etablissement ? activite.etablissement.nom : 'Sans établissement' }}</span>
+                                    </div>
+                                    <div class="card-actions">
+                                        <a class="btn-voir" href="{{ path('app_activite_show', {'idActivite': activite.idActivite}) }}">Voir plus →</a>
+                                        <a class="btn-icon btn-icon-pdf" href="{{ path('app_activite_export_pdf', {'idActivite': activite.idActivite}) }}" title="Exporter PDF">PDF</a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button class="carousel-arrow next" id="nextBtn" aria-label="Suivant">→</button>
+            </div>
+
+            <div class="carousel-dots" id="carouselDots"></div>
+            <p class="slide-indicator" id="slideIndicator"></p>
+
+            {% if pagination.totalPages > 1 %}
+                <nav class="gallery-pagination" aria-label="Pagination des activités">
+                    {% set prevPage = pagination.page - 1 %}
+                    {% set nextPage = pagination.page + 1 %}
+
+                    <a class="btn-page {{ pagination.page <= 1 ? 'is-disabled' : '' }}"
+                       href="{{ pagination.page <= 1 ? '#' : path('app_activite_index', filters|merge({'page': prevPage})) }}"
+                       {{ pagination.page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' }}>← Préc</a>
+
+                    <span class="page-indicator">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+
+                    <a class="btn-page {{ pagination.page >= pagination.totalPages ? 'is-disabled' : '' }}"
+                       href="{{ pagination.page >= pagination.totalPages ? '#' : path('app_activite_index', filters|merge({'page': nextPage})) }}"
+                       {{ pagination.page >= pagination.totalPages ? 'aria-disabled="true" tabindex="-1"' : '' }}>Suiv →</a>
+                </nav>
+            {% endif %}
+        {% endif %}
+    </main>
+</div>
+
+<a class="fab" href="{{ path('app_activite_new') }}" aria-label="Ajouter une activité">+</a>
+
+<script>
+(function () {
+    const track = document.getElementById('carouselTrack');
+    const dotsWrap = document.getElementById('carouselDots');
+    const indicator = document.getElementById('slideIndicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    if (!track) return;
+
+    const cards = Array.from(track.children);
+    let current = 0;
+
+    function visible() {
+        return window.innerWidth < 700 ? 1 : window.innerWidth < 1050 ? 2 : 3;
+    }
+    function total() { return Math.max(1, cards.length - visible() + 1); }
+
+    function buildDots() {
+        dotsWrap.innerHTML = '';
+        for (let i = 0; i < total(); i++) {
+            const d = document.createElement('button');
+            d.className = 'dot' + (i === current ? ' active' : '');
+            d.addEventListener('click', () => goTo(i));
+            dotsWrap.appendChild(d);
+        }
+    }
+
+    function goTo(idx) {
+        current = Math.max(0, Math.min(idx, total() - 1));
+        const gap = 20;
+        const w = cards[0].getBoundingClientRect().width + gap;
+        track.style.transform = `translateX(-${current * w}px)`;
+        document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+        if (indicator) indicator.textContent = `${current + 1} / ${total()}`;
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current >= total() - 1;
+    }
+
+    prevBtn.addEventListener('click', () => goTo(current - 1));
+    nextBtn.addEventListener('click', () => goTo(current + 1));
+    window.addEventListener('resize', () => { buildDots(); goTo(Math.min(current, total() - 1)); });
+
+    buildDots();
+    goTo(0);
+})();
+</script>
+{% endblock %}
