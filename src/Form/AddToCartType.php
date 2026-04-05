@@ -20,7 +20,7 @@ class AddToCartType extends AbstractType
                 'attr' => ['class' => 'input-modern'],
                 'constraints' => [
                     new Assert\NotBlank(message: 'La date de début est obligatoire'),
-                    new Assert\GreaterThanOrEqual('today', message: 'La date de début doit être aujourd\'hui ou plus tard'),
+                    new Assert\GreaterThanOrEqual('yesterday', message: 'La date de dÃ©but doit Ãªtre aujourd\'hui ou plus tard'),
                 ],
             ])
             ->add('dateFin', DateTimeType::class, [

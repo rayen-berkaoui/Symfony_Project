@@ -23,9 +23,12 @@ class Panier
     private ?Utilisateur $utilisateur = null;
 
     #[ORM\ManyToOne(targetEntity: LieuTouristique::class)]
-    #[ORM\JoinColumn(name: 'id_lieu', referencedColumnName: 'id_lieu', nullable: false, onDelete: 'CASCADE')]
-    #[Assert\NotNull(message: 'Veuillez sélectionner un lieu touristique')]
+    #[ORM\JoinColumn(name: 'id_lieu', referencedColumnName: 'id_lieu', nullable: true, onDelete: 'CASCADE')]
     private ?LieuTouristique $lieuTouristique = null;
+
+    #[ORM\ManyToOne(targetEntity: Etablissement::class)]
+    #[ORM\JoinColumn(name: 'id_etablissement', referencedColumnName: 'idEtablissement', nullable: true, onDelete: 'CASCADE')]
+    private ?Etablissement $etablissement = null;
 
     #[ORM\Column(name: 'session_id', type: 'string', length: 255)]
     private ?string $sessionId = null;
@@ -103,6 +106,17 @@ class Panier
     public function setLieuTouristique(?LieuTouristique $lieuTouristique): static
     {
         $this->lieuTouristique = $lieuTouristique;
+        return $this;
+    }
+
+    public function getEtablissement(): ?Etablissement
+    {
+        return $this->etablissement;
+    }
+
+    public function setEtablissement(?Etablissement $etablissement): static
+    {
+        $this->etablissement = $etablissement;
         return $this;
     }
 

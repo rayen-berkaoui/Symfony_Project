@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'etablissement')]
@@ -14,21 +15,28 @@ class Etablissement
     private ?int $idEtablissement = null;
 
     #[ORM\Column(name: 'nom', type: 'string', length: 120)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(min: 2, max: 120, minMessage: "Le nom doit comporter au moins 2 caractères")]
     private ?string $nom = null;
 
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+    #[Assert\Length(min: 10, minMessage: "La description doit comporter au moins 10 caractères if provided")]
     private ?string $description = null;
 
     #[ORM\Column(name: 'adresse', type: 'string', length: 180)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
     private ?string $adresse = null;
 
     #[ORM\Column(name: 'ville', type: 'string', length: 80)]
+    #[Assert\NotBlank(message: "La ville est obligatoire")]
     private ?string $ville = null;
 
     #[ORM\Column(name: 'telephone', type: 'string', length: 30, nullable: true)]
+    #[Assert\Regex(pattern: '/^[0-9\+\-\s]+$/', message: "Le téléphone doit contenir des chiffres et éventuellement un signe +")]
     private ?string $telephone = null;
 
     #[ORM\Column(name: 'email', type: 'string', length: 120, nullable: true)]
+    #[Assert\Email(message: "L'email doit être valide")]
     private ?string $email = null;
 
     #[ORM\Column(name: 'horaires', type: 'string', length: 255, nullable: true)]
@@ -38,12 +46,15 @@ class Etablissement
     private ?string $gammePrix = null;
 
     #[ORM\Column(name: 'type', type: 'string', columnDefinition: "ENUM('hotel','restaurant','cafe','museum','bar','loisir','autre')", nullable: true)]
+    #[Assert\NotBlank(message: "Le type de l'établissement est obligatoire")]
     private ?string $type = 'autre';
 
     #[ORM\Column(name: 'latitude', type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    #[Assert\Range(min: -90, max: 90, notInRangeMessage: "Latitude invalide")]
     private ?string $latitude = null;
 
     #[ORM\Column(name: 'longitude', type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    #[Assert\Range(min: -180, max: 180, notInRangeMessage: "Longitude invalide")]
     private ?string $longitude = null;
 
     public function getIdEtablissement(): ?int

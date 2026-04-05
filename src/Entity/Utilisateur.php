@@ -6,6 +6,7 @@ use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
@@ -21,12 +22,20 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Length(min: 2, max: 100, minMessage: 'Le nom doit faire au moins 2 caractères')]
+    #[Assert\Regex(pattern: '/^[A-Za-z\s-]+$/', message: 'Le nom ne doit contenir que des lettres')]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
+    #[Assert\Length(min: 2, max: 100, minMessage: 'Le prénom doit faire au moins 2 caractères')]
+    #[Assert\Regex(pattern: '/^[A-Za-z\s-]+$/', message: 'Le prénom ne doit contenir que des lettres')]
     private ?string $prenom = null;
 
     #[ORM\Column(type: 'string', length: 150, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: 'Veuillez entrer un email valide')]
     private ?string $email = null;
 
     #[ORM\Column(name: 'mot_de_passe', type: 'string', length: 255)]
@@ -45,6 +54,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\Column(name: 'num_tel', type: 'integer')]
+    #[Assert\NotBlank(message: 'Le numéro de téléphone est obligatoire')]
+    #[Assert\Positive(message: 'Le numéro doit être valide')]
+    #[Assert\Length(min: 8, max: 15, minMessage: 'Numéro trop court', maxMessage: 'Numéro trop long')]
+    #[Assert\Type(type: 'numeric', message: 'Le numéro de téléphone doit être numérique')]
     private ?int $numTel = null;
 
     #[ORM\Column(name: 'nfc_id', type: 'string', length: 100, nullable: true)]
@@ -52,6 +65,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: 'utilisateurs')]
     #[ORM\JoinColumn(name: 'role_id', referencedColumnName: 'id', nullable: false)]
+    #[Assert\NotNull(message: 'Veuillez sélectionner un rôle')]
     private ?Role $role = null;
 
     #[ORM\Column(name: 'profile_picture', type: 'text', nullable: true, columnDefinition: 'LONGTEXT')]

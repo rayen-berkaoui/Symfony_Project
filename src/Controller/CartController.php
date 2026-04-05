@@ -7,6 +7,7 @@ use App\Entity\Reservation;
 use App\Form\AddToCartType;
 use App\Form\CheckoutType;
 use App\Repository\LieuTouristiqueRepository;
+use App\Repository\EtablissementRepository;
 use App\Repository\PanierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -194,5 +195,56 @@ final class CartController extends AbstractController
         $count = $panierRepository->countBySessionId($sessionId);
 
         return new JsonResponse(['count' => $count]);
+    }
+
+    #[Route('/add-etablissement/{id}', name: 'app_cart_etablissement_add', methods: ['GET', 'POST'])]
+    public function addEtablissement(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $etablissement = $entityManager->getRepository(\App\Entity\Etablissement::class)->find($id);
+        if (!$etablissement) {
+            $this->addFlash('danger', 'Établissement non trouvé.');
+            return $this->redirectToRoute('app_etablissement_index');
+        }
+
+        $form = $this->createForm(AddToCartType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+
+            $panier = new Panier();
+            $panier->setEtablissement($etablissement);
+            $panier->setSessionId($request->getSession()->getId());
+
+            if ($this->getUser()) {
+                $panier->setUtilisateur($this->getUser());
+            }
+
+            $panier->setTypeService('Visite');
+            $panier->setDateDebut($data['dateDebut']);
+            $panier->setDateFin($data['dateFin']);
+            $panier->setNbAdultes($data['nbAdultes']);
+            $panier->setNbEnfants($data['nbEnfants']);
+            $panier->setNbPersonnes($data['nbAdultes'] + $data['nbEnfants']);
+
+            // Arbitrary price for etablissement if it has no price
+            $prixEstime = 0;
+            $panier->setPrixEstime((string) $prixEstime);
+
+            $entityManager->persist($panier);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'L\'établissement a été ajouté à votre panier.');
+
+            return $this->redirectToRoute('app_cart_index');
+        }
+
+        return $this->render('cart/add_etablissement.html.twig', [
+            'etablissement' => $etablissement,
+            'form' => $form->createView(),
+        ]);
     }
 }
