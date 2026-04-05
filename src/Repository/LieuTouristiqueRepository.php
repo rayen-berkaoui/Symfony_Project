@@ -16,20 +16,33 @@ class LieuTouristiqueRepository extends ServiceEntityRepository
         parent::__construct($registry, LieuTouristique::class);
     }
 
-    public function searchByQuery(string $query)
+    public function searchByQuery(string $query, ?int $categorieId = null, ?string $prixMin = null, ?string $prixMax = null, ?bool $statut = null)
     {
         $qb = $this->createQueryBuilder('l')
             ->leftJoin('l.categorie', 'c')
             ->leftJoin('l.adresse', 'a');
 
         if ($query) {
-            $qb->where('l.nom LIKE :query')
-                ->orWhere('l.description LIKE :query')
-                ->orWhere('l.ville LIKE :query')
-                ->orWhere('c.nomCategorie LIKE :query')
-                ->orWhere('a.rue LIKE :query')
+            $qb->andWhere('l.nom LIKE :query OR l.description LIKE :query OR l.ville LIKE :query OR c.nomCategorie LIKE :query OR a.rue LIKE :query')
                 ->setParameter('query', '%' . $query . '%');
         }
+
+        if ($categorieId !== null) {
+            $qb->andWhere('l.categorie = :cat')->setParameter('cat', $categorieId);
+        }
+
+        if ($prixMin !== null && $prixMin !== '') {
+            $qb->andWhere('l.prix >= :pmin')->setParameter('pmin', $prixMin);
+        }
+
+        if ($prixMax !== null && $prixMax !== '') {
+            $qb->andWhere('l.prix <= :pmax')->setParameter('pmax', $prixMax);
+        }
+
+        if ($statut !== null) {
+            $qb->andWhere('l.statut = :statut')->setParameter('statut', $statut);
+        }
+
         return $qb;
     }
 }

@@ -17,8 +17,11 @@
                    class="w-full bg-dark-200/50 backdrop-blur-md text-white border border-white/10 rounded-xl pl-10 pr-4 py-2.5 focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/50 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] placeholder-gray-500 font-medium">
         </form>
         <div class="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-            <a href="{{ path('app_adresse_pdf') }}" target="_blank" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-br from-red-500/20 to-red-600/10 hover:from-red-500/30 hover:to-red-600/20 text-red-400 font-semibold py-2.5 px-5 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]" title="Exporter en PDF">
-                <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">PDF</span>
+            <a href="{{ path('app_adresse_map') }}" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-br from-blue-500/20 to-blue-600/10 hover:from-blue-500/30 hover:to-blue-600/20 text-blue-400 font-semibold py-2.5 px-5 rounded-xl border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300 shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]" title="Voir sur la carte">
+                <i class="fa-solid fa-map"></i> <span class="hidden sm:inline">Carte Interactive</span>
+            </a>
+            <a href="{{ path('app_adresse_pdf') }}" target="_blank" class="hidden sm:flex flex-1 sm:flex-none items-center justify-center gap-2 bg-gradient-to-br from-red-500/20 to-red-600/10 hover:from-red-500/30 hover:to-red-600/20 text-red-400 font-semibold py-2.5 px-5 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]" title="Exporter en PDF">
+                <i class="fa-solid fa-file-pdf"></i> <span>PDF</span>
             </a>
             <a href="{{ path('app_adresse_new') }}" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-dark-300 font-black py-2.5 px-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(251,191,36,0.3)] whitespace-nowrap">
                 <i class="fa-solid fa-plus text-lg"></i> Créer
@@ -105,6 +108,10 @@
                     </div>
                 </article>
             {% endfor %}
+        </div>
+        
+        <div class="mt-6 flex justify-center relative z-10">
+            {{ knp_pagination_render(adresses) }}
         </div>
     {% endif %}
 </div>

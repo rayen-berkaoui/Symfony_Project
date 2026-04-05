@@ -74,6 +74,8 @@ final class CategorieController extends AbstractController
             $entityManager->persist($categorie);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Catégorie créée avec succès.');
+
             return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -84,10 +86,13 @@ final class CategorieController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_categorie_show', methods: ['GET'])]
-    public function show(Categorie $categorie): Response
+    public function show(Categorie $categorie, \App\Repository\LieuTouristiqueRepository $lieuRepo): Response
     {
+        $lieux = $lieuRepo->findBy(['categorie' => $categorie]);
+
         return $this->render('categorie/show.html.twig', [
             'categorie' => $categorie,
+            'lieux' => $lieux,
         ]);
     }
 
@@ -99,6 +104,8 @@ final class CategorieController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+
+            $this->addFlash('success', 'Catégorie mise à jour avec succès.');
 
             return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -115,6 +122,9 @@ final class CategorieController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$categorie->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($categorie);
             $entityManager->flush();
+            $this->addFlash('success', 'Catégorie supprimée avec succès.');
+        } else {
+            $this->addFlash('error', 'Token CSRF invalide.');
         }
 
         return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);

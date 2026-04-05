@@ -61,7 +61,31 @@
             ::-webkit-scrollbar-track { background: rgba(10, 10, 10, 0.8); }
             ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.2); border-radius: 4px; }
             ::-webkit-scrollbar-thumb:hover { background: rgba(255, 215, 0, 0.5); }
+            
+            /* Theme Toggle Magic Style */
+            html.light-mode {
+                filter: invert(1) hue-rotate(180deg);
+                background-color: #000000; /* Setting black so the inverse is white */
+            }
+            /* Elements that should stay in original color or not be double inverted */
+            html.light-mode img,
+            html.light-mode video,
+            html.light-mode iframe,
+            html.light-mode .leaflet-container,
+            html.light-mode .custom-popup,
+            html.light-mode .no-invert {
+                filter: invert(1) hue-rotate(180deg);
+            }
+            /* Dark mode transitions for smooth toggle */
+            html { transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         </style>
+
+        <!-- Prevent FOUC for Theme -->
+        <script>
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-mode');
+            }
+        </script>
 
         {% block stylesheets %}{% endblock %}
         {% block javascripts %}
@@ -146,7 +170,9 @@
                         <span>Administration</span>
                     {% endblock %}
                 </div>
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-6">                      <button id="theme-toggle" class="text-gray-400 hover:text-gold-400 transition-colors relative" title="Toggle Light/Dark Mode">
+                          <i id="theme-icon" class="fa-solid fa-moon text-xl"></i>
+                      </button>
                     <button class="text-gray-400 hover:text-gold-400 transition-colors relative">
                         <i class="fa-solid fa-bell text-lg"></i>
                         <span class="absolute -top-1 -right-1 flex h-3 w-3">
@@ -200,5 +226,40 @@
             </footer>
         </main>
         
-    </body>
-</html>
+        <script>
+            function initThemeManager() {
+                const themeToggle = document.getElementById('theme-toggle');
+                const htmlElement = document.documentElement;
+
+                if (!themeToggle) return;
+                
+                // Clone node to prevent multiple event listeners with Turbo
+                const newToggle = themeToggle.cloneNode(true);
+                themeToggle.parentNode.replaceChild(newToggle, themeToggle);
+                const newThemeIcon = document.getElementById('theme-icon');
+
+                // Determine starting icon based on HTML class (set in head script)
+                if (htmlElement.classList.contains('light-mode')) {
+                    if (newThemeIcon) newThemeIcon.className = 'fa-solid fa-sun text-xl';
+                } else {
+                    if (newThemeIcon) newThemeIcon.className = 'fa-solid fa-moon text-xl';
+                }
+
+                newToggle.addEventListener('click', () => {
+                    htmlElement.classList.toggle('light-mode');
+                    const isLight = htmlElement.classList.contains('light-mode');
+                    
+                    if (isLight) {
+                        localStorage.setItem('theme', 'light');
+                        if (newThemeIcon) newThemeIcon.className = 'fa-solid fa-sun text-xl text-yellow-500';
+                    } else {
+                        localStorage.setItem('theme', 'dark');
+                        if (newThemeIcon) newThemeIcon.className = 'fa-solid fa-moon text-xl';
+                    }
+                });
+            }
+
+            document.addEventListener('turbo:load', initThemeManager);
+            document.addEventListener('DOMContentLoaded', initThemeManager);
+            if (document.readyState !== 'loading') initThemeManager();
+        </script>
