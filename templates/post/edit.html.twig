@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier #{{ post.id }} — Tabaani Connect{% endblock %}
+
+{% block body %}
+<div class="connect-wrap connect-wrap--form">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        back_href: path('app_post_show', { id: post.id }),
+        back_label: '← Retour',
+        primary_href: path('app_post_new'),
+        primary_label: '+ Nouvelle publication',
+    } %}
+
+    <header class="tbn-feed-head">
+        <p class="tbn-kicker">Édition</p>
+        <h1 class="tbn-page-title">Modifier la publication #{{ post.id }}</h1>
+    </header>
+    {% include 'post/_form.html.twig' with {
+        submit_label: 'Mettre à jour',
+        cancel_path: path('app_post_show', { id: post.id }),
+        post: post,
+    } %}
+</div>
+{% endblock %}

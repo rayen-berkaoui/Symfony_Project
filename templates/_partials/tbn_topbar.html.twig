@@ -1,0 +1,18 @@
+<header class="tbn-topbar" role="banner">
+    <div class="tbn-topbar__inner">
+        <div class="tbn-topbar__left">
+            <a href="{{ brand_href|default(path('app_home')) }}" class="tbn-wordmark">TABAANI</a>
+            {% if back_href is defined and back_href %}
+                <a href="{{ back_href }}" class="btn btn-primary btn--sm tbn-topbar__back">{{ back_label|default('← Retour') }}</a>
+            {% endif %}
+        </div>
+        <div class="tbn-topbar__right">
+            {% if show_admin|default(false) %}
+                <a href="{{ admin_href|default('#') }}" class="btn btn-primary btn--sm"{% if admin_href|default('#') == '#' %} aria-disabled="true"{% endif %}>Administration</a>
+            {% endif %}
+            {% if primary_href is defined and primary_href %}
+                <a href="{{ primary_href }}" class="btn btn-primary">{{ primary_label|default('+ Nouvelle publication') }}</a>
+            {% endif %}
+        </div>
+    </div>
+</header>

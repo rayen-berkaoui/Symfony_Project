@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tabaani Connect{% endblock %}
+
+{% block body %}
+<div class="tbn-landing">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        show_admin: true,
+        admin_href: '#',
+    } %}
+
+    <main class="tbn-landing__main">
+        <header class="tbn-landing__intro">
+            <p class="tbn-kicker tbn-kicker--landing"></p>
+            <h1 class="tbn-landing__hero">TABAANI CONNECT</h1>
+            <p class="tbn-landing__tagline"></p>
+        </header>
+        <div class="tbn-landing__cards">
+            <article class="tbn-landing-card">
+                <div class="tbn-landing-card__icon-wrap" aria-hidden="true">
+                    <svg class="tbn-svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M8 6h12M8 12h12M8 18h8" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                        <rect x="3" y="4" width="3" height="16" rx="1" stroke="currentColor" stroke-width="1.75"/>
+                    </svg>
+                </div>
+                <h2 class="tbn-landing-card__title">Espace Postes</h2>
+                <p class="tbn-landing-card__desc"></p>
+                <a href="{{ path('app_post_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Accéder</a>
+            </article>
+            <article class="tbn-landing-card">
+                <div class="tbn-landing-card__icon-wrap" aria-hidden="true">
+                    <svg class="tbn-svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M21 11.5a8.5 8.5 0 01-8.5 8.5H8l-4 2 1.5-4.5A8.5 8.5 0 1112.5 3h.5a8.48 8.48 0 018 8.5z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+                        <path d="M8.5 10.5h7M8.5 14h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h2 class="tbn-landing-card__title">Espace Chat</h2>
+                <p class="tbn-landing-card__desc"></p>
+                <a href="{{ path('app_chat_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Accéder</a>
+            </article>
+        </div>
+    </main>
+</div>
+{% endblock %}

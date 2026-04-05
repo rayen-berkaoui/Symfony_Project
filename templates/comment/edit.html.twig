@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier commentaire #{{ comment.id }} — Tabaani Connect{% endblock %}
+
+{% block body %}
+<div class="connect-wrap connect-wrap--form">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        back_href: path('app_post_show', { id: post.id }),
+        back_label: '← Retour',
+        primary_href: path('app_post_new'),
+        primary_label: '+ Nouvelle publication',
+    } %}
+
+    <header class="tbn-feed-head">
+        <p class="tbn-kicker">Commentaire</p>
+        <h1 class="tbn-page-title">Modifier le commentaire #{{ comment.id }}</h1>
+    </header>
+    {{ form_start(form, { attr: { class: 'post-form' } }) }}
+        {{ form_row(form.userKey) }}
+        {{ form_row(form.content) }}
+        <div class="tbn-form-actions">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{{ path('app_post_show', { id: post.id }) }}" class="btn btn-ghost">Annuler</a>
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

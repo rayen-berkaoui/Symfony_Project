@@ -1,0 +1,293 @@
+{{ form_start(form, { attr: { class: 'post-form', enctype: 'multipart/form-data' } }) }}
+    {% for message in app.flashes('danger') %}
+        <div class="flash flash-danger">{{ message }}</div>
+    {% endfor %}
+    {{ form_row(form.content) }}
+    {{ form_row(form.hashtags) }}
+
+    {% set image_input_id = form.imageFiles.vars.id %}
+    {% set video_input_id = form.videoFile.vars.id %}
+    {% set current_video_url = null %}
+    {% if post is defined and post.videoPath %}
+        {% set current_video_url = (post.videoPath starts with 'http://' or post.videoPath starts with 'https://')
+            ? null
+            : asset(post.videoPath|trim('/')) %}
+    {% endif %}
+
+    <div class="tbn-media-card">
+        <div class="tbn-media-card__head">
+            <span class="tbn-media-card__icon tbn-media-card__icon--image" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/></svg>
+            </span>
+            <div>
+                <span class="tbn-field__label tbn-media-card__title" id="label-{{ image_input_id }}">Images</span>
+                <p class="tbn-media-card__hint">Jusqu’à 12 images (5 Mo chacune) — glisser-déposer ou parcourir. Les nouvelles images s’ajoutent à celles déjà en ligne.</p>
+            </div>
+        </div>
+
+        <div
+            class="tbn-media-dropzone"
+            data-tbn-dropzone
+            data-tbn-input="{{ image_input_id }}"
+            data-tbn-kind="image"
+            role="button"
+            tabindex="0"
+            aria-labelledby="label-{{ image_input_id }}"
+        >
+            <div class="tbn-media-dropzone__cloud" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="tbn-media-dropzone__text"><strong>Déposer des images</strong> ou cliquer pour parcourir</p>
+            <p class="tbn-media-dropzone__formats">JPEG, PNG, GIF, WebP — plusieurs fichiers possibles</p>
+        </div>
+
+        <div class="tbn-media-preview-host" data-tbn-preview-host="{{ image_input_id }}">
+            {% if post is defined and post.images|length > 0 %}
+                <div class="tbn-media-preview-grid tbn-media-preview-grid--current" data-tbn-preview-current-grid>
+                    {% for postImage in post.images %}
+                        {% set p = postImage.path %}
+                        {% set img_http = p starts with 'http://' or p starts with 'https://' %}
+                        {% set img_src = img_http ? p : asset(p|trim('/')) %}
+                        <figure class="tbn-media-preview tbn-media-preview--current">
+                            <img src="{{ img_src }}" alt="" class="tbn-media-preview__img" loading="lazy">
+                            <figcaption class="tbn-media-preview__label">En ligne · #{{ postImage.id }}</figcaption>
+                        </figure>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="tbn-media-preview-pending-wrap" data-tbn-preview-pending-wrap hidden>
+                <p class="tbn-media-preview-pending-title">Nouvelle sélection</p>
+                <div class="tbn-media-preview-grid" data-tbn-preview-pending-grid></div>
+            </div>
+        </div>
+
+        <div class="tbn-media-card__actions">
+            {{ form_widget(form.imageFiles, { attr: {
+                class: 'tbn-file-input sr-only',
+                'aria-labelledby': 'label-' ~ image_input_id,
+                'data-tbn-file-input': '1',
+                'data-tbn-multi': '1',
+            } }) }}
+            <label for="{{ image_input_id }}" class="btn btn-primary btn--sm tbn-file-picker-btn">Parcourir les fichiers</label>
+            <span class="tbn-file-chosen tbn-file-chosen--pill" data-tbn-file-for="{{ image_input_id }}" aria-live="polite"></span>
+        </div>
+        {{ form_errors(form.imageFiles) }}
+        {% if post is defined and post.images|length > 0 %}
+            <details class="tbn-media-tech-path">
+                <summary>Chemins des fichiers (technique)</summary>
+                {% for postImage in post.images %}
+                    <code>{{ postImage.path }}</code>
+                {% endfor %}
+            </details>
+        {% endif %}
+        {% if form.removeImageIds is defined %}
+            <div class="tbn-form-upload__remove tbn-media-card__remove">{{ form_row(form.removeImageIds, { row_attr: { class: 'tbn-remove-images-row' } }) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="tbn-media-card">
+        <div class="tbn-media-card__head">
+            <span class="tbn-media-card__icon tbn-media-card__icon--video" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div>
+                <span class="tbn-field__label tbn-media-card__title" id="label-{{ video_input_id }}">Vidéo</span>
+                <p class="tbn-media-card__hint">Glissez-déposez une vidéo ou parcourez — MP4, WebM, MOV jusqu’à 40 Mo.</p>
+            </div>
+        </div>
+
+        <div
+            class="tbn-media-dropzone tbn-media-dropzone--video"
+            data-tbn-dropzone
+            data-tbn-input="{{ video_input_id }}"
+            data-tbn-kind="video"
+            role="button"
+            tabindex="0"
+            aria-labelledby="label-{{ video_input_id }}"
+        >
+            <div class="tbn-media-dropzone__cloud" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="tbn-media-dropzone__text"><strong>Déposer une vidéo</strong> ou cliquer pour parcourir</p>
+            <p class="tbn-media-dropzone__formats">MP4, WebM, MOV — 40 Mo max</p>
+        </div>
+
+        <div class="tbn-media-preview-host" data-tbn-preview-host="{{ video_input_id }}">
+            {% if post is defined and post.videoPath and current_video_url is null %}
+                <p class="tbn-media-external"><a href="{{ post.videoPath }}" class="btn btn-ghost btn--sm" target="_blank" rel="noopener noreferrer">Ouvrir la vidéo (lien externe)</a></p>
+            {% endif %}
+            {% if current_video_url %}
+                <figure class="tbn-media-preview tbn-media-preview--current" data-tbn-preview-current>
+                    <video class="tbn-media-preview__video" controls playsinline preload="metadata" src="{{ current_video_url }}"></video>
+                    <figcaption class="tbn-media-preview__label">Aperçu actuel</figcaption>
+                </figure>
+            {% endif %}
+            <figure class="tbn-media-preview tbn-media-preview--pending" data-tbn-preview-pending hidden>
+                <video class="tbn-media-preview__video" controls playsinline data-tbn-preview-video hidden></video>
+                <figcaption class="tbn-media-preview__label">Nouvelle sélection</figcaption>
+            </figure>
+        </div>
+
+        <div class="tbn-media-card__actions">
+            {{ form_widget(form.videoFile, { attr: {
+                class: 'tbn-file-input sr-only',
+                'aria-labelledby': 'label-' ~ video_input_id,
+                'data-tbn-file-input': '1',
+            } }) }}
+            <label for="{{ video_input_id }}" class="btn btn-primary btn--sm tbn-file-picker-btn">Parcourir les fichiers</label>
+            <span class="tbn-file-chosen tbn-file-chosen--pill" data-tbn-file-for="{{ video_input_id }}" aria-live="polite"></span>
+        </div>
+        {{ form_errors(form.videoFile) }}
+        {% if post is defined and post.videoPath %}
+            <details class="tbn-media-tech-path">
+                <summary>Chemin du fichier</summary>
+                <code>{{ post.videoPath }}</code>
+            </details>
+        {% endif %}
+        {% if form.removeVideo is defined %}
+            <div class="tbn-form-upload__remove tbn-media-card__remove">{{ form_row(form.removeVideo, { row_attr: { class: 'tbn-checkbox-row' } }) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="tbn-form-actions">
+        <button type="submit" class="btn btn-primary">{{ submit_label|default('Enregistrer') }}</button>
+        {% if cancel_path is defined %}
+            <a href="{{ cancel_path }}" class="btn btn-ghost">Annuler</a>
+        {% endif %}
+    </div>
+{{ form_end(form) }}
+<script>
+(function () {
+    var revokeByInput = {};
+
+    function revokeAllForInput(inputId) {
+        var m = revokeByInput[inputId] || {};
+        Object.keys(m).forEach(function (k) {
+            if (m[k]) URL.revokeObjectURL(m[k]);
+        });
+        revokeByInput[inputId] = {};
+    }
+
+    function setChosenName(inputId, name) {
+        var el = document.querySelector('.tbn-file-chosen[data-tbn-file-for="' + inputId + '"]');
+        if (el) el.textContent = name || '';
+    }
+
+    function bindPreview(input) {
+        var id = input.id;
+        var host = document.querySelector('[data-tbn-preview-host="' + id + '"]');
+        if (!host) return;
+        var pendingWrap = host.querySelector('[data-tbn-preview-pending-wrap]');
+        var pendingGrid = host.querySelector('[data-tbn-preview-pending-grid]');
+        var pendingFig = host.querySelector('[data-tbn-preview-pending]');
+        var pendingVid = host.querySelector('[data-tbn-preview-video]');
+        var isMulti = input.hasAttribute('data-tbn-multi');
+        var isVideo = input.accept && input.accept.indexOf('video') !== -1;
+
+        input.addEventListener('change', function () {
+            revokeAllForInput(id);
+            revokeByInput[id] = revokeByInput[id] || {};
+
+            var files = input.files ? Array.prototype.slice.call(input.files) : [];
+
+            if (isMulti && pendingGrid && pendingWrap) {
+                pendingGrid.innerHTML = '';
+                if (!files.length) {
+                    pendingWrap.hidden = true;
+                    setChosenName(id, '');
+                    return;
+                }
+                pendingWrap.hidden = false;
+                files.forEach(function (f, idx) {
+                    var url = URL.createObjectURL(f);
+                    revokeByInput[id][String(idx)] = url;
+                    var fig = document.createElement('figure');
+                    fig.className = 'tbn-media-preview tbn-media-preview--pending';
+                    var img = document.createElement('img');
+                    img.className = 'tbn-media-preview__img';
+                    img.alt = '';
+                    img.src = url;
+                    fig.appendChild(img);
+                    var cap = document.createElement('figcaption');
+                    cap.className = 'tbn-media-preview__label';
+                    cap.textContent = f.name;
+                    fig.appendChild(cap);
+                    pendingGrid.appendChild(fig);
+                });
+                var label = files.length === 1 ? files[0].name : (files.length + ' fichiers');
+                setChosenName(id, label);
+                return;
+            }
+
+            var f = files[0];
+            if (!f || !pendingFig) {
+                if (pendingFig) pendingFig.hidden = true;
+                setChosenName(id, '');
+                return;
+            }
+            setChosenName(id, f.name);
+            var url = URL.createObjectURL(f);
+            revokeByInput[id]['0'] = url;
+            pendingFig.hidden = false;
+            if (isVideo && pendingVid) {
+                pendingVid.src = url;
+                pendingVid.hidden = false;
+            } else if (host.querySelector('[data-tbn-preview-img]')) {
+                host.querySelector('[data-tbn-preview-img]').src = url;
+            }
+        });
+    }
+
+    document.querySelectorAll('input[type="file"][data-tbn-file-input]').forEach(bindPreview);
+
+    document.querySelectorAll('[data-tbn-dropzone]').forEach(function (zone) {
+        var inputId = zone.getAttribute('data-tbn-input');
+        var kind = zone.getAttribute('data-tbn-kind') || '';
+        var input = document.getElementById(inputId);
+        if (!input) return;
+
+        function activate() { zone.classList.add('is-dragover'); }
+        function deactivate() { zone.classList.remove('is-dragover'); }
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                activate();
+            });
+        });
+        zone.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            if (!zone.contains(e.relatedTarget)) deactivate();
+        });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            deactivate();
+            var files = e.dataTransfer && e.dataTransfer.files;
+            if (!files || !files.length) return;
+            var dt = new DataTransfer();
+            if (kind === 'image') {
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i].type && files[i].type.indexOf('image/') === 0) {
+                        dt.items.add(files[i]);
+                    }
+                }
+            } else {
+                dt.items.add(files[0]);
+            }
+            if (!dt.files.length) return;
+            input.files = dt.files;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        zone.addEventListener('click', function () {
+            input.click();
+        });
+        zone.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                input.click();
+            }
+        });
+    });
+})();
+</script>

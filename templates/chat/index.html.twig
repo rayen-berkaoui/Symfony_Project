@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chat — Tabaani Connect{% endblock %}
+
+{% block body %}
+<div class="tbn-chat-page">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        back_href: path('app_home'),
+        back_label: '← Retour',
+    } %}
+
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="flash flash-warning">{{ message }}</div>
+    {% endfor %}
+
+    <div class="tbn-chat-subbar">
+        <div class="tbn-chat-subbar__head">
+            <div class="tbn-chat-subbar__title">
+                <h1 class="tbn-page-title tbn-page-title--chat">Espace Chat</h1>
+            </div>
+            <p class="tbn-chat-subbar__online"><strong>{{ online_count }}</strong> connecté(s)</p>
+        </div>
+        <div class="tbn-chat-subbar__identity">
+            <div class="pseudo-bar pseudo-bar--chat">
+                {% if sessionUserKey %}
+                    <span>Connecté en tant que <strong>{{ sessionUserKey }}</strong></span>
+                {% else %}
+                    <span>Pour écrire dans le chat :</span>
+                {% endif %}
+                <form method="post" action="{{ path('app_chat_set_pseudo') }}" class="pseudo-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('pseudo_chat') }}">
+                    <label for="chat-bar-user-key" class="sr-only">Pseudo</label>
+                    <input id="chat-bar-user-key" type="text" name="user_key" value="{{ sessionUserKey }}" placeholder="votre pseudo" autocomplete="username">
+                    <button type="submit" class="btn btn-primary btn--sm">Enregistrer</button>
+                </form>
+            </div>
+            {% if sessionUserKey %}
+                <form method="post" action="{{ path('app_chat_leave') }}" class="tbn-inline-form tbn-chat-leave-form">
+                    <input type="hidden" name="_token" value="{{ csrf_token('chat_leave') }}">
+                    <button type="submit" class="btn btn-ghost btn--sm">Quitter le salon</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="tbn-chat-main">
+        <div id="chat-log" class="chat-log tbn-chat-log" aria-label="Fil de discussion">
+            {% for m in messages|reverse %}
+                <div class="chat-line" data-msg-id="{{ m.id }}">
+                    <div class="chat-meta"><strong>{{ m.userKey }}</strong> — {{ m.createdAt ? m.createdAt|date('d/m/Y H:i') : '—' }}</div>
+                    <div class="chat-body">{{ m.content }}</div>
+                </div>
+            {% else %}
+                <p class="tbn-muted tbn-chat-empty">Aucun message encore. Soyez le premier !</p>
+            {% endfor %}
+        </div>
+        <aside class="tbn-chat-sidebar" aria-label="Présence">
+            <div class="tbn-chat-sidebar__head">
+                <span aria-hidden="true">👥</span>
+                <span>En ligne</span>
+            </div>
+            <p class="tbn-chat-sidebar__body tbn-muted">Estimation sur les 30 dernières minutes : <strong class="tbn-gold-text">{{ online_count }}</strong></p>
+        </aside>
+    </div>
+
+    <footer class="tbn-chat-footer">
+        {{ form_start(form, { attr: { class: 'tbn-chat-footer__form' } }) }}
+            {% if not sessionUserKey %}
+                <p class="tbn-chat-footer__hint">Enregistrez votre pseudo dans la barre ci-dessus pour envoyer un message.</p>
+            {% endif %}
+            <div class="tbn-chat-footer__row">
+                {{ form_widget(form.content, {
+                    attr: { class: 'tbn-input tbn-chat-footer__input', placeholder: sessionUserKey ? 'Votre message…' : 'Enregistrez d’abord votre pseudo…', rows: 2 }
+                        |merge(sessionUserKey ? {} : { readonly: 'readonly' }),
+                }) }}
+                <button type="submit" class="btn btn-primary"{% if not sessionUserKey %} disabled{% endif %}>Envoyer</button>
+            </div>
+            {{ form_errors(form.content) }}
+        {{ form_end(form) }}
+    </footer>
+</div>
+{% endblock %}

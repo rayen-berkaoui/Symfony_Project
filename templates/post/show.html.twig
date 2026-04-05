@@ -1,0 +1,290 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Publication #{{ post.id }} — Tabaani Connect{% endblock %}
+
+{% block head_extra %}
+    {% set og_desc = post.content|striptags|replace({"\n": ' ', "\r": ' ', "\t": ' '})|trim %}
+    {% if og_desc|length > 200 %}
+        {% set og_desc = og_desc|slice(0, 200) ~ '…' %}
+    {% endif %}
+    <meta name="description" content="{{ og_desc|e('html_attr') }}">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ ('Publication #' ~ post.id ~ ' — Tabaani Connect')|e('html_attr') }}">
+    <meta property="og:description" content="{{ og_desc|e('html_attr') }}">
+    <meta property="og:url" content="{{ postPublicUrl|e('html_attr') }}">
+    {% set first_img = post.images|first %}
+    {% if first_img %}
+        {% set p0 = first_img.path %}
+        {% set og_img = (p0 starts with 'http://' or p0 starts with 'https://') ? p0 : absolute_url(asset(p0|trim('/'))) %}
+        <meta property="og:image" content="{{ og_img|e('html_attr') }}">
+    {% endif %}
+    <meta name="twitter:card" content="{{ first_img ? 'summary_large_image' : 'summary' }}">
+{% endblock %}
+
+{% block body %}
+<div class="connect-wrap connect-wrap--detail">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        back_href: path('app_post_index'),
+        back_label: '← Retour',
+        primary_href: path('app_post_new'),
+        primary_label: '+ Nouvelle publication',
+    } %}
+
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="flash flash-warning">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="flash flash-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="tbn-detail-head">
+        <div class="tbn-detail-head__titles">
+            <p class="tbn-kicker">Lecture</p>
+            <h1 class="tbn-page-title tbn-page-title--detail">Détails de la publication</h1>
+        </div>
+        <div class="tbn-detail-head__actions">
+            <a href="{{ path('app_post_edit', { id: post.id }) }}" class="btn btn-primary">Modifier</a>
+            <form method="post" action="{{ path('app_post_delete', { id: post.id }) }}" class="tbn-inline-form" onsubmit="return confirm('Supprimer cette publication ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="pseudo-bar">
+        {% if sessionUserKey %}
+            <span>Connecté en tant que <strong>{{ sessionUserKey }}</strong></span>
+        {% else %}
+            <span>Pour liker / partager :</span>
+        {% endif %}
+        <form method="post" action="{{ path('app_post_set_pseudo', { id: post.id }) }}" class="pseudo-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('pseudo' ~ post.id) }}">
+            <label for="pseudo-user-key" class="sr-only">Identifiant</label>
+            <input id="pseudo-user-key" type="text" name="user_key" value="{{ sessionUserKey }}" placeholder="votre pseudo" autocomplete="username">
+            <button type="submit" class="btn btn-primary btn--sm">Enregistrer</button>
+        </form>
+    </div>
+
+    <article class="post-card post-card--detail">
+        <header class="post-card__head">
+            <span class="tbn-post-badge">Post #{{ post.id }}</span>
+            <time class="post-card__time" datetime="{{ post.createdAt ? post.createdAt|date('c') : '' }}">
+                {{ post.createdAt ? post.createdAt|date('d/m/Y — H:i') : '—' }}
+                {% if post.updatedAt %}<span class="tbn-muted"> · modifié {{ post.updatedAt|date('d/m/Y H:i') }}</span>{% endif %}
+            </time>
+        </header>
+        <div class="tbn-post-body content-box content-box--in-card" dir="auto">{{ post.content }}</div>
+
+        {% if post.images|length > 0 or post.videoPath %}
+            <p class="tbn-detail-media-edit">
+                <a href="{{ path('app_post_edit', { id: post.id }) }}" class="btn btn-ghost btn--sm">Modifier texte, images ou vidéo</a>
+            </p>
+        {% endif %}
+
+        {% if post.images|length > 0 %}
+            <figure class="tbn-media-block tbn-media-block--gallery">
+                <figcaption class="tbn-media-label">Images ({{ post.images|length }})</figcaption>
+                <div class="tbn-post-gallery">
+                    {% for postImage in post.images %}
+                        {% set p = postImage.path %}
+                        {% set img_http = p starts with 'http://' or p starts with 'https://' %}
+                        {% set img_src = img_http ? p : asset(p|trim('/')) %}
+                        <div class="tbn-post-gallery__item">
+                            <div class="tbn-media-frame tbn-post-gallery__frame">
+                                <img class="tbn-media-img" src="{{ img_src }}" alt="Illustration {{ loop.index }} de la publication" loading="lazy">
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <details class="tbn-media-path">
+                    <summary>Chemins des fichiers (technique)</summary>
+                    {% for postImage in post.images %}
+                        <code class="tbn-media-path__code">{{ postImage.path }}</code>
+                    {% endfor %}
+                </details>
+            </figure>
+        {% endif %}
+
+        {% if post.videoPath %}
+            {% set vid_http = post.videoPath starts with 'http://' or post.videoPath starts with 'https://' %}
+            <figure class="tbn-media-block">
+                <figcaption class="tbn-media-label">Vidéo</figcaption>
+                {% if vid_http %}
+                    <div class="tbn-media-frame tbn-media-frame--video">
+                        <a href="{{ post.videoPath }}" class="btn btn-primary btn--sm" target="_blank" rel="noopener noreferrer">Ouvrir la vidéo</a>
+                    </div>
+                {% else %}
+                    <div class="tbn-media-frame tbn-media-frame--video">
+                        <video class="tbn-media-video" controls playsinline preload="metadata" src="{{ asset(post.videoPath|trim('/')) }}"></video>
+                    </div>
+                {% endif %}
+                <details class="tbn-media-path">
+                    <summary>Chemin du fichier (technique)</summary>
+                    <code class="tbn-media-path__code">{{ post.videoPath }}</code>
+                </details>
+            </figure>
+        {% endif %}
+    </article>
+
+    <div class="post-reactions post-reactions--center" aria-label="Réactions publication">
+        <form method="post" action="{{ path('app_post_react', { id: post.id }) }}" class="tbn-inline-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('react_post' ~ post.id) }}">
+            <input type="hidden" name="type" value="like">
+            <button type="submit" class="btn btn-react btn-react--like{% if userPostReaction == 'LIKE' %} is-like-active{% endif %}">👍 {{ postLikesCount }}</button>
+        </form>
+        <form method="post" action="{{ path('app_post_react', { id: post.id }) }}" class="tbn-inline-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('react_post' ~ post.id) }}">
+            <input type="hidden" name="type" value="dislike">
+            <button type="submit" class="btn btn-react btn-react--dislike{% if userPostReaction == 'DISLIKE' %} is-dislike-active{% endif %}">👎 {{ postDislikesCount }}</button>
+        </form>
+        <a class="btn btn-react btn-react--share" href="#tbn-share-section">Partager ({{ shareCount }})</a>
+    </div>
+
+    <section class="share-section tbn-share-section--premium" id="tbn-share-section" aria-label="Partages">
+        <h2 class="tbn-share-section__title">Partager</h2>
+        <p class="share-hint">Ouvrez le réseau souhaité pour envoyer le lien. Avec un identifiant enregistré, le partage peut être journalisé.</p>
+        {% include '_partials/tbn_share_bar.html.twig' with {
+            waText: waText,
+            postPublicUrl: postPublicUrl,
+            sharePlain: sharePlain,
+            mailSubject: mailSubject,
+            mailBody: mailBody,
+        } only %}
+        <p class="share-copy-feedback" id="share-copy-feedback" role="status" aria-live="polite"></p>
+        {% if recentShares is not empty %}
+            <p class="tbn-share-recent-title">Derniers partages</p>
+            <ul class="share-list">
+                {% for s in recentShares %}
+                    <li><strong>{{ s.userKey }}</strong> — {{ s.platform }} — {{ s.createdAt ? s.createdAt|date('d/m/Y H:i') : '—' }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="comments-section comments-section--premium">
+        <h2 class="tbn-comments-title">Commentaires</h2>
+
+        <div class="tbn-comment-composer tbn-comment-composer--premium">
+            {{ form_start(commentForm, { attr: { class: 'comment-form comment-form--premium' } }) }}
+                {{ form_errors(commentForm.userKey) }}
+                {{ form_errors(commentForm.content) }}
+                <div class="tbn-comment-premium__grid">
+                    <div class="tbn-comment-premium__pseudo">
+                        <span class="tbn-comment-premium__pseudo-icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'user' }) }}</span>
+                        {{ form_widget(commentForm.userKey, {
+                            attr: {
+                                placeholder: 'Pseudo…',
+                                class: 'tbn-input tbn-comment-premium__input',
+                                autocomplete: 'username',
+                            },
+                        }) }}
+                    </div>
+                    <div class="tbn-comment-premium__message">
+                        {{ form_widget(commentForm.content, {
+                            attr: {
+                                placeholder: 'Écrire un commentaire…',
+                                rows: 3,
+                                class: 'tbn-input tbn-comment-premium__textarea',
+                            },
+                        }) }}
+                    </div>
+                    <div class="tbn-comment-premium__submit">
+                        <button type="submit" class="btn btn-primary tbn-comment-premium__btn">Publier</button>
+                    </div>
+                </div>
+            {{ form_end(commentForm) }}
+        </div>
+
+        {% for comment in post.comments %}
+            <article class="comment-card">
+                <p class="comment-meta">
+                    <span class="comment-card__user" aria-hidden="true">👤</span>
+                    <strong>{{ comment.userKey }}</strong>
+                    — {{ comment.createdAt ? comment.createdAt|date('d/m/Y H:i') : '—' }}
+                    {% if comment.updatedAt %}<span class="tbn-muted">(modifié {{ comment.updatedAt|date('d/m/Y H:i') }})</span>{% endif %}
+                </p>
+                <p class="comment-body">{{ comment.content }}</p>
+                <div class="comment-actions" aria-label="Actions commentaire">
+                    <form method="post" action="{{ path('app_comment_react', { id: post.id, commentId: comment.id }) }}" class="tbn-inline-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('react_comment' ~ comment.id) }}">
+                        <input type="hidden" name="type" value="like">
+                        <button type="submit" class="btn btn-react btn--sm btn-react--like{% if commentReactions[comment.id] ?? null == 'LIKE' %} is-like-active{% endif %}">👍 {{ comment.likesCount }}</button>
+                    </form>
+                    <form method="post" action="{{ path('app_comment_react', { id: post.id, commentId: comment.id }) }}" class="tbn-inline-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('react_comment' ~ comment.id) }}">
+                        <input type="hidden" name="type" value="dislike">
+                        <button type="submit" class="btn btn-react btn--sm btn-react--dislike{% if commentReactions[comment.id] ?? null == 'DISLIKE' %} is-dislike-active{% endif %}">👎 {{ comment.dislikesCount }}</button>
+                    </form>
+                    <a href="{{ path('app_comment_edit', { id: post.id, commentId: comment.id }) }}" class="btn btn-ghost btn--sm">Modifier</a>
+                    <form method="post" action="{{ path('app_comment_delete', { id: post.id, commentId: comment.id }) }}" class="tbn-inline-form" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                        <button type="submit" class="btn btn-danger btn--sm">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <p class="tbn-comments-empty" role="status">Aucun commentaire pour l’instant.</p>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    (function () {
+        var shareLogUrl = {{ path('app_post_share_log', { id: post.id })|json_encode|raw }};
+        var csrf = {{ csrf_token('share_log' ~ post.id)|json_encode|raw }};
+        var publicUrl = {{ postPublicUrl|json_encode|raw }};
+        var shareTitle = {{ ('Publication #' ~ post.id ~ ' — Tabaani Connect')|json_encode|raw }};
+        var shareText = {{ sharePlain|json_encode|raw }};
+
+        function logShare(platform) {
+            var fd = new FormData();
+            fd.append('_token', csrf);
+            fd.append('platform', platform);
+            fetch(shareLogUrl, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' }).catch(function () {});
+        }
+
+        document.querySelectorAll('a[data-log-share]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                var p = el.getAttribute('data-log-share');
+                if (p) {
+                    logShare(p);
+                }
+            });
+        });
+
+        var copyBtn = document.getElementById('share-copy-btn');
+        var copyFb = document.getElementById('share-copy-feedback');
+        if (copyBtn && copyFb) {
+            copyBtn.addEventListener('click', function () {
+                if (!navigator.clipboard || !navigator.clipboard.writeText) {
+                    copyFb.textContent = 'Copie non disponible — copiez l’URL depuis la barre d’adresse.';
+                    return;
+                }
+                navigator.clipboard.writeText(publicUrl).then(function () {
+                    logShare('copie_lien');
+                    copyFb.textContent = 'Lien copié dans le presse-papiers.';
+                    setTimeout(function () { copyFb.textContent = ''; }, 3500);
+                }).catch(function () {
+                    copyFb.textContent = 'Copie impossible — sélectionnez le lien dans la barre d’adresse.';
+                });
+            });
+        }
+
+        var nativeBtn = document.getElementById('share-native-btn');
+        if (nativeBtn && navigator.share) {
+            nativeBtn.hidden = false;
+            nativeBtn.addEventListener('click', function () {
+                navigator.share({ title: shareTitle, text: shareText, url: publicUrl }).then(function () {
+                    logShare('native');
+                }).catch(function () {});
+            });
+        }
+    })();
+    </script>
+{% endblock %}
