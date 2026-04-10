@@ -875,4 +875,95 @@
     updateSummary();
 })();
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const equipementInput = document.getElementById('{{ fieldIds.equipementInclus }}');
+    const categoryPills = document.querySelectorAll('[data-category-pill]');
+    const categoryField = document.getElementById('{{ fieldIds.categorie }}');
+
+    let suggestionsContainer = document.getElementById('equipement-suggestions');
+    if (!suggestionsContainer && equipementInput) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'equipement-suggestions';
+        suggestionsContainer.style.marginTop = '10px';
+        suggestionsContainer.style.fontSize = '0.9em';
+        equipementInput.parentNode.appendChild(suggestionsContainer);
+    }
+
+    const suggestionsMap = {
+        'sport': ['Casque', 'Baudrier', 'Gilets de sauvetage', 'Vélos', 'Gants', 'Gourde'],
+        'culture': ['Audio-guide', 'Brochure', 'Billet coupe-file', 'Guide papier', 'Carte de la ville'],
+        'bienetre': ['Serviette', 'Peignoir', 'Tongs', 'Huiles essentielles', 'Thé', 'Tapis de yoga', 'Savon'],
+        'aventure': ['Jumelles', 'Carte de randonnée', 'Bâtons de marche', 'Anti-moustique', 'Lampe de poche'],
+        'gastronomie': ['Tablier', 'Ustensiles de cuisine', 'Ingrédients', 'Fiches recettes', 'Boissons', 'Dégustation'],
+        'autre': ['Bouteille d''eau', 'Sac à dos']
+    };
+
+    function updateSuggestions(selectedCat) {
+        if (!equipementInput || !suggestionsContainer) return;
+        
+        // Use normalized names directly mapping to the suggestionsMap
+        let normalizedCat = (selectedCat || '').toLowerCase();
+        
+        const currentEquipments = new Set(
+            equipementInput.value.split(',').map(e => e.trim()).filter(e => e.length > 0)
+        );
+
+        suggestionsContainer.innerHTML = '';
+        
+        if (suggestionsMap[normalizedCat]) {
+            const labelNode = document.createElement('div');
+            labelNode.textContent = 'Matériel suggéré (cliquez pour ajouter):';
+            labelNode.style.fontWeight = 'bold';
+            labelNode.style.marginBottom = '8px';
+            labelNode.style.color = 'var(--text)';
+            suggestionsContainer.appendChild(labelNode);
+
+            suggestionsMap[normalizedCat].forEach(item => {
+                const badge = document.createElement('span');
+                badge.textContent = item;
+                badge.style.display = 'inline-block';
+                badge.style.padding = '4px 12px';
+                badge.style.margin = '4px';
+                badge.style.borderRadius = 'var(--radius-sm)';
+                badge.style.cursor = 'pointer';
+                badge.style.border = '1px solid var(--accent)';
+                badge.style.color = currentEquipments.has(item) ? '#000' : 'var(--text)';
+                badge.style.backgroundColor = currentEquipments.has(item) ? 'var(--accent)' : 'transparent';
+                badge.style.transition = 'all 0.2s';
+                
+                badge.addEventListener('click', () => {
+                    const equipList = equipementInput.value.split(',').map(e => e.trim()).filter(e => e.length > 0);
+                    const idx = equipList.indexOf(item);
+                    if (idx === -1) {
+                        equipList.push(item);
+                        badge.style.backgroundColor = 'var(--accent)';
+                        badge.style.color = '#000';
+                    } else {
+                        equipList.splice(idx, 1);
+                        badge.style.backgroundColor = 'transparent';
+                        badge.style.color = 'var(--text)';
+                    }
+                    equipementInput.value = equipList.join(', ');
+                    equipementInput.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                suggestionsContainer.appendChild(badge);
+            });
+        }
+    }
+
+    categoryPills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+            const value = pill.getAttribute('data-category-pill') || '';
+            updateSuggestions(value);
+        });
+    });
+
+    if (categoryField && categoryField.value) {
+        updateSuggestions(categoryField.value);
+    }
+});
+</script>
 {% endblock %}

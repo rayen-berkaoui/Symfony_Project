@@ -3,6 +3,7 @@
 {% block title %}Nouvel Etablissement{% endblock %}
 
 {% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     :root {
         --bg: #0d0d0d;
@@ -152,6 +153,24 @@
         min-width: 0;
     }
 
+    .field ul {
+        margin: 4px 0 0 0;
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .field ul li, .text-danger {
+        color: var(--danger);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .is-invalid {
+        border-color: var(--danger) !important;
+        box-shadow: 0 0 0 2px rgba(224, 91, 91, 0.2) !important;
+    }
+
     .field.full { grid-column: 1 / -1; }
 
     label {
@@ -205,43 +224,6 @@
         display: grid;
         grid-template-columns: 110px 1fr;
         gap: 10px;
-    }
-
-    .map-shell {
-        position: relative;
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        overflow: hidden;
-        background: #111;
-    }
-
-    .map-picker {
-        height: 280px;
-        position: relative;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
-            radial-gradient(circle at 30% 30%, rgba(245, 197, 24, 0.18), transparent 36%),
-            #0f0f0f;
-        cursor: crosshair;
-    }
-
-    .map-pin {
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        background: var(--accent);
-        border-radius: 50% 50% 50% 0;
-        transform: translate(-50%, -100%) rotate(-45deg);
-        box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.25);
-    }
-
-    .map-search-overlay {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 10px;
-        padding: 12px;
-        background: rgba(0, 0, 0, 0.45);
-        border-bottom: 1px solid var(--border);
     }
 
     .map-help,
@@ -400,7 +382,6 @@
         .grid-2,
         .grid-3,
         .phone-input-group { grid-template-columns: 1fr; }
-        .map-search-overlay { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -498,17 +479,11 @@
 
             <div class="panel-section">
                 <div class="section-title">Localisation carte</div>
-                <p class="map-help">Cliquez sur la carte pour sélectionner l'emplacement.</p>
-                <div class="map-shell">
-                    <div class="map-search-overlay">
-                        <input id="map-search-input" type="text" placeholder="Rechercher un lieu..." autocomplete="off">
-                        <button type="button" class="btn" id="map-search-btn">Chercher</button>
-                    </div>
-                    <div id="map-picker" class="map-picker" aria-label="Carte de localisation"></div>
-                </div>
-                <p class="map-help" id="map-status">Aucune position sélectionnée.</p>
+                <p class="map-help">La carte se mettra à jour automatiquement en fonction de l'adresse renseignée.</p>
+                <div id="map-picker" style="height: 400px; width: 100%; z-index: 1;"></div>
+                <p class="map-help" id="map-status" style="margin-top: 8px;">Aucune position sélectionnée.</p>
 
-                <div class="grid-2" style="margin-top: 12px;">
+                <div class="grid-2" style="margin-top: 12px; display: none;">
                     <div class="field">
                         {{ form_label(form.latitude) }}
                         {{ form_widget(form.latitude) }}
@@ -650,5 +625,6 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {{ include('etablissement/_form_scripts.html.twig') }}
 {% endblock %}

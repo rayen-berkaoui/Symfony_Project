@@ -27,9 +27,97 @@
         {{ form_row(form.ageMin) }}
         {{ form_row(form.adresseDepart) }}
     </div>
-    {{ form_row(form.equipementInclus) }}
+    
+    <div class="equipement-container">
+        {{ form_row(form.equipementInclus) }}
+        <div id="equipement-suggestions" class="mt-2 text-sm"></div>
+    </div>
+    
     {{ form_row(form.conditionsAnnulation) }}
     {{ form_row(form.description) }}
 
     <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorieSelect = document.getElementById('activite_categorie');
+    const equipementInput = document.getElementById('equipement_inclus_input');
+    const suggestionsContainer = document.getElementById('equipement-suggestions');
+
+    const suggestionsMap = {
+        'Sport & Aventure': ['Casque', 'Baudrier', 'Gilets de sauvetage', 'V�los', 'Gants', 'Bouteille d\'eau', 'Trousse de secours'],
+        'Culture & Histoire': ['Audio-guide', 'Brochure', 'Billet coupe-file', 'Guide papier', 'Carte de la ville'],
+        'Bien-�tre & D�tente': ['Serviette', 'Peignoir', 'Tongs', 'Huiles essentielles', 'Th�', 'Tapis de yoga', 'Savon'],
+        'Gastronomie': ['Tablier', 'Ustensiles de cuisine', 'Ingr�dients', 'Fiches recettes', 'Boissons', 'D�gustation'],
+        'Nature & Plein air': ['Jumelles', 'Carte de randonn�e', 'B�tons de marche', 'Anti-moustique', 'Lampe de poche', 'Gourde']
+    };
+
+    function updateSuggestions() {
+        if (!categorieSelect || !equipementInput || !suggestionsContainer) return;
+        
+        const selectedCat = categorieSelect.options[categorieSelect.selectedIndex]?.text || categorieSelect.value;
+        const currentEquipments = new Set(
+            equipementInput.value.split(',').map(e => e.trim()).filter(e => e.length > 0)
+        );
+
+        suggestionsContainer.innerHTML = '';
+        
+        if (suggestionsMap[selectedCat]) {
+            const labelNode = document.createElement('span');
+            labelNode.textContent = 'Mat�riel sugg�r� (cliquez pour ajouter): ';
+            labelNode.style.fontWeight = 'bold';
+            labelNode.style.display = 'block';
+            labelNode.style.marginBottom = '5px';
+            suggestionsContainer.appendChild(labelNode);
+
+            suggestionsMap[selectedCat].forEach(item => {
+                const badge = document.createElement('span');
+                badge.textContent = item;
+                badge.style.display = 'inline-block';
+                badge.style.padding = '0.3rem 0.8rem';
+                badge.style.margin = '0.2rem';
+                badge.style.borderRadius = '20px';
+                badge.style.cursor = 'pointer';
+                badge.style.border = '1px solid #0056b3';
+                badge.style.fontWeight = 'bold';
+                badge.style.transition = 'all 0.2s ease-in-out';
+                badge.style.userSelect = 'none';
+                
+                if (currentEquipments.has(item)) {
+                    badge.style.backgroundColor = '#0056b3';
+                    badge.style.color = '#fff';
+                } else {
+                    badge.style.backgroundColor = '#f8f9fa';
+                    badge.style.color = '#0056b3';
+                }
+
+                badge.addEventListener('click', () => {
+                    const equipList = equipementInput.value.split(',').map(e => e.trim()).filter(e => e.length > 0);
+                    const idx = equipList.indexOf(item);
+                    if (idx === -1) {
+                        equipList.push(item);
+                        badge.style.backgroundColor = '#0056b3';
+                        badge.style.color = '#fff';
+                    } else {
+                        equipList.splice(idx, 1);
+                        badge.style.backgroundColor = '#f8f9fa';
+                        badge.style.color = '#0056b3';
+                    }
+                    equipementInput.value = equipList.join(', ');
+                });
+
+                suggestionsContainer.appendChild(badge);
+            });
+        }
+    }
+
+    if (categorieSelect && equipementInput && suggestionsContainer) {
+        categorieSelect.addEventListener('change', updateSuggestions);
+        setTimeout(updateSuggestions, 100);
+    }
+});
+</script>

@@ -6,11 +6,14 @@ use App\Entity\Activite;
 use App\Form\ActiviteType;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/activite')]
 class ActiviteController extends AbstractController
@@ -63,6 +66,7 @@ class ActiviteController extends AbstractController
             ->setMaxResults($perPage);
 
         $activites = $qb->getQuery()->getResult();
+        $imageUrls = $this->buildGalleryImageUrls($activites, $entityManager);
 
         $categories = $entityManager
             ->createQuery('SELECT DISTINCT a.categorie FROM App\\Entity\\Activite a WHERE a.categorie IS NOT NULL ORDER BY a.categorie ASC')
@@ -70,6 +74,7 @@ class ActiviteController extends AbstractController
 
         return $this->render('activite/index.html.twig', [
             'activites' => $activites,
+            'imageUrls' => $imageUrls,
             'filters' => [
                 'q' => $query,
                 'statut' => $statut,
@@ -84,6 +89,121 @@ class ActiviteController extends AbstractController
                 'totalPages' => $totalPages,
             ],
         ]);
+    }
+
+    #[Route('/gallery-image/{idImage}', name: 'app_activite_gallery_image', methods: ['GET'])]
+    public function galleryImage(int $idImage, EntityManagerInterface $entityManager): Response
+    {
+        $row = $entityManager->getConnection()->fetchAssociative(
+            'SELECT image_path FROM activite_image WHERE idImage = :id LIMIT 1',
+            ['id' => $idImage]
+        );
+
+        if (!$row || !isset($row['image_path'])) {
+            throw $this->createNotFoundException('Image not found.');
+        }
+
+        $path = $this->resolveActivityImagePath((string) $row['image_path']);
+        if ($path === null || !is_file($path)) {
+            throw $this->createNotFoundException('Image file missing on disk.');
+        }
+
+        $response = new BinaryFileResponse($path);
+        $response->headers->set('Content-Type', $this->guessMimeTypeFromPath($path));
+        $response->setContentDisposition('inline', basename($path));
+
+        return $response;
+    }
+
+    /**
+     * @param list<Activite> $activites
+     * @return array<int, string>
+     */
+    private function buildGalleryImageUrls(array $activites, EntityManagerInterface $entityManager): array
+    {
+        $ids = [];
+        foreach ($activites as $activite) {
+            $id = $activite->getIdActivite();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $entityManager->getConnection()->executeQuery(
+            'SELECT idActivite, idImage
+             FROM activite_image
+             WHERE idActivite IN (?)
+             ORDER BY idActivite ASC, ordre_affichage ASC, idImage ASC',
+            [$ids],
+            [ArrayParameterType::INTEGER]
+        )->fetchAllAssociative();
+
+        $imageUrls = [];
+        foreach ($rows as $row) {
+            $idActivite = isset($row['idActivite']) ? (int) $row['idActivite'] : 0;
+            $idImage = isset($row['idImage']) ? (int) $row['idImage'] : 0;
+
+            if ($idActivite <= 0 || $idImage <= 0 || isset($imageUrls[$idActivite])) {
+                continue;
+            }
+
+            $imageUrls[$idActivite] = $this->generateUrl(
+                'app_activite_gallery_image',
+                ['idImage' => $idImage],
+                UrlGeneratorInterface::ABSOLUTE_PATH
+            );
+        }
+
+        return $imageUrls;
+    }
+
+    private function resolveActivityImagePath(string $rawPath): ?string
+    {
+        if ($rawPath === '') {
+            return null;
+        }
+
+        if (is_file($rawPath)) {
+            return $rawPath;
+        }
+
+        $projectDir = dirname(__DIR__, 2);
+        $normalized = ltrim(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $rawPath), DIRECTORY_SEPARATOR);
+
+        $candidates = [
+            $projectDir.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'activites'.DIRECTORY_SEPARATOR.$normalized,
+            $projectDir.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'activities'.DIRECTORY_SEPARATOR.$normalized,
+            $projectDir.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$normalized,
+            $projectDir.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'activites'.DIRECTORY_SEPARATOR.$normalized,
+            $projectDir.DIRECTORY_SEPARATOR.'public'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.$normalized,
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function guessMimeTypeFromPath(string $path): string
+    {
+        $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'bmp' => 'image/bmp',
+            'svg' => 'image/svg+xml',
+            default => 'application/octet-stream',
+        };
     }
 
     #[Route('/dashboard', name: 'app_activite_dashboard', methods: ['GET'])]
@@ -174,7 +294,7 @@ class ActiviteController extends AbstractController
         return $this->render('activite/new.html.twig', [
             'activite' => $activite,
             'form' => $form->createView(),
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/success/create', name: 'app_activite_create_success', methods: ['GET'])]
@@ -296,7 +416,7 @@ class ActiviteController extends AbstractController
         return $this->render('activite/edit.html.twig', [
             'activite' => $activite,
             'form' => $form->createView(),
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/{idActivite}', name: 'app_activite_delete', methods: ['POST'])]

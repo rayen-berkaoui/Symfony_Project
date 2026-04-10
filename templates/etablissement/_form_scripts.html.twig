@@ -14,8 +14,7 @@
             const aiButton = document.getElementById('ai-description-btn');
             const imageInput = document.getElementById('etablissement_images');
             const imagePreview = document.getElementById('image-preview');
-            const mapSearchInput = document.getElementById('map-search-input');
-            const mapSearchBtn = document.getElementById('map-search-btn');
+            const nomInput = document.getElementById('etablissement_nom');
 
             const tunisiaBounds = {
                 latMin: 30.0,
@@ -78,7 +77,8 @@
                 'Kébili': ['Kébili', 'Douz', 'Souk Lahad'],
             };
 
-            let pin = null;
+            let leafletMap = null;
+            let leafletMarker = null;
 
             const normalize = function (value) {
                 return (value || '')
@@ -92,31 +92,6 @@
                 return Math.min(Math.max(value, min), max);
             };
 
-            const ensurePin = function () {
-                if (!mapContainer || pin) {
-                    return;
-                }
-
-                pin = document.createElement('span');
-                pin.className = 'map-pin';
-                pin.setAttribute('aria-hidden', 'true');
-                mapContainer.appendChild(pin);
-            };
-
-            const renderPin = function (lat, lng) {
-                if (!mapContainer || Number.isNaN(lat) || Number.isNaN(lng)) {
-                    return;
-                }
-
-                ensurePin();
-
-                const x = ((lng - tunisiaBounds.lngMin) / (tunisiaBounds.lngMax - tunisiaBounds.lngMin)) * 100;
-                const y = ((tunisiaBounds.latMax - lat) / (tunisiaBounds.latMax - tunisiaBounds.latMin)) * 100;
-
-                pin.style.left = clamp(x, 0, 100) + '%';
-                pin.style.top = clamp(y, 0, 100) + '%';
-            };
-
             const setStatus = function (text) {
                 if (mapStatus) {
                     mapStatus.textContent = text;
@@ -128,18 +103,19 @@
                     return;
                 }
 
-                const safeLat = clamp(lat, tunisiaBounds.latMin, tunisiaBounds.latMax);
-                const safeLng = clamp(lng, tunisiaBounds.lngMin, tunisiaBounds.lngMax);
+                if (latInput) latInput.value = lat.toFixed(7);
+                if (lngInput) lngInput.value = lng.toFixed(7);
 
-                if (latInput) {
-                    latInput.value = safeLat.toFixed(7);
-                }
-                if (lngInput) {
-                    lngInput.value = safeLng.toFixed(7);
+                if (leafletMap) {
+                    if (!leafletMarker) {
+                        leafletMarker = L.marker([lat, lng]).addTo(leafletMap);
+                    } else {
+                        leafletMarker.setLatLng([lat, lng]);
+                    }
+                    leafletMap.setView([lat, lng], leafletMap.getZoom() < 10 ? 10 : leafletMap.getZoom());
                 }
 
-                renderPin(safeLat, safeLng);
-                setStatus('Position mise a jour depuis ' + source + ': ' + safeLat.toFixed(5) + ', ' + safeLng.toFixed(5));
+                setStatus('Position mise a jour depuis ' + source + ': ' + lat.toFixed(5) + ', ' + lng.toFixed(5));
             };
 
             const inferGovernorateFromCity = function (cityValue) {
@@ -289,7 +265,7 @@
                     if (cityInput) {
                         cityInput.value = cityMatch.city;
                     }
-                    applyCityToMap();
+                    autoMapSearch();
                 };
 
                 addressInput.addEventListener('input', function () {
@@ -306,18 +282,20 @@
             };
 
             const initVirtualMap = function () {
-                if (!mapContainer) {
+                if (!mapContainer || !window.L) {
                     return;
                 }
 
-                mapContainer.addEventListener('click', function (event) {
-                    const rect = mapContainer.getBoundingClientRect();
-                    const xRatio = clamp((event.clientX - rect.left) / rect.width, 0, 1);
-                    const yRatio = clamp((event.clientY - rect.top) / rect.height, 0, 1);
+                leafletMap = L.map('map-picker');
 
-                    const lng = tunisiaBounds.lngMin + (xRatio * (tunisiaBounds.lngMax - tunisiaBounds.lngMin));
-                    const lat = tunisiaBounds.latMax - (yRatio * (tunisiaBounds.latMax - tunisiaBounds.latMin));
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(leafletMap);
 
+                leafletMap.on('click', function (e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
                     setCoordinates(lat, lng, 'un clic carte');
                 });
 
@@ -325,10 +303,11 @@
                 const currentLng = parseFloat(lngInput ? lngInput.value : '');
 
                 if (!Number.isNaN(currentLat) && !Number.isNaN(currentLng)) {
-                    renderPin(currentLat, currentLng);
+                    leafletMap.setView([currentLat, currentLng], 12);
+                    leafletMarker = L.marker([currentLat, currentLng]).addTo(leafletMap);
                     setStatus('Position existante chargee.');
                 } else {
-                    setCoordinates(34.0, 9.0, 'la position par defaut');
+                    leafletMap.setView([33.8869, 9.5375], 6);
                 }
 
                 const updateFromManualInputs = function () {
@@ -347,43 +326,55 @@
                 }
             };
 
-            if (mapSearchInput && mapSearchBtn) {
-                const runMapSearch = function () {
-                    const query = mapSearchInput.value.trim();
-                    if (!query) {
+            const autoMapSearch = function () {
+                const parts = [];
+                if (addressInput && addressInput.value.trim()) parts.push(addressInput.value.trim());
+                if (cityInput && cityInput.value.trim()) parts.push(cityInput.value.trim());
+                if (governorateInput && governorateInput.value.trim()) parts.push(governorateInput.value.trim());
+
+                if (parts.length === 0) return;
+                
+                parts.push('Tunisia');
+                
+                const addressQuery = parts.join(' ');
+                let queriesToTry = [];
+                
+                if (nomInput && nomInput.value.trim()) {
+                    queriesToTry.push(nomInput.value.trim() + ' ' + addressQuery);
+                }
+                queriesToTry.push(addressQuery);
+
+                const tryNextQuery = function(index) {
+                    if (index >= queriesToTry.length) {
+                        setStatus('Lieu non trouvé.');
+                        // Fallback to estimated city coordinates
+                        applyCityToMap();
                         return;
                     }
-
-                    const match = findCity(query);
-                    if (!match) {
-                        setStatus('Lieu non trouve localement. Essaie avec une ville tunisienne.');
-                        return;
-                    }
-
-                    if (governorateInput) {
-                        governorateInput.value = match.governorate;
-                    }
-                    rebuildCityOptions();
-                    if (cityInput) {
-                        cityInput.value = match.city;
-                    }
-
-                    const estimate = estimateCityCoordinates(match.governorate, match.city, match.index);
-                    setCoordinates(estimate.lat, estimate.lng, 'la recherche locale');
-
-                    if (addressInput && !addressInput.value.trim()) {
-                        addressInput.value = match.city + ', ' + match.governorate + ', Tunisie';
-                    }
+                    
+                    const query = queriesToTry[index];
+                    setStatus('Recherche automatique en cours: ' + query);
+                    
+                    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const result = data[0];
+                                setCoordinates(parseFloat(result.lat), parseFloat(result.lon), 'la recherche automatique');
+                            } else {
+                                tryNextQuery(index + 1);
+                            }
+                        })
+                        .catch(err => {
+                            tryNextQuery(index + 1);
+                        });
                 };
+                
+                tryNextQuery(0);
+            };
 
-                mapSearchBtn.addEventListener('click', runMapSearch);
-                mapSearchInput.addEventListener('keydown', function (event) {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        runMapSearch();
-                    }
-                });
-            }
+            if (nomInput) nomInput.addEventListener('blur', autoMapSearch);
+            if (addressInput) addressInput.addEventListener('blur', autoMapSearch);
 
             if (governorateInput && cityInput && !governorateInput.value && cityInput.value) {
                 const inferredGovernorate = inferGovernorateFromCity(cityInput.value);
@@ -408,10 +399,10 @@
                         cityInput.value = firstCity;
                     }
 
-                    applyCityToMap();
+                    autoMapSearch();
                 });
 
-                cityInput.addEventListener('change', applyCityToMap);
+                cityInput.addEventListener('change', autoMapSearch);
             }
 
             if (scheduleMode && scheduleInput) {

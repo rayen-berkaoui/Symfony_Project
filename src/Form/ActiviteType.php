@@ -22,7 +22,17 @@ class ActiviteType extends AbstractType
         $builder
             ->add('nomActivite', TextType::class, ['label' => 'Nom de l\'activité'])
             ->add('description', TextareaType::class, ['required' => false])
-            ->add('categorie', TextType::class, ['required' => false])
+            ->add('categorie', ChoiceType::class, [
+                'choices' => [
+                    'Sport' => 'sport',
+                    'Culture / Art' => 'culture',
+                    'Bien-être / Spa' => 'bienetre',
+                    'Aventure / Nature' => 'aventure',
+                    'Gastronomie' => 'gastronomie',
+                    'Autre' => 'autre'
+                ],
+                'required' => false
+            ])
             ->add('duree', IntegerType::class, ['required' => false, 'label' => 'Durée (en minutes)'])
             ->add('niveau', ChoiceType::class, [
                 'choices' => [
@@ -40,8 +50,19 @@ class ActiviteType extends AbstractType
             ->add('placesDispo', IntegerType::class, ['required' => false])
             ->add('adresseDepart', TextType::class, ['required' => false])
             ->add('ageMin', IntegerType::class, ['required' => false])
-            ->add('equipementInclus', TextType::class, ['required' => false])
-            ->add('conditionsAnnulation', TextType::class, ['required' => false])
+            ->add('equipementInclus', TextType::class, [
+                'required' => false,
+                'attr' => ['class' => 'equipement-mots-cles', 'id' => 'equipement_inclus_input']
+            ])
+            ->add('conditionsAnnulation', ChoiceType::class, [
+                'choices' => [
+                    'Gratuite (24h avant)' => 'Gratuite (24h avant)',
+                    'Modérée (5 jours avant)' => 'Modérée (5 jours avant)',
+                    'Stricte (7 jours avant)' => 'Stricte (7 jours avant)',
+                    'Non remboursable' => 'Non remboursable'
+                ],
+                'required' => false
+            ])
             ->add('statut', ChoiceType::class, [
                 'choices' => [
                     'Disponible' => 'disponible',

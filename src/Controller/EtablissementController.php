@@ -6,11 +6,15 @@ use App\Entity\Etablissement;
 use App\Form\EtablissementType;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/etablissement')]
 class EtablissementController extends AbstractController
@@ -111,6 +115,7 @@ class EtablissementController extends AbstractController
             ->setMaxResults($perPage);
 
         $etablissements = $qb->getQuery()->getResult();
+        $imageUrls = $this->buildGalleryImageUrls($etablissements, $entityManager);
 
         $types = $entityManager
             ->createQuery('SELECT DISTINCT e.type FROM App\\Entity\\Etablissement e WHERE e.type IS NOT NULL ORDER BY e.type ASC')
@@ -126,6 +131,7 @@ class EtablissementController extends AbstractController
 
         return $this->render('etablissement/index.html.twig', [
             'etablissements' => $etablissements,
+            'imageUrls' => $imageUrls,
             'filters' => [
                 'q' => $query,
                 'type' => $type,
@@ -144,6 +150,77 @@ class EtablissementController extends AbstractController
                 'totalPages' => $totalPages,
             ],
         ]);
+    }
+
+    #[Route('/gallery-image/{idImage}', name: 'app_etablissement_gallery_image', methods: ['GET'])]
+    public function galleryImage(int $idImage, EntityManagerInterface $entityManager): Response
+    {
+        $row = $entityManager->getConnection()->fetchAssociative(
+            'SELECT image_path FROM etablissement_image WHERE idImage = :id LIMIT 1',
+            ['id' => $idImage]
+        );
+
+        if (!$row || !isset($row['image_path'])) {
+            throw $this->createNotFoundException('Image not found.');
+        }
+
+        $path = (string) $row['image_path'];
+        if (!is_file($path)) {
+            throw $this->createNotFoundException('Image file missing on disk.');
+        }
+
+        $response = new BinaryFileResponse($path);
+        $mimeType = $this->guessMimeTypeFromPath($path);
+        $response->headers->set('Content-Type', $mimeType);
+        $response->setContentDisposition('inline', basename($path));
+
+        return $response;
+    }
+
+    /**
+     * @param list<Etablissement> $etablissements
+     * @return array<int, string>
+     */
+    private function buildGalleryImageUrls(array $etablissements, EntityManagerInterface $entityManager): array
+    {
+        $ids = [];
+        foreach ($etablissements as $etablissement) {
+            $id = $etablissement->getIdEtablissement();
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = $entityManager->getConnection()->executeQuery(
+            'SELECT idEtablissement, idImage
+             FROM etablissement_image
+             WHERE idEtablissement IN (?)
+             ORDER BY idEtablissement ASC, ordre_affichage ASC, idImage ASC',
+            [$ids],
+            [ArrayParameterType::INTEGER]
+        )->fetchAllAssociative();
+
+        $imageUrls = [];
+        foreach ($rows as $row) {
+            $idEtablissement = isset($row['idEtablissement']) ? (int) $row['idEtablissement'] : 0;
+            $idImage = isset($row['idImage']) ? (int) $row['idImage'] : 0;
+
+            if ($idEtablissement <= 0 || $idImage <= 0 || isset($imageUrls[$idEtablissement])) {
+                continue;
+            }
+
+            $imageUrls[$idEtablissement] = $this->generateUrl(
+                'app_etablissement_gallery_image',
+                ['idImage' => $idImage],
+                UrlGeneratorInterface::ABSOLUTE_PATH
+            );
+        }
+
+        return $imageUrls;
     }
 
     #[Route('/dashboard', name: 'app_etablissement_dashboard', methods: ['GET'])]
@@ -257,17 +334,22 @@ class EtablissementController extends AbstractController
         $form = $this->createForm(EtablissementType::class, $etablissement);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($etablissement);
-            $entityManager->flush();
+        if ($form->isSubmitted()) {
+            if (!$form->isValid()) {
+                // dump($form->getErrors(true));
+            } else {
+                $entityManager->persist($etablissement);
+                $entityManager->flush();
+                $this->storeUploadedImages($form->get('images')->getData(), $etablissement, $entityManager);
 
-            return $this->redirectToRoute('app_etablissement_create_success', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_etablissement_create_success', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('etablissement/new.html.twig', [
             'etablissement' => $etablissement,
             'form' => $form->createView(),
-        ]);
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/success/create', name: 'app_etablissement_create_success', methods: ['GET'])]
@@ -382,14 +464,15 @@ class EtablissementController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $this->storeUploadedImages($form->get('images')->getData(), $etablissement, $entityManager);
 
             return $this->redirectToRoute('app_etablissement_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('etablissement/edit.html.twig', [
             'etablissement' => $etablissement,
-            'form' => $form->createView(), // using createView for compatibility
-        ]);
+            'form' => $form->createView(),
+        ], new Response(null, $form->isSubmitted() && !$form->isValid() ? 422 : 200));
     }
 
     #[Route('/{idEtablissement}', name: 'app_etablissement_delete', methods: ['POST'])]
@@ -401,5 +484,87 @@ class EtablissementController extends AbstractController
         }
 
         return $this->redirectToRoute('app_etablissement_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @param array<int, UploadedFile>|UploadedFile|null $uploadedImages
+     */
+    private function storeUploadedImages(array|UploadedFile|null $uploadedImages, Etablissement $etablissement, EntityManagerInterface $entityManager): void
+    {
+        if ($uploadedImages === null) {
+            return;
+        }
+
+        $files = $uploadedImages instanceof UploadedFile ? [$uploadedImages] : $uploadedImages;
+        if ($files === []) {
+            return;
+        }
+
+        $idEtablissement = $etablissement->getIdEtablissement();
+        if ($idEtablissement === null) {
+            return;
+        }
+
+        $uploadDir = dirname(__DIR__, 2).'/public/uploads/etablissements';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $connection = $entityManager->getConnection();
+        $maxOrder = (int) $connection->fetchOne(
+            'SELECT COALESCE(MAX(ordre_affichage), 0) FROM etablissement_image WHERE idEtablissement = :id',
+            ['id' => $idEtablissement]
+        );
+
+        foreach ($files as $file) {
+            if (!$file instanceof UploadedFile || !$file->isValid()) {
+                continue;
+            }
+
+            $safeExt = $this->resolveUploadedFileExtension($file);
+            $fileName = sprintf('etab_%d_%d.%s', $idEtablissement, time().random_int(1000, 9999), $safeExt);
+            $file->move($uploadDir, $fileName);
+
+            $maxOrder++;
+            $connection->insert('etablissement_image', [
+                'idEtablissement' => $idEtablissement,
+                'image_path' => $uploadDir.'/'.$fileName,
+                'ordre_affichage' => $maxOrder,
+            ]);
+        }
+    }
+
+    private function resolveUploadedFileExtension(UploadedFile $file): string
+    {
+        try {
+            $guessed = $file->guessExtension();
+            if (is_string($guessed) && $guessed !== '') {
+                return strtolower($guessed);
+            }
+        } catch (\Throwable) {
+            // Fall back to original client extension when MIME guessers are not available.
+        }
+
+        $clientExt = strtolower((string) pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+        if ($clientExt !== '') {
+            return preg_replace('/[^a-z0-9]+/', '', $clientExt) ?: 'bin';
+        }
+
+        return 'bin';
+    }
+
+    private function guessMimeTypeFromPath(string $path): string
+    {
+        $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+
+        return match ($ext) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'bmp' => 'image/bmp',
+            'svg' => 'image/svg+xml',
+            default => 'application/octet-stream',
+        };
     }
 }

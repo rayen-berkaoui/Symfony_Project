@@ -237,6 +237,26 @@
             hsl(calc(var(--hue,260) * 1deg + 45) 50% 12%)
         );
     }
+    .card-visual img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        position: absolute; inset: 0;
+    }
+    .card-visual .no-image {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: rgba(255,255,255,.78);
+        font-size: .8rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        z-index: 1;
+        padding: 8px 12px;
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 999px;
+        background: rgba(0,0,0,.25);
+    }
     .card-visual::after {
         content: '';
         position: absolute; inset: 0;
@@ -450,6 +470,12 @@
                             {% set hue = ((activite.idActivite ?? loop.index) * 53 + 190) % 360 %}
                             <article class="etab-card" style="--hue:{{ hue }}">
                                 <div class="card-visual">
+                                    {% set galleryImageUrl = imageUrls[activite.idActivite] ?? null %}
+                                    {% if galleryImageUrl %}
+                                        <img src="{{ galleryImageUrl }}" alt="{{ activite.nomActivite }}">
+                                    {% else %}
+                                        <span class="no-image">Aucune image</span>
+                                    {% endif %}
                                     <span class="card-badge">{{ activite.categorie ?: 'Sans catégorie' }}</span>
                                     <span class="card-city">{{ activite.statut ?: 'Statut inconnu' }}</span>
                                     <div class="card-name-overlay">
