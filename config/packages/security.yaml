@@ -13,6 +13,7 @@ security:
         main:
             lazy: true
             provider: utilisateur_provider
+            user_checker: App\Security\UserStatusChecker
             custom_authenticators:
                 - App\Security\LoginFormAuthenticator
             logout:

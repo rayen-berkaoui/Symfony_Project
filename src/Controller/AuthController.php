@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Form\RegistrationFormType;
 use App\Repository\RoleRepository;
+use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +43,8 @@ class AuthController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        RoleRepository $roleRepository
+        RoleRepository $roleRepository,
+        MailerService $mailerService
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -66,6 +68,15 @@ class AuthController extends AbstractController
 
             $entityManager->persist($utilisateur);
             $entityManager->flush();
+
+            // Send welcome email
+            try {
+                $mailerService->sendWelcomeEmail($utilisateur);
+                $this->addFlash('success', 'Registration successful! A welcome email has been sent to your inbox.');
+            } catch (\Exception $e) {
+                // Log the error but don't block registration if email fails
+                $this->addFlash('warning', 'Registration successful! Welcome email could not be sent, but you can still log in.');
+            }
 
             return $this->redirectToRoute('app_login');
         }

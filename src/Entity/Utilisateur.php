@@ -44,8 +44,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'date_creation', type: 'datetime')]
     private ?\DateTimeInterface $dateCreation = null;
 
-    #[ORM\Column(name: 'num_tel', type: 'integer')]
-    private ?int $numTel = null;
+    #[ORM\Column(name: 'num_tel', type: 'string', length: 8, nullable: true)]
+    private ?string $numTel = null;
 
     #[ORM\Column(name: 'nfc_id', type: 'string', length: 100, nullable: true)]
     private ?string $nfcId = null;
@@ -214,12 +214,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getNumTel(): ?int
+    public function getNumTel(): ?string
     {
         return $this->numTel;
     }
 
-    public function setNumTel(int $numTel): static
+    public function setNumTel(?string $numTel): static
     {
         $this->numTel = $numTel;
 

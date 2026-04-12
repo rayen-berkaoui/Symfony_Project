@@ -1,71 +1,487 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ user.nom }} {{ user.prenom }} - User Details{% endblock %}
+{% block title %}{{ user.nom }} {{ user.prenom }} - Tabaany Admin{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .topbar { display: none; }
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 28%),
+            radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 22%),
+            linear-gradient(180deg, #0f172a 0%, #111827 18%, #f6f8fc 18%, #eef2ff 100%);
+    }
+
+    .admin-shell {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        color: #0f172a;
+    }
+
+    .admin-sidebar {
+        position: sticky;
+        top: 0;
+        min-height: 100vh;
+        padding: 2rem 1.5rem;
+        background: rgba(15, 23, 42, 0.95);
+        color: #e2e8f0;
+        border-right: 1px solid rgba(148, 163, 184, 0.18);
+        backdrop-filter: blur(16px);
+    }
+
+    .brand-mark {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.9rem;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #38bdf8 0%, #22c55e 100%);
+        color: white;
+        font-weight: 800;
+        box-shadow: 0 16px 30px rgba(14, 165, 233, 0.3);
+    }
+
+    .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .admin-brand h1,
+    .section-title {
+        margin: 0;
+    }
+
+    .admin-brand p,
+    .muted-copy,
+    .sidebar-label,
+    .sidebar-link span,
+    .sidebar-metric small {
+        color: #94a3b8;
+    }
+
+    .sidebar-label {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.72rem;
+        display: block;
+        margin-bottom: 0.9rem;
+    }
+
+    .sidebar-links {
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        text-decoration: none;
+        color: #f8fafc;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .sidebar-link strong { display: block; margin-bottom: 0.2rem; }
+
+    .sidebar-metric {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.86);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .sidebar-metric strong {
+        display: block;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .admin-main {
+        padding: 2rem;
+    }
+
+    .hero,
+    .panel {
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow: 0 24px 55px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(18px);
+        border-radius: 1.5rem;
+    }
+
+    .hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .hero-panel {
+        padding: 1.25rem 0;
+    }
+
+    .hero-panel h2 {
+        margin: 0.55rem 0;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        line-height: 1.02;
+        letter-spacing: -0.05em;
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: #1d4ed8;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .hero-metrics {
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .metric-card {
+        padding: 1rem 1.1rem;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.88));
+        color: white;
+    }
+
+    .metric-card strong {
+        display: block;
+        font-size: 1.3rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .summary-card {
+        padding: 1rem 1.1rem;
+        border-radius: 1.1rem;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .summary-card strong {
+        display: block;
+        font-size: 1.7rem;
+        line-height: 1;
+        margin-bottom: 0.4rem;
+    }
+
+    .summary-card span { color: #64748b; font-size: 0.9rem; }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    .panel {
+        padding: 1.35rem;
+    }
+
+    .panel-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-admin {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.95rem;
+        text-decoration: none;
+        font-weight: 700;
+        border: 0;
+        cursor: pointer;
+    }
+
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #f97316); color: white; }
+    .btn-neutral { background: rgba(15, 23, 42, 0.06); color: #0f172a; }
+
+    .profile-card {
+        display: grid;
+        gap: 1rem;
+        text-align: center;
+        padding: 0.5rem 0;
+    }
+
+    .avatar {
+        width: 8rem;
+        height: 8rem;
+        border-radius: 2rem;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #1d4ed8, #38bdf8);
+        color: white;
+        font-size: 2.75rem;
+        font-weight: 800;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .status-badge,
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.38rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .status-actif { background: #dcfce7; color: #166534; }
+    .status-bloque { background: #fee2e2; color: #991b1b; }
+    .status-en_attente { background: #fef3c7; color: #92400e; }
+    .role-pill { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+
+    .details-list {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        gap: 1rem;
+        padding: 0.9rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .detail-row:last-child { border-bottom: 0; }
+
+    .detail-label {
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .action-grid {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .action-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        align-items: center;
+    }
+
+    .action-select {
+        min-width: 220px;
+        padding: 0.8rem 0.9rem;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        background: rgba(255, 255, 255, 0.94);
+    }
+
+    .action-group {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    @media (max-width: 1280px) {
+        .hero,
+        .content-grid,
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .admin-shell { grid-template-columns: 1fr; }
+        .admin-sidebar { min-height: auto; position: relative; }
+        .detail-row { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
-<div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; margin: -2rem -2rem 2rem -2rem; border-radius: 0 0 20px 20px;">
-        <a href="{{ path('app_admin_users') }}" style="color: white; text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-            ← Back to Users
-        </a>
-        <h1 style="margin: 0;">User Details</h1>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem;">
-        <div style="background: white; color: #111; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; height: fit-content;">
-            <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: 700; margin: 0 auto 1.5rem auto;">
-                {{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}
-            </div>
-            <h2 style="margin: 0;">{{ user.nom }} {{ user.prenom }}</h2>
-            <p style="color: #6b7280; margin: 0.5rem 0 1rem 0;">{{ user.role.nom }}</p>
-            <span style="padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; display: inline-block; background: {% if user.statut == 'ACTIF' %}#d1fae5; color: #065f46{% elseif user.statut == 'BLOQUE' %}#fee2e2; color: #991b1b{% else %}#fef3c7; color: #92400e{% endif %};">
-                {{ user.statut }}
-            </span>
-        </div>
-        
-        <div style="background: white; color: #111; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <h2 style="margin: 0 0 1.5rem 0; font-size: 1.5rem;">Personal Information</h2>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">ID</div>
-                <div>{{ user.id }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">First Name</div>
-                <div>{{ user.prenom }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">Last Name</div>
-                <div>{{ user.nom }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">Email</div>
-                <div>{{ user.email }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">Phone</div>
-                <div>{{ user.numTel ?? 'N/A' }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">Language</div>
-                <div>{{ user.language ?? 'fr' }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="font-weight: 600; color: #6b7280;">Loyalty Points</div>
-                <div>{{ user.loyaltyPoints ?? 0 }}</div>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 150px 1fr; padding: 1rem 0;">
-                <div style="font-weight: 600; color: #6b7280;">Joined</div>
-                <div>{{ user.dateCreation|date('F d, Y at H:i') }}</div>
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="brand-mark">TA</div>
+            <div>
+                <h1>Tabaany Admin</h1>
+                <p>User profile</p>
             </div>
         </div>
-    </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-label">Navigation</span>
+            <div class="sidebar-links">
+                <a class="sidebar-link" href="{{ path('app_admin_dashboard') }}">
+                    <div><strong>Overview</strong><small>Platform control center</small></div>
+                    <span>01</span>
+                </a>
+                <a class="sidebar-link" href="{{ path('app_admin_users') }}">
+                    <div><strong>Users</strong><small>Account list and actions</small></div>
+                    <span>02</span>
+                </a>
+                <a class="sidebar-link" href="{{ path('app_admin_users_export') }}">
+                    <div><strong>Export</strong><small>Printable roster</small></div>
+                    <span>PDF</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-label">Current status</span>
+            <div class="sidebar-metric">
+                <strong>{{ user.statut }}</strong>
+                <small>{{ user.role ? user.role.nom : 'No role' }}</small>
+            </div>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">User account details</span>
+                <h2>{{ user.nom }} {{ user.prenom }}</h2>
+                <p class="muted-copy">Review the account profile, change the role, and block or reactivate access from one place.</p>
+            </div>
+
+            <div class="hero-metrics">
+                <div class="metric-card">
+                    <strong>{{ user.role ? user.role.nom : 'No role' }}</strong>
+                    <span>Current role</span>
+                </div>
+                <div class="metric-card">
+                    <strong>{{ user.statut }}</strong>
+                    <span>Current status</span>
+                </div>
+                <div class="metric-card">
+                    <strong>{{ user.dateCreation|date('d M Y') }}</strong>
+                    <span>Joined date</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="summary-grid">
+            <div class="summary-card"><strong>{{ user.id }}</strong><span>User ID</span></div>
+            <div class="summary-card"><strong>{{ user.loyaltyPoints ?? 0 }}</strong><span>Loyalty points</span></div>
+            <div class="summary-card"><strong>{{ user.faceSamplesCount ?? 0 }}</strong><span>Face samples</span></div>
+            <div class="summary-card"><strong>{{ user.language ?? 'fr' }}</strong><span>Language</span></div>
+        </section>
+
+        <section class="content-grid">
+            <div class="panel">
+                <div class="profile-card">
+                    <div class="avatar">
+                        {% if user.profilePicture %}
+                            <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
+                        {% else %}
+                            {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3 class="section-title">{{ user.nom }} {{ user.prenom }}</h3>
+                        <p class="muted-copy">{{ user.email }}</p>
+                    </div>
+                    <div>
+                        <span class="role-badge role-pill">{{ user.role ? user.role.nom : 'No role' }}</span>
+                        <span class="status-badge status-{{ user.statut|lower }}">{{ user.statut }}</span>
+                    </div>
+                </div>
+
+                <div class="action-grid" style="margin-top: 1.25rem;">
+                    <div class="action-group">
+                        <h3 class="section-title" style="margin-bottom: 0.75rem;">Role management</h3>
+                        <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="action-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('user_role_' ~ user.id) }}">
+                            <select name="role_id" class="action-select" {% if user.id == app.user.id %}disabled{% endif %}>
+                                {% for roleOption in availableRoles|default([]) %}
+                                    <option value="{{ roleOption.id }}" {{ user.role and user.role.id == roleOption.id ? 'selected' : '' }}>{{ roleOption.nom }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn-admin btn-primary" {% if user.id == app.user.id %}disabled{% endif %}>Update role</button>
+                        </form>
+                    </div>
+
+                    <div class="action-group">
+                        <h3 class="section-title" style="margin-bottom: 0.75rem;">Access control</h3>
+                        <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="action-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('user_status_' ~ user.id) }}">
+                            <input type="hidden" name="status" value="{{ user.statut == 'BLOQUE' ? 'ACTIF' : 'BLOQUE' }}">
+                            <button type="submit" class="btn-admin {{ user.statut == 'BLOQUE' ? 'btn-primary' : 'btn-danger' }}" {% if user.id == app.user.id %}disabled{% endif %}>
+                                {{ user.statut == 'BLOQUE' ? 'Reactivate account' : 'Block account' }}
+                            </button>
+                            {% if user.id == app.user.id %}
+                                <span class="muted-copy">You cannot change your own status.</span>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <div class="action-group">
+                        <h3 class="section-title" style="margin-bottom: 0.75rem;">Other actions</h3>
+                        <div class="action-form">
+                            <a href="{{ path('app_admin_users') }}" class="btn-admin btn-neutral">Back to list</a>
+                            <a href="{{ path('app_admin_users_export') }}" class="btn-admin btn-neutral">Export roster</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Personal information</h3>
+                        <p class="muted-copy">Detailed account metadata for review.</p>
+                    </div>
+                </div>
+
+                <div class="details-list">
+                    <div class="detail-row"><div class="detail-label">ID</div><div>{{ user.id }}</div></div>
+                    <div class="detail-row"><div class="detail-label">First name</div><div>{{ user.prenom }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Last name</div><div>{{ user.nom }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Email</div><div>{{ user.email }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Phone</div><div>{{ user.numTel ?? 'N/A' }}</div></div>
+                    <div class="detail-row"><div class="detail-label">NFC ID</div><div>{{ user.nfcId ?? 'N/A' }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Language</div><div>{{ user.language ?? 'fr' }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Theme</div><div>{{ user.themePreference ?? 'SYSTEM' }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Face confidence</div><div>{{ user.faceConfidence ?? 0 }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Face samples</div><div>{{ user.faceSamplesCount ?? 0 }}</div></div>
+                    <div class="detail-row"><div class="detail-label">Joined</div><div>{{ user.dateCreation|date('F d, Y at H:i') }}</div></div>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 {% endblock %}

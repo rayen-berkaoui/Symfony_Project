@@ -5,7 +5,6 @@ namespace App\Form;
 use App\Entity\Utilisateur;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -66,21 +65,26 @@ class RegistrationFormType extends AbstractType
                     new Assert\Length(max: 150, maxMessage: 'Maximum 150 caracteres.'),
                 ],
             ])
-            ->add('numTel', IntegerType::class, [
+            ->add('numTel', TextType::class, [
                 'label' => 'Numero de telephone',
                 'required' => false,
                 'row_attr' => ['class' => 'form-row'],
                 'attr' => [
-                    'placeholder' => 'Numero de telephone',
+                    'placeholder' => '12345678',
                     'inputmode' => 'tel',
-                    'data-validate' => 'required|phone|minlength:6|maxlength:15',
+                    'data-validate' => 'required|digits|length:8',
                     'data-label' => 'Numero de telephone',
                     'autocomplete' => 'tel',
+                    'minlength' => '8',
+                    'maxlength' => '8',
+                    'pattern' => '[0-9]{8}',
                 ],
                 'constraints' => [
                     new Assert\NotBlank(message: 'Ce champ est obligatoire.'),
-                    new Assert\Positive(message: 'Numero invalide.'),
-                    new Assert\Range(min: 1, max: 2147483647, notInRangeMessage: 'Numero invalide.'),
+                    new Assert\Regex(
+                        pattern: '/^\d{8}$/',
+                        message: 'Le numéro de téléphone doit contenir exactement 8 chiffres.'
+                    ),
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [
@@ -90,16 +94,17 @@ class RegistrationFormType extends AbstractType
                 'row_attr' => ['class' => 'form-row'],
                 'attr' => [
                     'placeholder' => '********',
-                    'data-validate' => 'required|minlength:6|maxlength:255',
+                    'data-validate' => 'required|minlength:8|maxlength:255',
                     'data-label' => 'Mot de passe',
                     'autocomplete' => 'new-password',
+                    'minlength' => '8',
                 ],
                 'constraints' => [
                     new Assert\NotBlank(message: 'Ce champ est obligatoire.'),
                     new Assert\Length(
-                        min: 6,
+                        min: 8,
                         max: 255,
-                        minMessage: 'Mot de passe trop court (6 caracteres minimum).',
+                        minMessage: 'Mot de passe trop court (8 caracteres minimum).',
                         maxMessage: 'Mot de passe trop long.'
                     ),
                 ],

@@ -1,290 +1,975 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Admin Dashboard - Tabaany{% endblock %}
+{% block title %}Admin Control Center - Tabaany{% endblock %}
 
 {% block stylesheets %}
 <style>
-    .admin-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
+    .topbar {
+        display: none;
     }
-    
-    .admin-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 3rem 2rem;
-        margin: -2rem -2rem 2rem -2rem;
-        border-radius: 0 0 20px 20px;
+
+    body {
+        background:
+            radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 30%),
+            radial-gradient(circle at top right, rgba(16, 185, 129, 0.15), transparent 24%),
+            linear-gradient(180deg, #0f172a 0%, #111827 16%, #f5f7fb 16%, #eef2ff 100%);
     }
-    
-    .admin-header h1 {
-        margin: 0 0 0.5rem 0;
-        font-size: 2.5rem;
-    }
-    
-    .stats-grid {
+
+    .admin-shell {
+        min-height: 100vh;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        color: #0f172a;
+    }
+
+    .admin-sidebar {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        min-height: 100vh;
+        padding: 2rem 1.5rem;
+        background: rgba(15, 23, 42, 0.94);
+        color: #e2e8f0;
+        border-right: 1px solid rgba(148, 163, 184, 0.18);
+        backdrop-filter: blur(16px);
+    }
+
+    .admin-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
         margin-bottom: 2rem;
     }
-    
-    .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-left: 4px solid #667eea;
+
+    .brand-mark {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.9rem;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #38bdf8 0%, #22c55e 100%);
+        color: white;
+        font-weight: 800;
+        box-shadow: 0 16px 30px rgba(14, 165, 233, 0.3);
     }
-    
-    .stat-card.active { border-left-color: #10b981; }
-    .stat-card.blocked { border-left-color: #ef4444; }
-    .stat-card.pending { border-left-color: #f59e0b; }
-    
-    .stat-card h3 {
-        font-size: 0.875rem;
-        color: #6b7280;
-        margin: 0 0 0.5rem 0;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-    
-    .stat-card .stat-value {
-        font-size: 2.5rem;
+
+    .admin-brand h1 {
+        margin: 0;
+        font-size: 1rem;
         font-weight: 700;
-        color: #111827;
+        letter-spacing: 0.02em;
+    }
+
+    .admin-brand p,
+    .sidebar-label,
+    .sidebar-link span,
+    .sidebar-metric small,
+    .muted-copy {
+        color: #94a3b8;
+    }
+
+    .sidebar-section + .sidebar-section {
+        margin-top: 1.75rem;
+    }
+
+    .sidebar-label {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.72rem;
+        margin-bottom: 0.9rem;
         display: block;
     }
-    
+
+    .sidebar-links {
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        text-decoration: none;
+        color: #f8fafc;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .sidebar-link:hover {
+        transform: translateX(4px);
+        border-color: rgba(96, 165, 250, 0.5);
+        background: rgba(59, 130, 246, 0.16);
+    }
+
+    .sidebar-link strong {
+        display: block;
+        font-size: 0.95rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .sidebar-link small {
+        display: block;
+        font-size: 0.78rem;
+    }
+
+    .sidebar-metric {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .sidebar-metric strong {
+        display: block;
+        font-size: 1.4rem;
+        color: white;
+    }
+
+    .admin-main {
+        padding: 2rem;
+    }
+
+    .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+        gap: 1.5rem;
+        align-items: stretch;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero-panel,
+    .surface {
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow: 0 24px 55px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(18px);
+    }
+
+    .hero-panel {
+        padding: 2rem;
+        border-radius: 1.6rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-panel::after {
+        content: '';
+        position: absolute;
+        inset: auto -7rem -7rem auto;
+        width: 14rem;
+        height: 14rem;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.18), transparent 70%);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: #1d4ed8;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .hero-panel h2 {
+        margin: 1rem 0 0.65rem;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1.02;
+        letter-spacing: -0.05em;
+        color: #020617;
+    }
+
+    .hero-panel p {
+        margin: 0;
+        max-width: 58ch;
+        color: #475569;
+        font-size: 1.05rem;
+    }
+
+    .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        margin-top: 1.5rem;
+    }
+
+    .hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.8rem 1rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.04);
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .hero-actions {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .hero-action,
+    .action-card,
+    .stat-card,
+    .panel {
+        border-radius: 1.4rem;
+    }
+
+    .hero-action {
+        padding: 1.25rem;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.97), rgba(15, 23, 42, 0.88));
+        color: white;
+        text-decoration: none;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow: 0 22px 40px rgba(15, 23, 42, 0.16);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .hero-action:hover {
+        transform: translateY(-3px);
+        border-color: rgba(96, 165, 250, 0.45);
+    }
+
+    .hero-action strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 1rem;
+    }
+
+    .hero-action span {
+        color: #cbd5e1;
+        font-size: 0.92rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1.15rem;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+    }
+
+    .stat-card h3 {
+        margin: 0 0 0.6rem;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+    }
+
+    .stat-card .stat-value {
+        display: block;
+        font-size: clamp(1.75rem, 2.8vw, 2.6rem);
+        line-height: 1;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .stat-card p {
+        margin: 0.7rem 0 0;
+        color: #64748b;
+        font-size: 0.88rem;
+    }
+
+    .stat-card.accent-blue { border-top: 4px solid #3b82f6; }
+    .stat-card.accent-emerald { border-top: 4px solid #10b981; }
+    .stat-card.accent-amber { border-top: 4px solid #f59e0b; }
+    .stat-card.accent-rose { border-top: 4px solid #f43f5e; }
+    .stat-card.accent-slate { border-top: 4px solid #334155; }
+    .stat-card.accent-cyan { border-top: 4px solid #06b6d4; }
+
     .content-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
+        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+        gap: 1.5rem;
+        align-items: start;
     }
-    
+
     .panel {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 1.4rem;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.07);
     }
-    
-    .panel h2 {
-        margin: 0 0 1.5rem 0;
-        font-size: 1.25rem;
+
+    .panel + .panel {
+        margin-top: 1.5rem;
+    }
+
+    .panel-header {
         display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
         align-items: center;
         justify-content: space-between;
+        margin-bottom: 1rem;
     }
-    
-    .user-list {
-        list-style: none;
-        padding: 0;
+
+    .panel-header h3 {
         margin: 0;
+        font-size: 1.15rem;
+        color: #020617;
     }
-    
-    .user-item {
+
+    .panel-header p {
+        margin: 0.25rem 0 0;
+        color: #64748b;
+    }
+
+    .panel-actions {
         display: flex;
-        align-items: center;
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
+        flex-wrap: wrap;
+        gap: 0.75rem;
     }
-    
-    .user-item:last-child {
-        border-bottom: none;
-    }
-    
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        margin-right: 1rem;
-        overflow: hidden;
-    }
-    
-    .user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .user-info {
-        flex: 1;
-    }
-    
-    .user-name {
-        font-weight: 600;
-        color: #111827;
-        display: block;
-    }
-    
-    .user-email {
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-    
-    .user-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .user-badge.active {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    
-    .user-badge.blocked {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .user-badge.pending {
-        background: #fef3c7;
-        color: #92400e;
-    }
-    
-    .role-chart {
-        margin-top: 1rem;
-    }
-    
-    .role-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .role-item:last-child {
-        border-bottom: none;
-    }
-    
-    .role-bar {
-        height: 8px;
-        background: #e5e7eb;
-        border-radius: 4px;
-        overflow: hidden;
-        flex: 1;
-        margin: 0 1rem;
-    }
-    
-    .role-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        transition: width 0.3s ease;
-    }
-    
+
     .btn-admin {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+        padding: 0.85rem 1.1rem;
+        border-radius: 0.95rem;
         text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: transform 0.2s;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    
+
     .btn-admin:hover {
         transform: translateY(-2px);
+    }
+
+    .btn-admin.primary {
+        background: linear-gradient(135deg, #2563eb, #0ea5e9);
+        color: white;
+        box-shadow: 0 18px 30px rgba(37, 99, 235, 0.24);
+    }
+
+    .btn-admin.secondary {
+        background: rgba(15, 23, 42, 0.06);
+        color: #0f172a;
+    }
+
+    .latest-user {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .latest-user:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .user-badge {
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 0.95rem;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #1d4ed8, #38bdf8);
+        color: white;
+        font-weight: 800;
+        flex: 0 0 auto;
+        overflow: hidden;
+    }
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+    }
+
+    .user-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-name {
+        display: block;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .user-email {
+        display: block;
+        color: #64748b;
+        font-size: 0.92rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .status-badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .status-badge.actif {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-badge.bloque {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-badge.en_attente {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .trend-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.9rem;
+        align-items: end;
+        min-height: 220px;
+    }
+
+    .trend-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .trend-bar-shell {
+        width: 100%;
+        height: 170px;
+        border-radius: 1rem;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.05), rgba(15, 23, 42, 0.02));
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        padding: 0.45rem;
+        display: flex;
+        align-items: end;
+    }
+
+    .trend-bar {
+        width: 100%;
+        border-radius: 0.8rem;
+        background: linear-gradient(180deg, #0ea5e9 0%, #2563eb 100%);
+        min-height: 12px;
+    }
+
+    .trend-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    .trend-count {
+        font-size: 0.78rem;
+        color: #64748b;
+    }
+
+    .role-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .role-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .role-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .role-head strong {
+        font-size: 0.96rem;
+    }
+
+    .role-head span {
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .role-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.2);
+        overflow: hidden;
+    }
+
+    .role-bar-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #38bdf8 0%, #2563eb 100%);
+    }
+
+    .subtle-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .signal-card {
+        padding: 1rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .signal-card strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .signal-card span {
+        color: #64748b;
+        font-size: 0.88rem;
+    }
+
+    .quick-grid {
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .quick-user {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        align-items: start;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    .quick-user:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .quick-user-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 0.7rem;
+    }
+
+    .quick-user-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 0.8rem;
+    }
+
+    .mini-form {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .mini-select {
+        min-width: 180px;
+        padding: 0.7rem 0.8rem;
+        border-radius: 0.8rem;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        background: rgba(255, 255, 255, 0.92);
+        color: #0f172a;
+    }
+
+    .mini-button,
+    .mini-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.72rem 0.95rem;
+        border-radius: 0.8rem;
+        border: 0;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .mini-button.primary {
+        background: linear-gradient(135deg, #2563eb, #0ea5e9);
         color: white;
     }
-    
-    @media (max-width: 1024px) {
+
+    .mini-button.danger {
+        background: linear-gradient(135deg, #ef4444, #f97316);
+        color: white;
+    }
+
+    .mini-button.neutral,
+    .mini-link {
+        background: rgba(15, 23, 42, 0.06);
+        color: #0f172a;
+    }
+
+    @media (max-width: 1280px) {
+        .stats-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .hero,
         .content-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .admin-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-sidebar {
+            min-height: auto;
+            position: relative;
+        }
+
+        .stats-grid,
+        .subtle-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .trend-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
         }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="admin-container">
-    <div class="admin-header">
-        <h1>🎛️ Admin Dashboard</h1>
-        <p>Bienvenue, {{ app.user.nom }} {{ app.user.prenom }}</p>
-    </div>
-    
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Total Users</h3>
-            <span class="stat-value">{{ totalUsers }}</span>
-        </div>
-        
-        <div class="stat-card active">
-            <h3>Active Users</h3>
-            <span class="stat-value">{{ activeUsers }}</span>
-        </div>
-        
-        <div class="stat-card blocked">
-            <h3>Blocked Users</h3>
-            <span class="stat-value">{{ blockedUsers }}</span>
-        </div>
-        
-        <div class="stat-card pending">
-            <h3>Pending Users</h3>
-            <span class="stat-value">{{ pendingUsers }}</span>
-        </div>
-    </div>
-    
-    <div class="content-grid">
-        <div class="panel">
-            <h2>
-                Recent Users
-                <a href="{{ path('app_admin_users') }}" class="btn-admin">View All Users</a>
-            </h2>
-            <ul class="user-list">
-                {% for user in recentUsers %}
-                <li class="user-item">
-                    <div class="user-avatar">
-                        {% if user.profilePicture %}
-                            <img src="{{ user.profilePicture }}" alt="{{ user.nom }}">
-                        {% else %}
-                            {{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}
-                        {% endif %}
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
-                        <span class="user-email">{{ user.email }}</span>
-                    </div>
-                    <span class="user-badge {{ user.statut|lower }}">{{ user.statut }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        
-        <div class="panel">
-            <h2>Users by Role</h2>
-            <div class="role-chart">
-                {% set maxCount = 0 %}
-                {% for stat in roleStats %}
-                    {% if stat.userCount > maxCount %}
-                        {% set maxCount = stat.userCount %}
-                    {% endif %}
-                {% endfor %}
-                
-                {% for stat in roleStats %}
-                <div class="role-item">
-                    <span style="font-weight: 600;">{{ stat.nom }}</span>
-                    <div class="role-bar">
-                        <div class="role-bar-fill" style="width: {{ maxCount > 0 ? (stat.userCount / maxCount * 100) : 0 }}%"></div>
-                    </div>
-                    <span style="font-weight: 600; color: #667eea;">{{ stat.userCount }}</span>
-                </div>
-                {% endfor %}
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="brand-mark">TA</div>
+            <div>
+                <h1>Tabaany Admin</h1>
+                <p>Control center</p>
             </div>
         </div>
-    </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-label">Navigation</span>
+            <div class="sidebar-links">
+                <a class="sidebar-link" href="{{ path('app_admin_dashboard') }}">
+                    <div>
+                        <strong>Overview</strong>
+                        <small>Live platform snapshot</small>
+                    </div>
+                    <span>01</span>
+                </a>
+                <a class="sidebar-link" href="{{ path('app_admin_users') }}">
+                    <div>
+                        <strong>Users</strong>
+                        <small>Search, edit, block, delete</small>
+                    </div>
+                    <span>{{ totalUsers }}</span>
+                </a>
+                <a class="sidebar-link" href="{{ path('app_admin_users_export') }}">
+                    <div>
+                        <strong>Export</strong>
+                        <small>Printable user report</small>
+                    </div>
+                    <span>Report</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-label">Current admin</span>
+            <div class="sidebar-metric">
+                <strong>{{ app.user.prenom ?? 'Admin' }} {{ app.user.nom ?? '' }}</strong>
+                <small>{{ app.user.email ?? '' }}</small>
+                <small style="display:block; margin-top:0.45rem;">Role: {{ app.user.role.nom ?? 'ADMIN' }}</small>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-label">Platform health</span>
+            <div class="sidebar-metric">
+                <small>Total loyalty points</small>
+                <strong>{{ totalLoyaltyPoints }}</strong>
+                <small>Average face confidence: {{ averageFaceConfidence|number_format(2) }}</small>
+            </div>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <section class="hero">
+            <div class="hero-panel">
+                <span class="eyebrow">Admin Control Center</span>
+                <h2>Operate the platform from one professional workspace.</h2>
+                <p>
+                    Welcome back, {{ app.user.prenom ?? 'Admin' }}. Monitor account growth, review security coverage,
+                    and move users between active, pending, and blocked states without leaving the dashboard.
+                </p>
+
+                <div class="hero-meta">
+                    <span class="hero-pill">{{ totalUsers }} total accounts</span>
+                    <span class="hero-pill">{{ adminUsers }} admin operators</span>
+                    <span class="hero-pill">{{ totpEnabledUsers }} TOTP enabled</span>
+                    <span class="hero-pill">{{ profilePictureUsers }} profiles with photos</span>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                {% for action in controlCenter %}
+                    <a class="hero-action" href="{{ path(action.route) }}">
+                        <strong>{{ action.title }}</strong>
+                        <span>{{ action.description }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card accent-slate">
+                <h3>Total users</h3>
+                <span class="stat-value">{{ totalUsers }}</span>
+                <p>All accounts currently stored in the application.</p>
+            </article>
+
+            <article class="stat-card accent-emerald">
+                <h3>Active users</h3>
+                <span class="stat-value">{{ activeUsers }}</span>
+                <p>Accounts that can sign in and use the platform.</p>
+            </article>
+
+            <article class="stat-card accent-amber">
+                <h3>Pending users</h3>
+                <span class="stat-value">{{ pendingUsers }}</span>
+                <p>Accounts awaiting review or activation.</p>
+            </article>
+
+            <article class="stat-card accent-rose">
+                <h3>Blocked users</h3>
+                <span class="stat-value">{{ blockedUsers }}</span>
+                <p>Accounts currently restricted by the admin team.</p>
+            </article>
+
+            <article class="stat-card accent-blue">
+                <h3>Admin users</h3>
+                <span class="stat-value">{{ adminUsers }}</span>
+                <p>People with elevated control permissions.</p>
+            </article>
+
+            <article class="stat-card accent-cyan">
+                <h3>Security coverage</h3>
+                <span class="stat-value">{{ totpEnabledUsers }}</span>
+                <p>Users who have TOTP enabled for stronger sign-in protection.</p>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Registration trend</h3>
+                            <p>Daily signups over the last 7 days.</p>
+                        </div>
+                        <div class="panel-actions">
+                            <a href="{{ path('app_admin_users') }}" class="btn-admin secondary">Open users</a>
+                            <a href="{{ path('app_admin_users_export') }}" class="btn-admin primary">Export report</a>
+                        </div>
+                    </div>
+
+                    <div class="trend-grid">
+                        {% for point in registrationTrend %}
+                            <div class="trend-item">
+                                <div class="trend-bar-shell">
+                                    <div class="trend-bar" style="height: {{ registrationPeak > 0 ? ((point.count / registrationPeak) * 100) : 0 }}%;"></div>
+                                </div>
+                                <span class="trend-label">{{ point.label }}</span>
+                                <span class="trend-count">{{ point.count }} new</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Latest accounts</h3>
+                            <p>The newest users entering the platform.</p>
+                        </div>
+                        <a href="{{ path('app_admin_users') }}" class="btn-admin secondary">View all</a>
+                    </div>
+
+                    <div>
+                        {% for user in recentUsers %}
+                            <div class="latest-user">
+                                <div class="user-badge user-avatar">
+                                    {% if user.profilePicture %}
+                                        <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
+                                    {% else %}
+                                        {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
+                                    {% endif %}
+                                </div>
+
+                                <div class="user-info">
+                                    <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
+                                    <span class="user-email">{{ user.email }}</span>
+                                </div>
+
+                                <span class="status-badge {{ user.statut|lower }}">{{ user.statut }}</span>
+                            </div>
+                        {% else %}
+                            <p class="muted-copy">No users available yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Role distribution</h3>
+                            <p>Users grouped by application role.</p>
+                        </div>
+                    </div>
+
+                    {% set maxRoleUsers = 0 %}
+                    {% for stat in roleStats %}
+                        {% if stat.userCount > maxRoleUsers %}
+                            {% set maxRoleUsers = stat.userCount %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for stat in roleStats %}
+                        <div class="role-item">
+                            <div class="role-head">
+                                <strong>{{ stat.roleName }}</strong>
+                                <span>{{ stat.userCount }}</span>
+                            </div>
+                            <div class="role-bar">
+                                <div class="role-bar-fill" style="width: {{ maxRoleUsers > 0 ? ((stat.userCount / maxRoleUsers) * 100) : 0 }}%;"></div>
+                            </div>
+                            {% if stat.roleDescription %}
+                                <p class="muted-copy" style="margin: 0.5rem 0 0;">{{ stat.roleDescription }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="muted-copy">No role data available.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Security signals</h3>
+                            <p>Operational data that helps you monitor account readiness.</p>
+                        </div>
+                    </div>
+
+                    <div class="subtle-grid">
+                        <div class="signal-card">
+                            <strong>{{ profilePictureUsers }}</strong>
+                            <span>Profiles with uploaded photos</span>
+                        </div>
+                        <div class="signal-card">
+                            <strong>{{ faceReadyUsers }}</strong>
+                            <span>Users ready for face login</span>
+                        </div>
+                        <div class="signal-card">
+                            <strong>{{ averageFaceConfidence|number_format(2) }}</strong>
+                            <span>Average face confidence</span>
+                        </div>
+                        <div class="signal-card">
+                            <strong>{{ latestUser ? latestUser.dateCreation|date('d M') : 'N/A' }}</strong>
+                            <span>Latest account creation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Quick account controls</h3>
+                            <p>Change user roles or status directly from the dashboard.</p>
+                        </div>
+                    </div>
+
+                    <div class="quick-grid">
+                        {% for user in recentUsers|slice(0, 4) %}
+                            <div class="quick-user">
+                                <div class="user-badge user-avatar">
+                                    {% if user.profilePicture %}
+                                        <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
+                                    {% else %}
+                                        {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
+                                    {% endif %}
+                                </div>
+
+                                <div>
+                                    <div class="quick-user-head">
+                                        <div>
+                                            <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
+                                            <span class="user-email">{{ user.email }}</span>
+                                        </div>
+                                        <span class="status-badge {{ user.statut|lower }}">{{ user.statut }}</span>
+                                    </div>
+
+                                    <div class="quick-user-actions">
+                                        <a href="{{ path('app_admin_user_view', {id: user.id}) }}" class="mini-link">Open profile</a>
+
+                                        <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="mini-form">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('user_status_' ~ user.id) }}">
+                                            <input type="hidden" name="status" value="{{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? constant('App\\Entity\\Utilisateur::STATUT_ACTIF') : constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') }}">
+                                            <button type="submit" class="mini-button {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'primary' : 'danger' }}" {% if user.id == app.user.id %}disabled{% endif %}>
+                                                {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'Reactivate' : 'Block' }}
+                                            </button>
+                                        </form>
+
+                                        <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="mini-form">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('user_role_' ~ user.id) }}">
+                                            <select name="role_id" class="mini-select" {% if user.id == app.user.id %}disabled{% endif %}>
+                                                {% for role in availableRoles %}
+                                                    <option value="{{ role.id }}" {{ user.role and user.role.id == role.id ? 'selected' : '' }}>{{ role.nom }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="mini-button neutral" {% if user.id == app.user.id %}disabled{% endif %}>Update role</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="muted-copy">No accounts available for quick actions.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 </div>
 {% endblock %}
