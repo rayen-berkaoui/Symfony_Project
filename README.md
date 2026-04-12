@@ -61,9 +61,8 @@ Le projet est organisé de manière claire avec :
 
 ## 🛠️ Technologies utilisées
 
-- Java
+- Symfony
 - MySQL
-- JavaFX (interface graphique)
 - JDBC (connexion base de données)
 
 ---
