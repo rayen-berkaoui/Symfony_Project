@@ -50,6 +50,12 @@ final class CartController extends AbstractController
         $form = $this->createForm(AddToCartType::class);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
@@ -102,8 +108,18 @@ final class CartController extends AbstractController
         $nbAdultes = (int) $request->request->get('nbAdultes', 1);
         $nbEnfants = (int) $request->request->get('nbEnfants', 0);
 
-        $panier->setNbAdultes(max(1, $nbAdultes));
-        $panier->setNbEnfants(max(0, $nbEnfants));
+        if ($nbAdultes < 1 || $nbAdultes > 20) {
+            $this->addFlash('error', 'Le nombre d\'adultes doit être compris entre 1 et 20.');
+            return $this->redirectToRoute('app_cart_index');
+        }
+
+        if ($nbEnfants < 0 || $nbEnfants > 20) {
+            $this->addFlash('error', 'Le nombre d\'enfants doit être compris entre 0 et 20.');
+            return $this->redirectToRoute('app_cart_index');
+        }
+
+        $panier->setNbAdultes($nbAdultes);
+        $panier->setNbEnfants($nbEnfants);
         $panier->setNbPersonnes($panier->getNbAdultes() + $panier->getNbEnfants());
 
         // Recalculate price
@@ -212,6 +228,12 @@ final class CartController extends AbstractController
         $form = $this->createForm(AddToCartType::class);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
@@ -248,3 +270,4 @@ final class CartController extends AbstractController
         ]);
     }
 }
+

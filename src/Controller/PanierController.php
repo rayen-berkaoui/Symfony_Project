@@ -92,6 +92,12 @@ final class PanierController extends AbstractController
         $form = $this->createForm(PanierType::class, $panier);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculate total persons
             $panier->setNbPersonnes($panier->getNbAdultes() + $panier->getNbEnfants());
@@ -128,6 +134,12 @@ final class PanierController extends AbstractController
         $form = $this->createForm(PanierType::class, $panier);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             // Calculate total persons
             $panier->setNbPersonnes($panier->getNbAdultes() + $panier->getNbEnfants());
@@ -161,3 +173,4 @@ final class PanierController extends AbstractController
         return $this->redirectToRoute('app_panier_index', [], Response::HTTP_SEE_OTHER);
     }
 }
+

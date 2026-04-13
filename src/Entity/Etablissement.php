@@ -57,6 +57,9 @@ class Etablissement
     #[Assert\Range(min: -180, max: 180, notInRangeMessage: "Longitude invalide")]
     private ?string $longitude = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     public function getIdEtablissement(): ?int
     {
         return $this->idEtablissement;
@@ -192,5 +195,25 @@ class Etablissement
     public function __toString(): string
     {
         return (string) $this->nom;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        return '/uploads/etablissements/' . $this->image;
     }
 }

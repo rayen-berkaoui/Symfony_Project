@@ -417,8 +417,6 @@
     'gammePrix': form.gammePrix.vars.id,
     'horaires': form.horaires.vars.id,
     'description': form.description.vars.id,
-    'latitude': form.latitude.vars.id,
-    'longitude': form.longitude.vars.id,
     'images': form.images.vars.id
 } %}
 
@@ -492,32 +490,6 @@
                         <div class="select-wrap">{{ form_widget(form.horairesMode) }}</div>
                         {{ form_widget(form.horaires, {'attr': {'placeholder': 'Ex: Lun-Ven 08:00-18:00', 'style': 'margin-top:10px;'}}) }}
                         {{ form_errors(form.horaires) }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <div class="section-title">Localisation carte</div>
-                <p class="map-help">Cliquez sur la carte pour sélectionner l'emplacement.</p>
-                <div class="map-shell">
-                    <div class="map-search-overlay">
-                        <input id="map-search-input" type="text" placeholder="Rechercher un lieu..." autocomplete="off">
-                        <button type="button" class="btn" id="map-search-btn">Chercher</button>
-                    </div>
-                    <div id="map-picker" class="map-picker" aria-label="Carte de localisation"></div>
-                </div>
-                <p class="map-help" id="map-status">Aucune position sélectionnée.</p>
-
-                <div class="grid-2" style="margin-top: 12px;">
-                    <div class="field">
-                        {{ form_label(form.latitude) }}
-                        {{ form_widget(form.latitude) }}
-                        {{ form_errors(form.latitude) }}
-                    </div>
-                    <div class="field">
-                        {{ form_label(form.longitude) }}
-                        {{ form_widget(form.longitude) }}
-                        {{ form_errors(form.longitude) }}
                     </div>
                 </div>
             </div>

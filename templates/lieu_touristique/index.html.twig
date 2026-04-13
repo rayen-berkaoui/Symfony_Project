@@ -6,13 +6,13 @@
 <div class="mb-8 flex flex-col 2xl:flex-row 2xl:items-start justify-between gap-4 animate-[fade-in_0.5s_ease-out]">
     <div class="flex-shrink-0">
         <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2 drop-shadow-[0_4px_15px_rgba(255,215,0,0.4)]">Lieux Touristiques</h1>
-        <p class="text-gray-400 text-lg">Gérez les destinations et sites touristiques de votre catalogue.</p>
+        <p class="text-gray-400 text-lg">GÃ©rez les destinations et sites touristiques de votre catalogue.</p>
     </div>
-    
+
     <div class="flex flex-col items-end gap-3 w-full 2xl:w-auto">
         <!-- Action Buttons -->
         <div class="flex flex-row gap-3">
-            <a href="{{ path('app_lieu_touristique_ai') }}" class="group flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/20 to-purple-600/10 hover:from-purple-500 hover:to-indigo-600 border border-purple-500/30 hover:border-transparent px-4 py-2 rounded-xl text-purple-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.1)] hover:shadow-[0_4px_20px_rgba(139,92,246,0.4)] text-sm whitespace-nowrap" title="Assistant IA">
+            <a href="{{ path('app_lieu_touristique_ai') }}" class="group flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600/20 to-purple-600/10 hover:from-purple-500 hover:to-indigo-600 border border-purple-500/30 hover:border-transparent px-4 py-2 rounded-xl text-purple-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(139,92,246,0.1)] hover:shadow-[0_4px_20px_rgba(139,92,246,0.4)] text-sm whitespace-nowrap" title="Assistant IA">    
                 <i class="fa-solid fa-sparkles text-base transition-transform group-hover:scale-110"></i>
                 <span class="font-semibold hidden sm:inline">IA Assistant</span>
             </a>
@@ -33,33 +33,33 @@
                     <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                     <input type="text" name="search" value="{{ searchQuery }}" placeholder="Rechercher..." class="text-sm bg-dark-300/80 text-white border border-gold-500/20 rounded-lg pl-8 pr-3 py-1.5 focus:border-gold-500 focus:ring-1 focus:ring-gold-500 w-full transition-all">
                 </div>
-                
+
                 <select name="categorie" class="text-sm bg-dark-300/80 text-gray-300 border border-gold-500/20 rounded-lg px-2 py-1.5 focus:border-gold-500 outline-none w-full sm:w-auto">
-                    <option value="">Toutes catégories</option>
+                    <option value="">Toutes catÃ©gories</option>
                     {% for cat in categories %}
                         <option value="{{ cat.id }}" {% if selectedCategorie == cat.id %}selected{% endif %}>{{ cat.nomCategorie }}</option>
                     {% endfor %}
                 </select>
-                
+
                 <select name="statut" class="text-sm bg-dark-300/80 text-gray-300 border border-gold-500/20 rounded-lg px-2 py-1.5 focus:border-gold-500 outline-none w-full sm:w-auto">
                     <option value="">Statut (Tous)</option>
                     <option value="1" {% if selectedStatut == '1' %}selected{% endif %}>Actif</option>
                     <option value="0" {% if selectedStatut == '0' %}selected{% endif %}>Inactif</option>
                 </select>
-                
+
                 <div class="flex items-center gap-1 w-full sm:w-auto justify-end">
                      <input type="number" name="prix_min" value="{{ prixMin }}" placeholder="Min" class="text-sm bg-dark-300/80 text-white border border-gold-500/20 rounded-lg px-2 py-1.5 focus:border-gold-500 w-16 text-center">
                      <span class="text-gray-500">-</span>
                      <input type="number" name="prix_max" value="{{ prixMax }}" placeholder="Max" class="text-sm bg-dark-300/80 text-white border border-gold-500/20 rounded-lg px-2 py-1.5 focus:border-gold-500 w-16 text-center">
                 </div>
-                
+
                 <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                     <button type="submit" class="bg-gradient-to-r from-gold-500 to-yellow-600 hover:from-gold-400 hover:to-yellow-500 text-black px-4 py-1.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(255,215,0,0.2)] hover:shadow-[0_4px_15px_rgba(255,215,0,0.4)] whitespace-nowrap text-sm">
                         Filtrer
                     </button>
-                    
+
                     {% if searchQuery or selectedCategorie or selectedStatut is not empty or prixMin or prixMax %}
-                        <a href="{{ path('app_lieu_touristique_index') }}" class="bg-dark-200 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/5 hover:border-red-500/30 px-2.5 py-1.5 rounded-lg transition-all transition-colors flex items-center justify-center h-8 w-8" title="Réinitialiser les filtres">
+                        <a href="{{ path('app_lieu_touristique_index') }}" class="bg-dark-200 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/5 hover:border-red-500/30 px-2.5 py-1.5 rounded-lg transition-all transition-colors flex items-center justify-center h-8 w-8" title="RÃ©initialiser les filtres">
                             <i class="fa-solid fa-xmark"></i>
                         </a>
                     {% endif %}
@@ -81,7 +81,7 @@
             </div>
         </div>
         <div class="flex items-center gap-2 mt-2 sm:mt-0">
-            <button type="button" class="btn-dark px-3 py-2" data-carousel-prev="lieu-carousel" aria-label="Précédent">
+            <button type="button" class="btn-dark px-3 py-2" data-carousel-prev="lieu-carousel" aria-label="PrÃ©cÃ©dent">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
             <button type="button" class="btn-dark px-3 py-2" data-carousel-next="lieu-carousel" aria-label="Suivant">
@@ -91,7 +91,7 @@
     </div>
 
     {% if lieu_touristiques is empty %}
-        <p class="text-center py-8 text-gray-500">Aucun lieu touristique trouvé.</p>
+        <p class="text-center py-8 text-gray-500">Aucun lieu touristique trouvÃ©.</p>
     {% else %}
         <div id="lieu-carousel" class="flex gap-5 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth">
             {% for lieu_touristique in lieu_touristiques %}
@@ -102,7 +102,7 @@
                 {% endif %}
                 {% if normalizedPath and (normalizedPath starts with 'http://' or normalizedPath starts with 'https://') %}
                     {% set imageSrc = normalizedPath %}
-                {% elseif normalizedPath and normalizedPath starts with '/' %}
+                {% elseif normalizedPath and normalizedPath starts with '/' %}  
                     {% set imageSrc = normalizedPath %}
                 {% elseif normalizedPath and normalizedPath starts with 'uploads/' %}
                     {% set imageSrc = asset(normalizedPath) %}
@@ -126,7 +126,7 @@
                     </div>
 
                     <div class="p-6 flex-1 flex flex-col relative">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-4">    
                             <span class="text-gold-500/70 font-bold text-xs uppercase tracking-widest bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20">Ref #{{ lieu_touristique.id }}</span>
                             <form action="{{ path('app_lieu_touristique_toggle_status', {'id': lieu_touristique.id}) }}" method="post" class="inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ lieu_touristique.id) }}">
@@ -140,12 +140,12 @@
                             </form>
                         </div>
 
-                        <h2 class="text-2xl font-black text-white mb-2 group-hover:text-gold-400 transition-colors drop-shadow">{{ lieu_touristique.nom }}</h2>
+                        <h2 class="text-2xl font-black text-white mb-2 group-hover:text-gold-400 transition-colors drop-shadow">{{ lieu_touristique.nom }}</h2> 
                         <p class="text-sm text-gray-400 mb-4 font-medium"><i class="fa-solid fa-location-dot mr-2 text-gold-500/50"></i>{{ lieu_touristique.ville ?: 'Localisation inconnue' }}</p>
 
                         <div class="meteo-widget flex items-center justify-center gap-2 mb-4 p-2 bg-dark-200 border border-white/5 rounded-xl shadow-inner min-h-[46px]" data-ville="{{ lieu_touristique.ville }}">
                             <i class="fa-solid fa-circle-notch fa-spin text-gold-500/50"></i>
-                            <span class="text-xs text-gray-500 italic">Météo en cours...</span>
+                            <span class="text-xs text-gray-500 italic">MÃ©tÃ©o en cours...</span>
                         </div>
 
                         <div class="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
@@ -153,7 +153,7 @@
 
                             <div class="flex gap-2">
                                 <a href="{{ path('app_cart_add', {'id': lieu_touristique.id}) }}" class="w-10 h-10 rounded-xl bg-gradient-to-r from-gold-500 to-yellow-600 hover:from-gold-400 hover:to-yellow-500 text-black flex items-center justify-center border border-white/5 transition-all duration-300 shadow-[0_0_10px_rgba(255,215,0,0.2)] hover:shadow-[0_4px_15px_rgba(255,215,0,0.4)]" title="Ajouter au panier">
-                                    <i class="fa-solid fa-cart-plus"></i>
+                                    <i class="fa-solid fa-cart-plus"></i>       
                                 </a>
                                 <a href="{{ path('app_lieu_touristique_show', {'id': lieu_touristique.id}) }}" class="w-10 h-10 rounded-xl bg-dark-200 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-gold-500/30" title="Voir plus">
                                     <i class="fa-solid fa-eye"></i>
@@ -161,7 +161,7 @@
                                 <form action="{{ path('app_lieu_touristique_duplicate', {'id': lieu_touristique.id}) }}" method="post" class="inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ lieu_touristique.id) }}">
                                     <button type="submit" class="w-10 h-10 rounded-xl bg-dark-200 hover:bg-purple-500/20 text-gray-400 hover:text-purple-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-purple-500/30" title="Dupliquer">
-                                        <i class="fa-solid fa-clone"></i>
+                                        <i class="fa-solid fa-clone"></i>       
                                     </button>
                                 </form>
                                 <a href="{{ path('app_lieu_touristique_edit', {'id': lieu_touristique.id}) }}" class="w-10 h-10 rounded-xl bg-dark-200 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 flex items-center justify-center border border-white/5 transition-all duration-300 hover:border-blue-500/30" title="Modifier">
@@ -173,7 +173,7 @@
                 </article>
             {% endfor %}
         </div>
-        
+
         <div class="mt-6 flex justify-center">
             {{ knp_pagination_render(lieu_touristiques) }}
         </div>
@@ -187,8 +187,8 @@
             const target = document.getElementById(id);
             if (!target) return;
             const step = target.clientWidth * 0.8;
-            const direction = btn.hasAttribute('data-carousel-next') ? 1 : -1;
-            target.scrollBy({ left: direction * step, behavior: 'smooth' });
+            const direction = btn.hasAttribute('data-carousel-next') ? 1 : -1;  
+            target.scrollBy({ left: direction * step, behavior: 'smooth' });    
         });
     });
     const initWeather = async () => {
@@ -199,32 +199,32 @@
 
             const ville = widget.dataset.ville;
             if (!ville || ville.trim() === "" || ville === "Localisation inconnue") {
-                widget.innerHTML = `<i class="fa-solid fa-cloud-sun text-gray-600"></i> <span class="text-xs text-gray-500 italic">M�t�o indisponible</span>`;
+                widget.innerHTML = `<i class="fa-solid fa-cloud-sun text-gray-600"></i> <span class="text-xs text-gray-500 italic">Mï¿½tï¿½o indisponible</span>`;
                 continue;
             }
 
             try {
                 const searchQuery = encodeURIComponent(ville);
                 const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${searchQuery}&count=1&language=fr&format=json`);
-                
+
                 if (!geoRes.ok) throw new Error("GeoAPI fail");
                 const geoData = await geoRes.json();
-                
+
                 if (!geoData.results || geoData.results.length === 0) {
-                    widget.innerHTML = `<i class="fa-solid fa-location-question text-gray-500"></i> <span class="text-xs text-gray-500 italic">Non trouv�e</span>`;
+                    widget.innerHTML = `<i class="fa-solid fa-location-question text-gray-500"></i> <span class="text-xs text-gray-500 italic">Non trouvï¿½e</span>`;
                     continue;
                 }
-                
+
                 const lat = geoData.results[0].latitude;
                 const lon = geoData.results[0].longitude;
 
                 const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                 if (!weatherRes.ok) throw new Error("WeatherAPI fail");
                 const weatherData = await weatherRes.json();
-                
+
                 const temp = Math.round(weatherData.current_weather.temperature);
                 const code = weatherData.current_weather.weathercode;
-                
+
                 let iconCode = "fa-cloud-sun text-gray-400 drop-shadow-[0_0_5px_rgba(156,163,175,0.5)]";
                 if (code <= 3) iconCode = "fa-sun text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]";
                 else if (code >= 45 && code <= 48) iconCode = "fa-smog text-gray-400 drop-shadow-[0_0_5px_rgba(156,163,175,0.5)]";
@@ -232,11 +232,11 @@
                 else if (code >= 71 && code <= 77) iconCode = "fa-snowflake text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]";
                 else if (code >= 80 && code <= 82) iconCode = "fa-cloud-showers-heavy text-blue-500";
                 else if (code >= 95 && code <= 99) iconCode = "fa-bolt text-yellow-500";
-                
-                widget.innerHTML = `<div class="flex items-center justify-between w-full px-2"><div class="flex items-center gap-3"><i class="fa-solid ${iconCode} text-xl"></i><span class="text-white font-bold text-lg tracking-wide">${temp}�C</span></div><span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold bg-dark-300 px-2 py-1 rounded-full border border-white/5">Actuellement</span></div>`;
+
+                widget.innerHTML = `<div class="flex items-center justify-between w-full px-2"><div class="flex items-center gap-3"><i class="fa-solid ${iconCode} text-xl"></i><span class="text-white font-bold text-lg tracking-wide">${temp}ï¿½C</span></div><span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold bg-dark-300 px-2 py-1 rounded-full border border-white/5">Actuellement</span></div>`;
             } catch (e) {
-                console.error("M�t�o erreur:", e);
-                widget.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500/50"></i> <span class="text-xs text-red-400/50 italic">Erreur r�seau</span>`;
+                console.error("Mï¿½tï¿½o erreur:", e);
+                widget.innerHTML = `<i class="fa-solid fa-circle-exclamation text-red-500/50"></i> <span class="text-xs text-red-400/50 italic">Erreur rï¿½seau</span>`;
             }
         }
     };
@@ -265,5 +265,3 @@
     }
 </style>
 {% endblock %}
-
-

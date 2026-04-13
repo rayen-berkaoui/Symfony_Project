@@ -262,8 +262,8 @@ final class LieuTouristiqueController extends AbstractController
 
         // We use Gemini API
         try {
-            $apiKey = 'AIzaSyD_vZ9iE2Xpw_3Y5OjYLA13619p6jGK-kE';
-            
+            $apiKey = $_ENV['GEMINI_API_KEY'] ?? 'METTEZ_VOTRE_CLE_DANS_LE_FICHIER_ENV';
+
             $systemInstruction = "Tu es un guide touristique expert et passionne. Tu dois recommander les meilleurs lieux a un client.".
                 " Utilise STRICTEMENT la base de donnees des lieux fournie ci-dessous pour faire tes propositions.".
                 " Ne mentionne jamais de lieux qui ne sont pas dans cette liste.".

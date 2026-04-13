@@ -48,7 +48,7 @@
             Détails de la Réservation
         </h2>
 
-        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'cart-form'}}) }}
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'cart-form', 'novalidate': 'novalidate'}}) }}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     {{ form_label(form.dateDebut) }}

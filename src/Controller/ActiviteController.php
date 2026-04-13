@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/activite')]
 class ActiviteController extends AbstractController
@@ -158,13 +160,37 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/new', name: 'app_activite_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $activite = new Activite();
         $form = $this->createForm(ActiviteType::class, $activite);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/activites',
+                        $newFilename
+                    );
+                    $activite->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image de l\'activité.');
+                }
+            }
+
             $entityManager->persist($activite);
             $entityManager->flush();
 
@@ -282,12 +308,36 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/{idActivite}/edit', name: 'app_activite_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Activite $activite, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Activite $activite, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(ActiviteType::class, $activite);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/activites',
+                        $newFilename
+                    );
+                    $activite->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image de l\'activité.');
+                }
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_activite_index', [], Response::HTTP_SEE_OTHER);

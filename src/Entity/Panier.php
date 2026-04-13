@@ -54,10 +54,12 @@ class Panier
     #[ORM\Column(name: 'nb_adultes', type: 'integer', options: ['default' => 1])]
     #[Assert\NotBlank(message: 'Le nombre d\'adultes est obligatoire')]
     #[Assert\Positive(message: 'Le nombre d\'adultes doit être positif')]
+    #[Assert\LessThanOrEqual(value: 20, message: 'Le nombre d\'adultes ne peut dépasser 20')]
     private ?int $nbAdultes = 1;
 
     #[ORM\Column(name: 'nb_enfants', type: 'integer', options: ['default' => 0])]
     #[Assert\PositiveOrZero(message: 'Le nombre d\'enfants ne peut pas être négatif')]
+    #[Assert\LessThanOrEqual(value: 20, message: 'Le nombre d\'enfants ne peut dépasser 20')]
     private ?int $nbEnfants = 0;
 
     #[ORM\Column(name: 'prix_estime', type: Types::DECIMAL, precision: 10, scale: 2)]

@@ -34,7 +34,7 @@ class AddToCartType extends AbstractType
             ->add('nbAdultes', IntegerType::class, [
                 'label' => 'Nombre d\'adultes',
                 'data' => 1,
-                'attr' => ['class' => 'input-modern', 'min' => 1, 'max' => 20],
+                'attr' => ['class' => 'input-modern'],
                 'constraints' => [
                     new Assert\NotBlank(message: 'Le nombre d\'adultes est obligatoire'),
                     new Assert\Positive(message: 'Le nombre d\'adultes doit être positif'),
@@ -44,7 +44,7 @@ class AddToCartType extends AbstractType
             ->add('nbEnfants', IntegerType::class, [
                 'label' => 'Nombre d\'enfants',
                 'data' => 0,
-                'attr' => ['class' => 'input-modern', 'min' => 0, 'max' => 20],
+                'attr' => ['class' => 'input-modern'],
                 'constraints' => [
                     new Assert\PositiveOrZero(message: 'Le nombre d\'enfants ne peut pas être négatif'),
                     new Assert\LessThanOrEqual(20, message: 'Maximum 20 enfants'),
@@ -59,3 +59,4 @@ class AddToCartType extends AbstractType
         ]);
     }
 }
+

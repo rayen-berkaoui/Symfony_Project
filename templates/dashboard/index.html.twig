@@ -161,6 +161,16 @@
 <script>
 function initCharts() {
     if (!document.getElementById('categoryPieChart')) return;
+    
+    // Destroy existing charts to prevent "Canvas is already in use" error
+    let existingCatChart = Chart.getChart('categoryPieChart');
+    if (existingCatChart) existingCatChart.destroy();
+    
+    let existingAdresseChart = Chart.getChart('adressePieChart');
+    if (existingAdresseChart) existingAdresseChart.destroy();
+    
+    let existingStatutChart = Chart.getChart('statutPieChart');
+    if (existingStatutChart) existingStatutChart.destroy();
 
     const chartOptions = {
         responsive: true,
@@ -232,7 +242,11 @@ function initCharts() {
     }
 }
 document.addEventListener('turbo:load', initCharts);
-document.addEventListener('DOMContentLoaded', initCharts);
-initCharts();
-</script>{% endblock %}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCharts);
+} else {
+    initCharts();
+}
+</script>
+{% endblock %}
 

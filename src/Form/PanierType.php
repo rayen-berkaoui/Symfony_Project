@@ -47,11 +47,11 @@ class PanierType extends AbstractType
             ])
             ->add('nbAdultes', IntegerType::class, [
                 'label' => 'Nombre d\'adultes',
-                'attr' => ['class' => 'input-modern', 'min' => 1],
+                'attr' => ['class' => 'input-modern'],
             ])
             ->add('nbEnfants', IntegerType::class, [
                 'label' => 'Nombre d\'enfants',
-                'attr' => ['class' => 'input-modern', 'min' => 0],
+                'attr' => ['class' => 'input-modern'],
             ])
             ->add('prixEstime', MoneyType::class, [
                 'label' => 'Prix Estimé',
@@ -78,3 +78,4 @@ class PanierType extends AbstractType
         ]);
     }
 }
+

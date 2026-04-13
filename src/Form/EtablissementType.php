@@ -175,8 +175,6 @@ class EtablissementType extends AbstractType
                 ],
                 'required' => false
             ])
-            ->add('latitude', NumberType::class, ['scale' => 7, 'required' => false])
-            ->add('longitude', NumberType::class, ['scale' => 7, 'required' => false])
             ->add('gouvernorat', ChoiceType::class, [
                 'mapped' => false,
                 'required' => true,

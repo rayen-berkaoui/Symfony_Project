@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/etablissement')]
 class EtablissementController extends AbstractController
@@ -251,13 +253,54 @@ class EtablissementController extends AbstractController
     }
 
     #[Route('/new', name: 'app_etablissement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $etablissement = new Etablissement();
         $form = $this->createForm(EtablissementType::class, $etablissement);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // Process image upload
+            $imagesFiles = $form->get('images')->getData();
+            if ($imagesFiles) {
+                // If multiple is true, but we only have string, we will take the first image
+                $imageFile = is_array($imagesFiles) ? $imagesFiles[0] : $imagesFiles;
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/etablissements',
+                        $newFilename
+                    );
+                    $etablissement->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                }
+            }
+
+            // Manage unmapped telephone and regional indicators cleanly
+            $indicatif = $form->get('telephoneIndicatif')->getData();
+            $tel = $etablissement->getTelephone();
+            if ($indicatif && $tel && strpos($tel, $indicatif) !== 0) {
+                $etablissement->setTelephone($indicatif . $tel);
+            }
+            
+            // Handle missing optional unmapped variables correctly
+            if (!$etablissement->getAdresse()) {
+                $ville = $form->get('ville')->getData();
+                $gouvernorat = $form->get('gouvernorat')->getData();
+                $etablissement->setAdresse($gouvernorat . ', ' . $ville);
+            }
+
             $entityManager->persist($etablissement);
             $entityManager->flush();
 
@@ -375,12 +418,45 @@ class EtablissementController extends AbstractController
     }
 
     #[Route('/{idEtablissement}/edit', name: 'app_etablissement_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Etablissement $etablissement, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Etablissement $etablissement, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(EtablissementType::class, $etablissement);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true, true) as $error) {
+                $this->addFlash('error', $error->getMessage());
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // Process image upload
+            $imagesFiles = $form->get('images')->getData();
+            if ($imagesFiles) {
+                // If multiple is true, but we only have string, we will take the first image
+                $imageFile = is_array($imagesFiles) ? $imagesFiles[0] : $imagesFiles;
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/etablissements',
+                        $newFilename
+                    );
+                    $etablissement->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                }
+            }
+
+            $indicatif = $form->get('telephoneIndicatif')->getData();
+            $tel = $etablissement->getTelephone();
+            if ($indicatif && $tel && strpos($tel, $indicatif) !== 0) {
+                $etablissement->setTelephone($indicatif . $tel);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_etablissement_index', [], Response::HTTP_SEE_OTHER);

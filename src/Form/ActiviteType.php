@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -49,6 +50,14 @@ class ActiviteType extends AbstractType
                     'Annulée' => 'annulee'
                 ],
                 'required' => false
+            ])
+            ->add('image', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Image de l\'activité',
+                'attr' => [
+                    'accept' => 'image/*'
+                ]
             ])
             ->add('etablissement', EntityType::class, [
                 'class' => Etablissement::class,

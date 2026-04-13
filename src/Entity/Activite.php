@@ -18,11 +18,15 @@ class Activite
     #[ORM\Column(name: 'nomActivite', type: 'string', length: 120)]
     #[Assert\NotBlank(message: "Le nom de l'activité est obligatoire")]
     #[Assert\Length(min: 3, max: 120, minMessage: "Le nom doit comporter au moins 3 caractères")]
+    #[Assert\NotBlank(message: 'Le nom de l\'activité est obligatoire')]
+    #[Assert\Length(min: 3, max: 120, minMessage: 'Le nom doit contenir au moins {{ limit }} caractères')]
     private ?string $nomActivite = null;
 
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
     #[Assert\NotBlank(message: "La description est obligatoire")]
     #[Assert\Length(min: 10, minMessage: "La description doit comporter au moins 10 caractères")]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(min: 10, minMessage: 'La description doit comporter au moins {{ limit }} caractères')]
     private ?string $description = null;
 
     #[ORM\Column(name: 'categorie', type: 'string', length: 60, nullable: true)]
@@ -31,6 +35,7 @@ class Activite
 
     #[ORM\Column(name: 'duree', type: 'integer', nullable: true)]
     #[Assert\Positive(message: "La durée doit être positive")]
+    #[Assert\Positive(message: 'La durée doit être supérieure à zéro')]
     private ?int $duree = null;
 
     #[ORM\Column(name: 'niveau', type: 'string', length: 50, nullable: true)]
@@ -39,6 +44,8 @@ class Activite
     #[ORM\Column(name: 'prix', type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Assert\NotBlank(message: "Le prix est obligatoire")]
     #[Assert\PositiveOrZero(message: "Le prix doit être positif ou nul")]
+    #[Assert\NotBlank(message: 'Le prix est obligatoire')]
+    #[Assert\PositiveOrZero(message: 'Le prix ne peut pas être négatif')]
     private ?string $prix = null;
 
     #[ORM\Column(name: 'devise', type: 'string', length: 3, nullable: true, options: ['default' => 'TND'])]
@@ -51,21 +58,27 @@ class Activite
 
     #[ORM\Column(name: 'date_fin', type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\NotBlank(message: "La date de fin est obligatoire")]
-    #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit être postérieure à la date de début")]
+    #[Assert\GreaterThan(propertyPath: "dateDebut", message: "La date de fin doit Ãªtre postÃ©rieure Ã la date de dÃ©but")]
+    #[Assert\Expression(expression: 'this.getDateDebut() == null or this.getDateFin() == null or this.getDateDebut() <= this.getDateFin()', message: 'La date de fin ne peut pas être antérieure à la date de début')]
     private ?\DateTimeInterface $date_fin = null;
 
     #[ORM\Column(name: 'nb_places', type: 'integer', nullable: true)]
     #[Assert\NotBlank(message: "Le nombre de places est obligatoire")]
     #[Assert\Positive(message: "Le nombre de places doit être positif")]
+    #[Assert\NotBlank(message: 'Le nombre de places est obligatoire')]
+    #[Assert\Positive(message: 'Le nombre de places doit être supérieur à zéro')]
     private ?int $nb_places = null;
 
     #[ORM\Column(name: 'places_dispo', type: 'integer', nullable: true)]
+    #[Assert\PositiveOrZero(message: "Doit être positif ou nul")]
     private ?int $places_dispo = null;
 
     #[ORM\Column(name: 'adresse_depart', type: 'string', length: 180, nullable: true)]
+    #[Assert\Length(max: 180, maxMessage: "Trop long")]
     private ?string $adresse_depart = null;
 
     #[ORM\Column(name: 'age_min', type: 'integer', nullable: true)]
+    #[Assert\PositiveOrZero(message: "Doit être positif ou nul")]
     private ?int $age_min = null;
 
     #[ORM\Column(name: 'equipement_inclus', type: 'string', length: 255, nullable: true)]
@@ -77,9 +90,13 @@ class Activite
     #[ORM\Column(name: 'statut', type: 'string', columnDefinition: "ENUM('disponible','complete','annulee')", nullable: true)]
     private ?string $statut = 'disponible';
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     // Foreign Key mapping
     #[ORM\ManyToOne(targetEntity: Etablissement::class)]
-    #[ORM\JoinColumn(name: 'idEtablissement', referencedColumnName: 'idEtablissement', nullable: false, onDelete: 'CASCADE')]
+#[ORM\JoinColumn(name: 'idEtablissement', referencedColumnName: 'idEtablissement', nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Veuillez sélectionner un établissement')]
     private ?Etablissement $etablissement = null;
 
 
@@ -278,5 +295,25 @@ class Activite
     {
         $this->etablissement = $etablissement;
         return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+        return '/uploads/activites/' . $this->image;
     }
 }

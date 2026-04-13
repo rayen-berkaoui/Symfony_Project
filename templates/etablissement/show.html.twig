@@ -219,6 +219,11 @@
         <aside class="card">
             <div class="section">
                 <h3>Résumé</h3>
+                {% if etablissement.imageUrl is defined and etablissement.imageUrl %}
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <img src="{{ etablissement.imageUrl }}" alt="{{ etablissement.nom }}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px;">
+                </div>
+                {% endif %}
                 <div class="summary-list">
                     <div class="summary-item"><span>Nom</span><strong>{{ etablissement.nom }}</strong></div>
                     <div class="summary-item"><span>Type</span><strong>{{ etablissement.type ?: '-' }}</strong></div>
