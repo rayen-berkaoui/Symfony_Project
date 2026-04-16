@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Fiche utilisateur{% endblock %}
+{% block breadcrumb %}Detail complet du compte, donnees personnelles et contexte d'inscription{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div style="display:flex; justify-content:space-between; gap:18px; align-items:flex-start; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:18px;">
+            <span class="avatar-dot" style="width:64px; height:64px; border-radius:20px; font-size:1.1rem;">{{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}</span>
+            <div>
+                <p class="header-overline" style="margin:0 0 8px;">Compte utilisateur</p>
+                <h2 style="font-size:clamp(1.9rem, 3vw, 2.7rem); font-weight:900; margin:0 0 8px;">{{ user.nom }} {{ user.prenom }}</h2>
+                <div class="inline-list">
+                    <span class="status-chip info">{{ user.role.nom }}</span>
+                    <span class="status-chip {% if user.statut == 'ACTIF' %}success{% elseif user.statut == 'BLOQUE' %}danger{% else %}warning{% endif %}">{{ user.statut }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="inline-list">
+            <a href="{{ path('app_admin_users') }}" class="btn-dark"><i class="fa-solid fa-arrow-left"></i><span>Retour a la liste</span></a>
+        </div>
+    </div>
+</section>
+
+<section class="content-grid" style="grid-template-columns: .9fr 1.3fr;">
+    <article class="admin-card">
+        <h3 style="margin:0 0 18px; font-size:1.2rem; font-weight:800;">Resume rapide</h3>
+        <div style="display:grid; gap:14px;">
+            <div style="padding:16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);">
+                <div style="color:var(--admin-muted); font-size:.82rem; margin-bottom:6px;">Email</div>
+                <strong>{{ user.email }}</strong>
+            </div>
+            <div style="padding:16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);">
+                <div style="color:var(--admin-muted); font-size:.82rem; margin-bottom:6px;">Telephone</div>
+                <strong>{{ user.numTel ?? 'Non renseigne' }}</strong>
+            </div>
+            <div style="padding:16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);">
+                <div style="color:var(--admin-muted); font-size:.82rem; margin-bottom:6px;">Langue</div>
+                <strong>{{ user.language ?? 'fr' }}</strong>
+            </div>
+            <div style="padding:16px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);">
+                <div style="color:var(--admin-muted); font-size:.82rem; margin-bottom:6px;">Points fidelite</div>
+                <strong>{{ user.loyaltyPoints ?? 0 }}</strong>
+            </div>
+        </div>
+    </article>
+
+    <article class="admin-card">
+        <h3 style="margin:0 0 18px; font-size:1.2rem; font-weight:800;">Informations detaillees</h3>
+        <div style="display:grid; gap:0; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.03);">
+            {% set rows = [
+                ['ID utilisateur', user.id],
+                ['Prenom', user.prenom],
+                ['Nom', user.nom],
+                ['Email', user.email],
+                ['Telephone', user.numTel ?? 'Non renseigne'],
+                ['Role', user.role.nom],
+                ['Statut', user.statut],
+                ['Preference de theme', user.themePreference ?? 'Par defaut'],
+                ['Derniere connexion faciale', user.lastFaceLogin ? user.lastFaceLogin|date('d/m/Y') : 'Jamais'],
+                ['Date de creation', user.dateCreation|date('d/m/Y H:i')]
+            ] %}
+            {% for row in rows %}
+                <div style="display:grid; grid-template-columns: 220px 1fr; gap:18px; padding:16px 18px; border-bottom:{{ loop.last ? '0' : '1px solid rgba(255,255,255,.06)' }};">
+                    <div style="color:var(--admin-muted); font-weight:700;">{{ row[0] }}</div>
+                    <div style="font-weight:600;">{{ row[1] }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

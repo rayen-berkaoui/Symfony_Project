@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Panier #{{ panier.id }}{% endblock %}
+
+{% block body %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm uppercase tracking-[0.3em] text-gold-500/70">Panier</p>
+            <h1 class="text-4xl font-black text-white">#{{ panier.id }} - {{ panier.displayName }}</h1>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ path('app_panier_edit', {'id': panier.id}) }}" class="btn-dark">Modifier</a>
+            <a href="{{ path('app_panier_index') }}" class="btn-gold">Retour</a>
+        </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="card lg:col-span-2 grid gap-4 md:grid-cols-2">
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Client</p><p class="mt-2 text-xl font-bold text-white">{{ panier.utilisateur ? (panier.utilisateur.prenom ~ ' ' ~ panier.utilisateur.nom) : 'Client indisponible' }}</p><p class="text-gray-500">{{ panier.utilisateur ? panier.utilisateur.email : '—' }}</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Statut</p><p class="mt-2"><span class="rounded-full border px-3 py-1 text-xs font-semibold {{ panier.statutBadgeClass }}">{{ panier.statutLabel }}</span></p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Type</p><p class="mt-2 text-xl font-bold text-white">{{ panier.serviceTypeLabel }}</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Référence service</p><p class="mt-2 text-xl font-bold text-white">{{ panier.displayReference }}</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Début</p><p class="mt-2 text-white">{{ panier.dateDebut|date('d/m/Y H:i') }}</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Fin</p><p class="mt-2 text-white">{{ panier.dateFin|date('d/m/Y H:i') }}</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Voyageurs</p><p class="mt-2 text-white">{{ panier.nbPersonnes }} total — {{ panier.nbAdultes }} adultes / {{ panier.nbEnfants }} enfants</p></div>
+            <div><p class="text-xs uppercase tracking-[0.2em] text-gray-500">Chambres</p><p class="mt-2 text-white">{{ panier.nbChambres }}</p></div>
+        </div>
+        <div class="card">
+            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Montant estimé</p>
+            <p class="mt-3 text-4xl font-black text-gold-400">{{ panier.prixEstime|number_format(2, '.', ' ') }}</p>
+            <p class="text-sm text-gray-500 mt-2">TND</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

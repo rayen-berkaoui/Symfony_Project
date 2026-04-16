@@ -1,0 +1,17 @@
+{{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+    <div class="grid gap-4 md:grid-cols-2">
+        {{ form_row(form.serviceId) }}
+        {{ form_row(form.typeService) }}
+        {{ form_row(form.dateDebut) }}
+        {{ form_row(form.dateFin) }}
+        {{ form_row(form.nbAdultes) }}
+        {{ form_row(form.nbEnfants) }}
+        {{ form_row(form.nbChambres) }}
+        {{ form_row(form.prixEstime) }}
+        {{ form_row(form.statutItem) }}
+    </div>
+    <div class="flex gap-3">
+        <button class="btn-gold">{{ button_label|default('Enregistrer') }}</button>
+        <a href="{{ path('app_panier_index') }}" class="btn-dark">Retour</a>
+    </div>
+{{ form_end(form) }}

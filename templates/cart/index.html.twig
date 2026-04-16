@@ -1,0 +1,440 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Mon panier
+<script>
+    document.querySelectorAll('.cart-update-form').forEach((form) => {
+        const unit = parseFloat(form.dataset.unitPrice || '0');
+        const type = form.dataset.serviceType || 'Lieu';
+        const start = form.querySelector('.cart-date-start');
+        const end = form.querySelector('.cart-date-end');
+        const adults = form.querySelector('.cart-adults');
+        const children = form.querySelector('.cart-children');
+        const rooms = form.querySelector('.cart-rooms');
+        const output = form.querySelector('.cart-live-price');
+
+        const recalc = () => {
+            const adultCount = Math.max(1, parseInt(adults?.value || '1', 10));
+            const childCount = Math.max(0, parseInt(children?.value || '0', 10));
+            const roomCount = Math.max(1, parseInt(rooms?.value || '1', 10));
+            const people = adultCount + childCount;
+            let days = 1;
+            if (start?.value && end?.value) {
+                const diff = new Date(end.value) - new Date(start.value);
+                days = diff > 0 ? Math.ceil(diff / 86400000) : 1;
+            }
+            const total = type === 'Hotel' ? unit * roomCount * days : unit * Math.max(1, people) * days;
+            if (output) output.textContent = total.toFixed(2) + ' TND';
+        };
+
+        [start, end, adults, children, rooms].forEach((field) => {
+            field?.addEventListener('input', recalc);
+            field?.addEventListener('change', recalc);
+        });
+        recalc();
+    });
+</script>
+
+{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-7xl px-4 py-8 space-y-8" data-cart-insight-url="{{ insightUrl }}" data-cart-weather-url="{{ weatherAdviceUrl }}">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+            <p class="text-sm uppercase tracking-[0.35em] text-gold-500/70">Panier intelligent</p>
+            <h1 class="text-4xl font-black text-white">Votre sélection voyage</h1>
+            <p class="mt-2 max-w-3xl text-gray-400">Un panier clair, des règles de réservation cohérentes et des recommandations pilotées par la météo et l'IA pour éviter les choix incohérents.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ path('app_lieu_touristique_index') }}" class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm font-semibold text-white transition hover:border-gold-500/40 hover:text-gold-300">Explorer les lieux</a>
+            <a href="{{ path('app_etablissement_index') }}" class="rounded-2xl bg-gold-500 px-4 py-3 text-sm font-bold text-black transition hover:bg-gold-400">Ajouter un service</a>
+        </div>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-3xl border border-white/10 bg-dark-300/80 p-5 shadow-luxury">
+            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Articles en attente</p>
+            <p class="mt-3 text-4xl font-black text-white">{{ itemCount }}</p>
+            <p class="mt-2 text-sm text-gray-400">Services encore modifiables avant paiement.</p>
+        </div>
+        <div class="rounded-3xl border border-white/10 bg-dark-300/80 p-5 shadow-luxury">
+            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Budget total</p>
+            <p class="mt-3 text-4xl font-black text-gold-400">{{ totalPrice|number_format(2, '.', ' ') }}</p>
+            <p class="mt-2 text-sm text-gray-400">Montant estimé sur la base des règles métier actuelles.</p>
+        </div>
+        <div class="rounded-3xl border border-white/10 bg-dark-300/80 p-5 shadow-luxury">
+            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Panier moyen</p>
+            <p class="mt-3 text-4xl font-black text-white">{{ averagePrice|number_format(2, '.', ' ') }}</p>
+            <p class="mt-2 text-sm text-gray-400">Valeur moyenne par article réservé.</p>
+        </div>
+        <div class="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-5 shadow-luxury">
+            <p class="text-xs uppercase tracking-[0.2em] text-emerald-300">Prêt pour checkout</p>
+            <p class="mt-3 text-4xl font-black text-white">{{ itemCount > 0 ? 'Oui' : '—' }}</p>
+            <p class="mt-2 text-sm text-emerald-200/80">Les validations de dates et de capacité sont appliquées avant paiement.</p>
+        </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div class="space-y-6">
+            <div class="grid gap-6 lg:grid-cols-2">
+                <article class="rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-500/12 to-sky-500/8 p-6 shadow-luxury">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.25em] text-violet-300">Insight achat</p>
+                            <h2 class="mt-2 text-2xl font-black text-white">Suggestions complémentaires</h2>
+                        </div>
+                        <span class="rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs font-semibold text-violet-200">IA + logique panier</span>
+                    </div>
+                    <p class="mt-4 text-sm leading-7 text-violet-100/85" id="purchaseInsightSummary">Analyse en cours…</p>
+                    <div class="mt-5 space-y-3" id="purchaseInsightSuggestions">
+                        <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-400">Les recommandations apparaîtront ici dès que l’analyse du panier sera terminée.</div>
+                    </div>
+                </article>
+
+                <article class="rounded-3xl border border-sky-500/20 bg-gradient-to-br from-sky-500/12 to-cyan-500/8 p-6 shadow-luxury">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.25em] text-sky-300">Météo décisionnelle</p>
+                            <h2 class="mt-2 text-2xl font-black text-white">Faut-il maintenir ce programme ?</h2>
+                        </div>
+                        <span class="rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-xs font-semibold text-sky-200">Prévisions + IA</span>
+                    </div>
+                    <p class="mt-4 text-sm leading-7 text-sky-100/85" id="weatherInsightSummary">Lecture météo en cours…</p>
+                    <div class="mt-5 space-y-3" id="weatherInsightItems">
+                        <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-400">Les conseils météo arriveront ici pour chaque article du panier.</div>
+                    </div>
+                </article>
+            </div>
+
+            {% if cartItems is empty %}
+                <div class="rounded-3xl border border-dashed border-white/15 bg-dark-300/70 px-8 py-16 text-center shadow-luxury">
+                    <i class="fa-solid fa-cart-shopping text-5xl text-gold-500/60"></i>
+                    <h2 class="mt-6 text-2xl font-bold text-white">Votre panier est vide</h2>
+                    <p class="mt-2 text-gray-400">Ajoutez un lieu touristique, un hôtel ou un restaurant pour commencer.</p>
+                </div>
+            {% else %}
+                <div class="space-y-5">
+                    {% for item in cartItems %}
+                        <article class="overflow-hidden rounded-3xl border border-white/10 bg-dark-300/80 shadow-luxury">
+                            <div class="grid gap-0 lg:grid-cols-[280px_1fr]">
+                                <div class="h-full min-h-[240px] overflow-hidden bg-black/30">
+                                    {% if item.displayImage %}
+                                        <img src="{{ asset(item.displayImage) }}" alt="{{ item.displayName }}" class="h-full w-full object-cover transition duration-500 hover:scale-105">
+                                    {% else %}
+                                        <div class="flex h-full min-h-[240px] items-center justify-center text-gray-600">
+                                            <i class="fa-solid fa-suitcase-rolling text-5xl"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-6 space-y-5">
+                                    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                        <div>
+                                            <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.22em] text-gold-500/70">
+                                                <span>{{ item.serviceTypeLabel }}</span>
+                                                <span class="h-1 w-1 rounded-full bg-gold-500/50"></span>
+                                                <span>{{ item.displayCity ?: 'Tunisie' }}</span>
+                                            </div>
+                                            <h2 class="mt-2 text-3xl font-black text-white">{{ item.displayName }}</h2>
+                                            <p class="mt-2 text-sm text-gray-400">Référence {{ item.displayReference }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="rounded-full border px-3 py-1 text-sm font-semibold {{ item.statutBadgeClass }}">{{ item.statutLabel }}</span>
+                                            <p class="mt-4 text-3xl font-black text-gold-400">{{ item.prixEstime|number_format(2, '.', ' ') }} <span class="text-sm text-gray-400">TND</span></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid gap-3 md:grid-cols-4">
+                                        <div class="rounded-2xl bg-black/20 p-4">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Début</p>
+                                            <p class="mt-2 font-semibold text-white">{{ item.dateDebut|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                        <div class="rounded-2xl bg-black/20 p-4">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Fin</p>
+                                            <p class="mt-2 font-semibold text-white">{{ item.dateFin|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                        <div class="rounded-2xl bg-black/20 p-4">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Voyageurs</p>
+                                            <p class="mt-2 font-semibold text-white">{{ item.nbPersonnes }} pers.</p>
+                                            <p class="text-xs text-gray-500">{{ item.nbAdultes }} adulte(s), {{ item.nbEnfants }} enfant(s)</p>
+                                        </div>
+                                        <div class="rounded-2xl bg-black/20 p-4">
+                                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Capacité</p>
+                                            <p class="mt-2 font-semibold text-white">{{ item.typeService == 'Hotel' ? (item.nbChambres ~ ' chambre(s)') : 'Service unitaire' }}</p>
+                                            <p class="text-xs text-gray-500">{{ item.nbJours }} jour(s)</p>
+                                        </div>
+                                    </div>
+
+                                    <form method="post" action="{{ path('app_cart_update', {'id': item.id}) }}" class="cart-update-form grid gap-3 lg:grid-cols-6" data-unit-price="{{ (item.nbJours > 0 and item.nbPersonnes > 0) ? (item.prixEstime / (item.typeService == 'Hotel' ? (item.nbChambres * item.nbJours) : (item.nbPersonnes * item.nbJours))) : item.prixEstime }}" data-service-type="{{ item.typeService }}">
+                                        <label class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+                                            <span class="mb-2 block text-xs uppercase tracking-[0.2em] text-gray-500">Début</span>
+                                            <input type="datetime-local" name="dateDebut" value="{{ item.dateDebut|date('Y-m-d\TH:i') }}" class="w-full bg-transparent font-semibold text-white outline-none cart-date-start">
+                                        </label>
+                                        <label class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+                                            <span class="mb-2 block text-xs uppercase tracking-[0.2em] text-gray-500">Fin</span>
+                                            <input type="datetime-local" name="dateFin" value="{{ item.dateFin|date('Y-m-d\TH:i') }}" class="w-full bg-transparent font-semibold text-white outline-none cart-date-end">
+                                        </label>
+                                        <label class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+                                            <span class="mb-2 block text-xs uppercase tracking-[0.2em] text-gray-500">Adultes</span>
+                                            <input type="number" name="nbAdultes" min="1" max="20" value="{{ item.nbAdultes }}" class="w-full bg-transparent font-semibold text-white outline-none cart-adults">
+                                        </label>
+                                        <label class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+                                            <span class="mb-2 block text-xs uppercase tracking-[0.2em] text-gray-500">Enfants</span>
+                                            <input type="number" name="nbEnfants" min="0" max="20" value="{{ item.nbEnfants }}" class="w-full bg-transparent font-semibold text-white outline-none cart-children">
+                                        </label>
+                                        {% if item.typeService == 'Hotel' %}
+                                            <label class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-gray-300">
+                                                <span class="mb-2 block text-xs uppercase tracking-[0.2em] text-gray-500">Chambres</span>
+                                                <input type="number" name="nbChambres" min="1" max="10" value="{{ item.nbChambres }}" class="w-full bg-transparent font-semibold text-white outline-none cart-rooms">
+                                            </label>
+                                        {% else %}
+                                            <input type="hidden" name="nbChambres" value="1" class="cart-rooms">
+                                        {% endif %}
+                                        <div class="flex flex-col items-stretch gap-3 lg:justify-end">
+                                            <div class="rounded-2xl border border-gold-500/20 bg-gold-500/10 px-4 py-3 text-sm font-semibold text-gold-200">Estimation: <span class="cart-live-price">{{ item.prixEstime|number_format(2, '.', ' ') }} TND</span></div>
+                                            <button class="rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">Mettre à jour</button>
+                                        </div>
+                                    </form>
+
+                                    <form method="post" action="{{ path('app_cart_remove', {'id': item.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('remove' ~ item.id) }}">
+                                        <button class="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20">
+                                            <i class="fa-solid fa-trash-can mr-2"></i>Retirer cet article
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <aside class="space-y-6">
+            <div class="rounded-3xl border border-gold-500/20 bg-dark-300/80 p-6 shadow-luxury">
+                <p class="text-xs uppercase tracking-[0.28em] text-gold-500/70">Résumé opérationnel</p>
+                <h2 class="mt-3 text-2xl font-black text-white">Prêt pour la validation</h2>
+                <div class="mt-6 space-y-4 text-sm text-gray-300">
+                    <div class="flex items-center justify-between"><span>Nombre d'articles</span><strong class="text-white">{{ itemCount }}</strong></div>
+                    <div class="flex items-center justify-between"><span>Montant global</span><strong class="text-gold-400">{{ totalPrice|number_format(2, '.', ' ') }} TND</strong></div>
+                    <div class="flex items-center justify-between"><span>Panier moyen</span><strong class="text-white">{{ averagePrice|number_format(2, '.', ' ') }} TND</strong></div>
+                    <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-gray-400">
+                        Le paiement Paymee est disponible au checkout. Les séjours hôteliers appliquent désormais une logique de capacité par chambre et les dates incohérentes sont refusées.
+                    </div>
+                </div>
+                {% if cartItems is not empty %}
+                    <a href="{{ path('app_cart_checkout') }}" class="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-gold-500 px-5 py-4 text-center font-bold text-black transition hover:bg-gold-400">Passer au paiement</a>
+                {% endif %}
+            </div>
+
+            <div class="rounded-3xl border border-white/10 bg-dark-300/80 p-6 shadow-luxury">
+                <h3 class="text-xl font-black text-white">Bonnes pratiques panier</h3>
+                <ul class="mt-4 space-y-3 text-sm text-gray-400">
+                    <li class="flex gap-3"><i class="fa-solid fa-circle-check mt-1 text-emerald-300"></i><span>Vérifiez que la date de fin est bien postérieure à la date de début.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-circle-check mt-1 text-emerald-300"></i><span>Pour les hôtels, gardez un ratio réaliste entre chambres et voyageurs.</span></li>
+                    <li class="flex gap-3"><i class="fa-solid fa-circle-check mt-1 text-emerald-300"></i><span>Utilisez les recommandations IA pour compléter le panier sans disperser l’itinéraire.</span></li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+
+    <section class="space-y-6">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p class="text-sm uppercase tracking-[0.28em] text-gold-500/70">Bundles intelligents</p>
+                <h2 class="text-3xl font-black text-white">10 packs à compléter depuis votre panier</h2>
+            </div>
+            <span class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-semibold text-gray-300">{{ bundleCards|length }} opportunités analysées</span>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {% for bundle in bundleCards %}
+                <article class="rounded-3xl border border-white/10 bg-dark-300/80 p-5 shadow-luxury">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.2em] text-gold-500/70">{{ bundle.subtitle }}</p>
+                            <h3 class="mt-2 text-xl font-black text-white">{{ bundle.title }}</h3>
+                        </div>
+                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ bundle.status == 'ready' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : (bundle.status == 'partial' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' : 'bg-slate-500/10 text-slate-300 border border-slate-500/20') }}">{{ bundle.readiness }}%</span>
+                    </div>
+                    <p class="mt-3 text-sm text-gray-400">{{ bundle.description }}</p>
+                    <div class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-300">
+                        <div class="flex items-center justify-between"><span>Ville visée</span><strong class="text-white">{{ bundle.city_scope }}</strong></div>
+                        <div class="mt-2 flex flex-wrap gap-2">
+                            {% for type in bundle.required_types %}<span class="rounded-full border border-white/10 px-3 py-1 text-xs">{{ type }}</span>{% endfor %}
+                        </div>
+                        <p class="mt-3 text-xs text-gray-500">{% if bundle.missing is empty %}Ce bundle est déjà presque complet.{% else %}Éléments manquants : {{ bundle.missing|join(', ') }}.{% endif %}</p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-3">
+        <article class="rounded-3xl border border-sky-500/20 bg-sky-500/10 p-6 shadow-luxury xl:col-span-1">
+            <p class="text-xs uppercase tracking-[0.22em] text-sky-200">OpenTripMap API</p>
+            <h2 class="mt-2 text-2xl font-black text-white">Notes & réputation</h2>
+            <div class="mt-4 space-y-3">
+                {% for item in cartItems %}
+                    {% set review = reviewHighlights[item.id] ?? null %}
+                    <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-white">{{ item.displayName }}</h3>
+                                <p class="mt-1 text-sm text-gray-400">{{ review and review.summary ? review.summary : 'Ajoutez OPENTRIPMAP_API_KEY pour charger un résumé touristique gratuit.' }}</p>
+                            </div>
+                            <div class="text-right text-sm text-white">
+                                <div>{{ review and review.rating ? review.rating : '—' }}</div>
+                                <div class="text-xs text-gray-500">{{ review and review.user_rating_count ? review.user_rating_count ~ ' avis' : 'avis indisponibles' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="rounded-3xl border border-violet-500/20 bg-violet-500/10 p-6 shadow-luxury xl:col-span-1">
+            <p class="text-xs uppercase tracking-[0.22em] text-violet-200">LibreTranslate API</p>
+            <h2 class="mt-2 text-2xl font-black text-white">Résumé multilingue</h2>
+            <div class="mt-4 space-y-4 text-sm text-violet-100/85">
+                <div><strong class="text-white">EN</strong><p class="mt-1">{{ translatedSummaries.en ?: 'LibreTranslate est utilisé automatiquement quand le service public est disponible.' }}</p></div>
+                <div><strong class="text-white">AR</strong><p class="mt-1">{{ translatedSummaries.ar ?: 'LibreTranslate est utilisé automatiquement quand le service public est disponible.' }}</p></div>
+            </div>
+        </article>
+
+        <article class="rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-6 shadow-luxury xl:col-span-1">
+            <p class="text-xs uppercase tracking-[0.22em] text-emerald-200">Discovery API</p>
+            <h2 class="mt-2 text-2xl font-black text-white">Inspirations vols</h2>
+            <div class="mt-4 space-y-3 text-sm text-emerald-100/85">
+                {% if flightSuggestions is not empty %}
+                    {% for flight in flightSuggestions %}
+                        <div class="rounded-2xl border border-white/10 bg-black/20 p-4 flex items-center justify-between gap-3">
+                            <div><p class="font-bold text-white">{{ flight.name }}</p><p class="text-xs text-gray-400">{{ flight.kinds }}</p></div>
+                            <strong class="text-white">{{ flight.distance ? flight.distance ~ ' m' : (flight.rate ? 'Rate ' ~ flight.rate : 'À voir') }}</strong>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-gray-300">Ajoutez OPENTRIPMAP_API_KEY pour afficher des idées de sorties proches de votre destination.</div>
+                {% endif %}
+            </div>
+        </article>
+    </section>
+
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('[data-cart-insight-url]');
+        if (!container) return;
+
+        const purchaseSummary = document.getElementById('purchaseInsightSummary');
+        const purchaseSuggestions = document.getElementById('purchaseInsightSuggestions');
+        const weatherSummary = document.getElementById('weatherInsightSummary');
+        const weatherItems = document.getElementById('weatherInsightItems');
+
+        const renderSuggestionCard = (item) => `
+            <article class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div class="flex gap-4">
+                    <div class="h-16 w-16 overflow-hidden rounded-2xl bg-dark-300/70 flex items-center justify-center">
+                        ${item.image ? `<img src="${item.image.startsWith('/') ? item.image : '/' + item.image.replace(/^\/+/, '')}" alt="${item.name}" class="h-full w-full object-cover">` : '<i class="fa-solid fa-stars text-gold-400"></i>'}
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs uppercase tracking-[0.18em] text-violet-300">${item.headline}</p>
+                        <h3 class="mt-1 text-lg font-bold text-white">${item.name}</h3>
+                        <p class="mt-1 text-sm text-gray-400">${item.city} • ${item.type}</p>
+                        <p class="mt-2 text-sm text-gray-300">${item.reason}</p>
+                    </div>
+                </div>
+            </article>`;
+
+        const renderWeatherCard = (item) => {
+            const verdictClass = item.verdict === 'avoid'
+                ? 'border-rose-500/20 bg-rose-500/10 text-rose-200'
+                : item.verdict === 'caution'
+                    ? 'border-amber-500/20 bg-amber-500/10 text-amber-100'
+                    : item.verdict === 'go'
+                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-100'
+                        : 'border-white/10 bg-black/20 text-gray-200';
+            const tempRange = item.temperature_min !== null && item.temperature_max !== null
+                ? `${Math.round(item.temperature_min)}°C → ${Math.round(item.temperature_max)}°C`
+                : 'Température non disponible';
+
+            return `
+                <article class="rounded-2xl border p-4 ${verdictClass}">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.18em] opacity-80">${item.city} • ${item.date}</p>
+                            <h3 class="mt-1 text-lg font-bold text-white">${item.service}</h3>
+                            <p class="mt-2 text-sm opacity-90">${item.reason}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-semibold">${item.label}</p>
+                            <p class="mt-2 text-xs opacity-75">${tempRange}</p>
+                            <p class="text-xs opacity-75">Pluie max ${Math.round(item.precipitation_probability_max || 0)}%</p>
+                        </div>
+                    </div>
+                </article>`;
+        };
+
+        fetch(container.dataset.cartInsightUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                purchaseSummary.textContent = data.summary || 'Aucun insight disponible.';
+                if (Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                    purchaseSuggestions.innerHTML = data.suggestions.map(renderSuggestionCard).join('');
+                } else {
+                    purchaseSuggestions.innerHTML = '<div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-400">Aucun achat complémentaire évident n\'a été détecté. Votre panier est déjà cohérent.</div>';
+                }
+            })
+            .catch(() => {
+                purchaseSummary.textContent = 'Impossible de générer l\'insight achat pour le moment.';
+            });
+
+        fetch(container.dataset.cartWeatherUrl)
+            .then((response) => response.json())
+            .then((data) => {
+                weatherSummary.textContent = data.summary || 'Aucun conseil météo disponible.';
+                if (Array.isArray(data.items) && data.items.length > 0) {
+                    weatherItems.innerHTML = data.items.map(renderWeatherCard).join('');
+                } else {
+                    weatherItems.innerHTML = '<div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-400">Aucune donnée météo disponible pour les articles du panier.</div>';
+                }
+            })
+            .catch(() => {
+                weatherSummary.textContent = 'Impossible de récupérer les conseils météo pour le moment.';
+            });
+    });
+</script>
+
+<script>
+    document.querySelectorAll('.cart-update-form').forEach((form) => {
+        const unit = parseFloat(form.dataset.unitPrice || '0');
+        const type = form.dataset.serviceType || 'Lieu';
+        const start = form.querySelector('.cart-date-start');
+        const end = form.querySelector('.cart-date-end');
+        const adults = form.querySelector('.cart-adults');
+        const children = form.querySelector('.cart-children');
+        const rooms = form.querySelector('.cart-rooms');
+        const output = form.querySelector('.cart-live-price');
+
+        const recalc = () => {
+            const adultCount = Math.max(1, parseInt(adults?.value || '1', 10));
+            const childCount = Math.max(0, parseInt(children?.value || '0', 10));
+            const roomCount = Math.max(1, parseInt(rooms?.value || '1', 10));
+            const people = adultCount + childCount;
+            let days = 1;
+            if (start?.value && end?.value) {
+                const diff = new Date(end.value) - new Date(start.value);
+                days = diff > 0 ? Math.ceil(diff / 86400000) : 1;
+            }
+            const total = type === 'Hotel' ? unit * roomCount * days : unit * Math.max(1, people) * days;
+            if (output) output.textContent = total.toFixed(2) + ' TND';
+        };
+
+        [start, end, adults, children, rooms].forEach((field) => {
+            field?.addEventListener('input', recalc);
+            field?.addEventListener('change', recalc);
+        });
+        recalc();
+    });
+</script>
+
+{% endblock %}

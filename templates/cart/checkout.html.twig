@@ -1,0 +1,73 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Validation panier{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-6xl px-4 py-8">
+    <div class="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+        <div class="rounded-3xl border border-white/10 bg-dark-300/80 p-6 shadow-luxury">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.3em] text-gold-500/70">Étape finale</p>
+                    <h1 class="mt-2 text-4xl font-black text-white">Choisissez votre mode de paiement</h1>
+                    <p class="mt-3 text-gray-400">Le compte Paymee configuré pour ce projet est le compte marchand <span class="text-gold-400 font-semibold">{{ paymeeAccount }}</span>.</p>
+                </div>
+                <span class="rounded-full border px-4 py-2 text-xs font-semibold {{ sandboxEnabled ? 'border-sky-500/20 bg-sky-500/10 text-sky-200' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' }}">
+                    {{ sandboxEnabled ? 'Mode sandbox Paymee actif' : 'Mode production Paymee' }}
+                </span>
+            </div>
+
+            <div class="mt-8 space-y-4">
+                {% for item in cartItems %}
+                    <div class="rounded-2xl border border-white/10 bg-black/20 p-4 flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">{{ item.serviceTypeLabel }}</p>
+                            <h2 class="mt-1 text-xl font-bold text-white">{{ item.displayName }}</h2>
+                            <p class="text-sm text-gray-400">{{ item.dateDebut|date('d/m/Y H:i') }} → {{ item.dateFin|date('d/m/Y H:i') }}</p>
+                        </div>
+                        <strong class="text-gold-400">{{ item.prixEstime|number_format(2, '.', ' ') }} TND</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'mt-8 space-y-4', 'data-turbo': 'false'}}) }}
+                <div class="grid gap-4 md:grid-cols-2">
+                    {% for child in form.modePaiement %}
+                        <label class="rounded-2xl border border-white/10 bg-black/20 p-5 flex gap-3 cursor-pointer hover:border-gold-500/40 transition">
+                            {{ form_widget(child) }}
+                            <div>
+                                <p class="font-bold text-white">{{ child.vars.label }}</p>
+                                <p class="text-sm text-gray-400 mt-1">
+                                    {% if child.vars.value == 'Paymee' %}
+                                        Paiement sécurisé via la page hébergée Paymee. En sandbox, utilisez votre compte de test pour simuler le règlement.
+                                    {% else %}
+                                        Réservation enregistrée en attente de règlement sur place.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+                <button class="rounded-2xl bg-gold-500 px-5 py-3 font-bold text-black hover:bg-gold-400">Continuer</button>
+            {{ form_end(form) }}
+        </div>
+
+        <aside class="rounded-3xl border border-gold-500/20 bg-dark-300/80 p-6 shadow-luxury h-fit">
+            <p class="text-sm uppercase tracking-[0.3em] text-gold-500/70">Résumé de commande</p>
+            <h2 class="mt-3 text-2xl font-black text-white">{{ cartItems|length }} service(s)</h2>
+            <div class="mt-6 space-y-3 text-sm text-gray-300">
+                <div class="flex items-center justify-between"><span>Montant total</span><strong class="text-gold-400">{{ totalPrice|number_format(2, '.', ' ') }} TND</strong></div>
+                <div class="flex items-center justify-between"><span>Client</span><strong class="text-white">{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
+                <div class="flex items-center justify-between"><span>Email</span><strong class="text-white">{{ app.user.email }}</strong></div>
+                <div class="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-gray-400">
+                    {% if sandboxEnabled %}
+                        Le paiement est configuré sur l'endpoint sandbox Paymee. La création de paiement utilise l'API de test, puis vous êtes redirigé vers la page hébergée Paymee.
+                    {% else %}
+                        Le paiement utilise l'environnement de production Paymee. Vérifiez bien les montants et l'URL de retour avant mise en ligne.
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

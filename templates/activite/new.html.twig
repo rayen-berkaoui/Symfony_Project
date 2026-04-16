@@ -1,0 +1,848 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Activité{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --bg: #0d0d0d;
+        --surface: #161616;
+        --surface-2: #1d1d1d;
+        --surface-3: #252525;
+        --border: rgba(255, 255, 255, 0.08);
+        --accent: #f5c518;
+        --accent-2: #ffd54f;
+        --text: #f3efe7;
+        --muted: #8b8b8b;
+        --danger: #e05b5b;
+        --radius: 18px;
+        --radius-sm: 12px;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background:
+            radial-gradient(circle at top left, rgba(245, 197, 24, 0.08), transparent 28%),
+            radial-gradient(circle at top right, rgba(245, 197, 24, 0.05), transparent 24%),
+            var(--bg);
+        color: var(--text);
+        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+        min-height: 100vh;
+    }
+
+    .activity-page {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 28px 24px 56px;
+    }
+
+    .page-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 10px;
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: clamp(2rem, 2.5vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+    }
+
+    .page-subtitle {
+        margin: 10px 0 0;
+        max-width: 680px;
+        color: var(--muted);
+        font-size: 0.96rem;
+        line-height: 1.6;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        text-decoration: none;
+        transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .back-link:hover {
+        color: var(--text);
+        border-color: rgba(245, 197, 24, 0.45);
+        transform: translateY(-1px);
+    }
+
+    .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.95fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .panel,
+    .sidebar-card {
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)), var(--surface);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    .panel-section {
+        padding: 26px 28px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .panel-section:last-child {
+        border-bottom: 0;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 18px;
+        font-size: 0.76rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .section-title::before {
+        content: '';
+        display: block;
+        width: 24px;
+        height: 2px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 1px rgba(245, 197, 24, 0.12);
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .field.full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--muted);
+        letter-spacing: 0.01em;
+    }
+
+    input[type='text'],
+    input[type='number'],
+    input[type='datetime-local'],
+    textarea,
+    select {
+        width: 100%;
+        appearance: none;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-2);
+        color: var(--text);
+        padding: 12px 14px;
+        font-size: 0.92rem;
+        outline: none;
+        transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        border-color: rgba(245, 197, 24, 0.8);
+        background: var(--surface-3);
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .select-wrap {
+        position: relative;
+    }
+
+    .select-wrap::after {
+        content: '▾';
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+        font-size: 0.8rem;
+    }
+
+    .select-wrap select {
+        padding-right: 36px;
+    }
+
+    .errors {
+        color: var(--danger);
+        font-size: 0.82rem;
+    }
+
+    .category-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .category-pill input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .category-pill label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--muted);
+        cursor: pointer;
+        transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+        user-select: none;
+    }
+
+    .category-pill label:hover {
+        color: var(--text);
+        border-color: rgba(245, 197, 24, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .category-pill.is-active label {
+        background: var(--accent);
+        color: #111;
+        border-color: var(--accent);
+        font-weight: 700;
+    }
+
+    .helper-box {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 14px 16px;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 0.88rem;
+    }
+
+    .progress-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 4px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .progress-fill {
+        width: 0;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 0.35s ease;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        position: sticky;
+        top: 18px;
+    }
+
+    .sidebar-card {
+        padding: 18px;
+    }
+
+    .sidebar-card h3 {
+        margin: 0 0 14px;
+        font-size: 0.92rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    .summary-hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .summary-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        background: rgba(245, 197, 24, 0.12);
+        border: 1px solid rgba(245, 197, 24, 0.25);
+        color: var(--accent);
+        font-size: 1.2rem;
+        flex: 0 0 auto;
+    }
+
+    .summary-title {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.35;
+    }
+
+    .summary-subtitle {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    .summary-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+    }
+
+    .summary-item span {
+        color: var(--muted);
+        font-size: 0.82rem;
+    }
+
+    .summary-item strong {
+        text-align: right;
+        font-size: 0.88rem;
+        font-weight: 600;
+        max-width: 58%;
+        word-break: break-word;
+    }
+
+    .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 22px 28px 28px;
+        flex-wrap: wrap;
+    }
+
+    .btn,
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 12px;
+        padding: 12px 18px;
+        text-decoration: none;
+        transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .btn {
+        border: 1px solid transparent;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #111;
+        font-weight: 700;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+    }
+
+    .btn-secondary:hover {
+        color: var(--text);
+        border-color: rgba(245, 197, 24, 0.35);
+    }
+
+    .hidden-category {
+        display: none;
+    }
+
+    @media (max-width: 1080px) {
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            position: static;
+        }
+    }
+
+    @media (max-width: 760px) {
+        .activity-page {
+            padding: 20px 14px 40px;
+        }
+
+        .panel-section,
+        .actions {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .grid-2,
+        .grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+{% set categoryChoices = [
+    {'value': 'sport', 'label': 'Sport', 'icon': '🏅'},
+    {'value': 'culture', 'label': 'Culture / Art', 'icon': '🎨'},
+    {'value': 'bienetre', 'label': 'Bien-être / Spa', 'icon': '🧘'},
+    {'value': 'aventure', 'label': 'Aventure / Nature', 'icon': '🏕️'},
+    {'value': 'gastronomie', 'label': 'Gastronomie', 'icon': '🍽️'},
+    {'value': 'autre', 'label': 'Autre', 'icon': '✦'}
+] %}
+
+{% set fieldIds = {
+    'nomActivite': form.nomActivite.vars.id,
+    'description': form.description.vars.id,
+    'categorie': form.categorie.vars.id,
+    'duree': form.duree.vars.id,
+    'niveau': form.niveau.vars.id,
+    'prix': form.prix.vars.id,
+    'devise': form.devise.vars.id,
+    'dateDebut': form.dateDebut.vars.id,
+    'dateFin': form.dateFin.vars.id,
+    'nbPlaces': form.nbPlaces.vars.id,
+    'placesDispo': form.placesDispo.vars.id,
+    'adresseDepart': form.adresseDepart.vars.id,
+    'ageMin': form.ageMin.vars.id,
+    'equipementInclus': form.equipementInclus.vars.id,
+    'conditionsAnnulation': form.conditionsAnnulation.vars.id,
+    'statut': form.statut.vars.id,
+    'etablissement': form.etablissement.vars.id
+} %}
+
+<div class="activity-page">
+    <div class="page-head">
+        <div>
+            <div class="eyebrow">Activités</div>
+            <h1 class="page-title">Créer une activité</h1>
+            <p class="page-subtitle">Organisez une nouvelle activité avec ses informations, sa catégorie, ses disponibilités et son établissement de rattachement.</p>
+        </div>
+
+        <a class="back-link" href="{{ path('app_activite_index') }}">← Retour à la liste</a>
+    </div>
+
+    {{ form_start(form, {'attr': {'id': 'activite-form', 'novalidate': 'novalidate'}}) }}
+    <div class="layout">
+        <div class="panel">
+            <div class="panel-section">
+                <div class="section-title">Informations générales</div>
+                <div class="grid-2">
+                    <div class="field full">
+                        {{ form_label(form.nomActivite) }}
+                        {{ form_widget(form.nomActivite, {'attr': {'placeholder': 'Ex: Randonnée au lever du soleil', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.nomActivite) }}</div>
+                    </div>
+
+                    <div class="field full">
+                        {{ form_label(form.description) }}
+                        {{ form_widget(form.description, {'attr': {'placeholder': 'Décrivez le concept, le public visé et l’expérience proposée.', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.description) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.duree) }}
+                        {{ form_widget(form.duree, {'attr': {'placeholder': 'Minutes', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.duree) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.niveau) }}
+                        <div class="select-wrap">
+                            {{ form_widget(form.niveau, {'attr': {'data-progress-field': '1'}}) }}
+                        </div>
+                        <div class="errors">{{ form_errors(form.niveau) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">Catégorie</div>
+                <div class="category-pills" id="category-pills">
+                    {% for choice in categoryChoices %}
+                        <div class="category-pill" data-category-pill="{{ choice.value }}">
+                            <input type="radio" name="activity_category_choice" id="choice-{{ choice.value }}" value="{{ choice.value }}">
+                            <label for="choice-{{ choice.value }}">{{ choice.icon }} {{ choice.label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {{ form_widget(form.categorie, {'attr': {'class': 'hidden-category', 'data-progress-field': '1'}}) }}
+                <div class="errors">{{ form_errors(form.categorie) }}</div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">Calendrier et prix</div>
+                <div class="grid-3">
+                    <div class="field">
+                        {{ form_label(form.dateDebut) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.dateDebut) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.dateFin) }}
+                        {{ form_widget(form.dateFin, {'attr': {'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.dateFin) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.prix) }}
+                        {{ form_widget(form.prix, {'attr': {'placeholder': '0.00', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.prix) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.devise) }}
+                        {{ form_widget(form.devise, {'attr': {'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.devise) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.ageMin) }}
+                        {{ form_widget(form.ageMin, {'attr': {'placeholder': 'ge minimum', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.ageMin) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.statut) }}
+                        <div class="select-wrap">
+                            {{ form_widget(form.statut, {'attr': {'data-progress-field': '1'}}) }}
+                        </div>
+                        <div class="errors">{{ form_errors(form.statut) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">Capacité et logistique</div>
+                <div class="grid-2">
+                    <div class="field">
+                        {{ form_label(form.nbPlaces) }}
+                        {{ form_widget(form.nbPlaces, {'attr': {'placeholder': 'Nombre total de places', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.nbPlaces) }}</div>
+                    </div>
+
+                    <div class="field">
+                        {{ form_label(form.placesDispo) }}
+                        {{ form_widget(form.placesDispo, {'attr': {'placeholder': 'Places restantes', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.placesDispo) }}</div>
+                    </div>
+
+                    <div class="field full">
+                        {{ form_label(form.adresseDepart) }}
+                        {{ form_widget(form.adresseDepart, {'attr': {'placeholder': 'Adresse de départ ou point de rendez-vous', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.adresseDepart) }}</div>
+                    </div>
+
+                    <div class="field full">
+                        {{ form_label(form.etablissement) }}
+                        <div class="select-wrap">
+                            {{ form_widget(form.etablissement, {'attr': {'data-progress-field': '1'}}) }}
+                        </div>
+                        <div class="errors">{{ form_errors(form.etablissement) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">Contenu et contraintes</div>
+                <div class="grid-2">
+                    <div class="field full">
+                        {{ form_label(form.equipementInclus) }}
+                        {{ form_widget(form.equipementInclus, {'attr': {'placeholder': 'Matériel inclus, séparé par des virgules', 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.equipementInclus) }}</div>
+                    </div>
+
+                    <div class="field full">
+                        {{ form_label(form.conditionsAnnulation) }}
+                        {{ form_widget(form.conditionsAnnulation, {'attr': {'placeholder': "Conditions d'annulation et remarques utiles", 'data-progress-field': '1'}}) }}
+                        <div class="errors">{{ form_errors(form.conditionsAnnulation) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a class="btn-secondary" href="{{ path('app_activite_index') }}">Annuler</a>
+                <button type="submit" class="btn">Publier l’activité</button>
+            </div>
+        </div>
+
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <h3>Aperçu</h3>
+                <div class="summary-hero">
+                    <div class="summary-icon">✦</div>
+                    <div>
+                        <p class="summary-title" id="summary-name">Nouvelle activité</p>
+                        <p class="summary-subtitle" id="summary-category">Choisissez une catégorie pour commencer.</p>
+                    </div>
+                </div>
+
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <span>Statut</span>
+                        <strong id="summary-status">Non défini</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Niveau</span>
+                        <strong id="summary-level">Non défini</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Dates</span>
+                        <strong id="summary-dates">Non planifiées</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Prix</span>
+                        <strong id="summary-price">--</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Capacité</span>
+                        <strong id="summary-capacity">--</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Établissement</span>
+                        <strong id="summary-venue">Aucun</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>Progression</h3>
+                <div class="progress-head">
+                    <span>Champs complétés</span>
+                    <strong id="progress-label">0%</strong>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div style="margin-top: 14px;" class="helper-box">
+                    Le panneau de droite se met à jour en direct pendant la saisie. La catégorie choisie alimente aussi le champ Symfony caché.
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+
+<script>
+(function () {
+    const form = document.getElementById('activite-form');
+    const categoryField = document.getElementById('{{ fieldIds.categorie }}');
+    const categoryPills = document.querySelectorAll('[data-category-pill]');
+
+    const summaryName = document.getElementById('summary-name');
+    const summaryCategory = document.getElementById('summary-category');
+    const summaryStatus = document.getElementById('summary-status');
+    const summaryLevel = document.getElementById('summary-level');
+    const summaryDates = document.getElementById('summary-dates');
+    const summaryPrice = document.getElementById('summary-price');
+    const summaryCapacity = document.getElementById('summary-capacity');
+    const summaryVenue = document.getElementById('summary-venue');
+    const progressFill = document.getElementById('progress-fill');
+    const progressLabel = document.getElementById('progress-label');
+
+    const fields = {
+        nomActivite: document.getElementById('{{ fieldIds.nomActivite }}'),
+        description: document.getElementById('{{ fieldIds.description }}'),
+        categorie: categoryField,
+        duree: document.getElementById('{{ fieldIds.duree }}'),
+        niveau: document.getElementById('{{ fieldIds.niveau }}'),
+        prix: document.getElementById('{{ fieldIds.prix }}'),
+        devise: document.getElementById('{{ fieldIds.devise }}'),
+        dateDebut: document.getElementById('{{ fieldIds.dateDebut }}'),
+        dateFin: document.getElementById('{{ fieldIds.dateFin }}'),
+        nbPlaces: document.getElementById('{{ fieldIds.nbPlaces }}'),
+        placesDispo: document.getElementById('{{ fieldIds.placesDispo }}'),
+        adresseDepart: document.getElementById('{{ fieldIds.adresseDepart }}'),
+        ageMin: document.getElementById('{{ fieldIds.ageMin }}'),
+        equipementInclus: document.getElementById('{{ fieldIds.equipementInclus }}'),
+        conditionsAnnulation: document.getElementById('{{ fieldIds.conditionsAnnulation }}'),
+        statut: document.getElementById('{{ fieldIds.statut }}'),
+        etablissement: document.getElementById('{{ fieldIds.etablissement }}')
+    };
+
+    function getSelectText(selectEl) {
+        if (!selectEl) {
+            return '';
+        }
+
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        return selectedOption ? selectedOption.textContent.trim() : '';
+    }
+
+    function setActiveCategory(value) {
+        categoryPills.forEach(function (pill) {
+            pill.classList.toggle('is-active', pill.getAttribute('data-category-pill') === value);
+        });
+    }
+
+    function updateSummary() {
+        const nameValue = fields.nomActivite ? fields.nomActivite.value.trim() : '';
+        const categoryValue = fields.categorie ? fields.categorie.value.trim() : '';
+        const levelValue = getSelectText(fields.niveau);
+        const statusValue = getSelectText(fields.statut);
+        const venueValue = getSelectText(fields.etablissement);
+        const dateStartValue = fields.dateDebut && fields.dateDebut.value ? fields.dateDebut.value : '';
+        const dateEndValue = fields.dateFin && fields.dateFin.value ? fields.dateFin.value : '';
+        const priceValue = fields.prix && fields.prix.value ? fields.prix.value : '';
+        const currencyValue = fields.devise && fields.devise.value ? fields.devise.value.trim() : 'TND';
+        const capacityValue = fields.nbPlaces && fields.nbPlaces.value ? fields.nbPlaces.value : '';
+
+        if (summaryName) {
+            summaryName.textContent = nameValue || 'Nouvelle activité';
+        }
+        if (summaryCategory) {
+            summaryCategory.textContent = categoryValue ? 'Catégorie : ' + categoryValue : 'Choisissez une catégorie pour commencer.';
+        }
+        if (summaryStatus) {
+            summaryStatus.textContent = statusValue || 'Non défini';
+        }
+        if (summaryLevel) {
+            summaryLevel.textContent = levelValue || 'Non défini';
+        }
+        if (summaryDates) {
+            summaryDates.textContent = dateStartValue || dateEndValue ? [dateStartValue || 'Début ?', dateEndValue || 'Fin ?'].join(' → ') : 'Non planifiées';
+        }
+        if (summaryPrice) {
+            summaryPrice.textContent = priceValue ? priceValue + ' ' + currencyValue : '--';
+        }
+        if (summaryCapacity) {
+            summaryCapacity.textContent = capacityValue ? capacityValue + ' places' : '--';
+        }
+        if (summaryVenue) {
+            summaryVenue.textContent = venueValue || 'Aucun';
+        }
+
+        const progressFields = form.querySelectorAll('input[type="text"], input[type="number"], input[type="datetime-local"], textarea, select');
+        let filled = 0;
+        let total = 0;
+
+        progressFields.forEach(function (input) {
+            if (input === categoryField) {
+                total += 1;
+                if (input.value.trim() !== '') {
+                    filled += 1;
+                }
+                return;
+            }
+
+            total += 1;
+            if (input.value && input.value.toString().trim() !== '') {
+                filled += 1;
+            }
+        });
+
+        const percentage = total ? Math.round((filled / total) * 100) : 0;
+        if (progressFill) {
+            progressFill.style.width = percentage + '%';
+        }
+        if (progressLabel) {
+            progressLabel.textContent = percentage + '%';
+        }
+
+        setActiveCategory(categoryValue);
+    }
+
+    categoryPills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+            const value = pill.getAttribute('data-category-pill') || '';
+            if (categoryField) {
+                categoryField.value = value;
+                categoryField.dispatchEvent(new Event('input', { bubbles: true }));
+                categoryField.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            setActiveCategory(value);
+            updateSummary();
+        });
+    });
+
+    if (categoryField && categoryField.value) {
+        setActiveCategory(categoryField.value);
+    }
+
+    form.addEventListener('input', updateSummary);
+    form.addEventListener('change', updateSummary);
+    updateSummary();
+})();
+</script>
+{% endblock %}

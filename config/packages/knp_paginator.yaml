@@ -1,0 +1,4 @@
+knp_paginator:
+    template:
+        pagination: '@KnpPaginator/Pagination/tailwindcss_pagination.html.twig'
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'

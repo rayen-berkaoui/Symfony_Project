@@ -1,0 +1,275 @@
+<?php
+
+namespace App\Entity;
+
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'etablissement')]
+class Etablissement
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(name: 'idEtablissement', type: 'integer')]
+    private ?int $idEtablissement = null;
+
+    #[ORM\Column(name: 'nom', type: 'string', length: 120)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(min: 2, max: 120, minMessage: "Le nom doit comporter au moins 2 caractères")]
+    private ?string $nom = null;
+
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+    #[Assert\Length(min: 10, minMessage: "La description doit comporter au moins 10 caractères if provided")]
+    private ?string $description = null;
+
+    #[ORM\Column(name: 'adresse', type: 'string', length: 180)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire")]
+    private ?string $adresse = null;
+
+    #[ORM\Column(name: 'ville', type: 'string', length: 80)]
+    #[Assert\NotBlank(message: "La ville est obligatoire")]
+    private ?string $ville = null;
+
+    #[ORM\Column(name: 'telephone', type: 'string', length: 30, nullable: true)]
+    #[Assert\Regex(pattern: '/^[0-9\+\-\s]+$/', message: "Le téléphone doit contenir des chiffres et éventuellement un signe +")]
+    private ?string $telephone = null;
+
+    #[ORM\Column(name: 'email', type: 'string', length: 120, nullable: true)]
+    #[Assert\Email(message: "L'email doit être valide")]
+    private ?string $email = null;
+
+    #[ORM\Column(name: 'horaires', type: 'string', length: 255, nullable: true)]
+    private ?string $horaires = null;
+
+    #[ORM\Column(name: 'gammePrix', type: 'string', length: 100, nullable: true)]
+    private ?string $gammePrix = null;
+
+    #[ORM\Column(name: 'type', type: 'string', length: 50, nullable: true)]
+    #[Assert\NotBlank(message: "Le type de l'établissement est obligatoire")]
+    private ?string $type = 'autre';
+
+    #[ORM\Column(name: 'latitude', type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    #[Assert\Range(min: -90, max: 90, notInRangeMessage: "Latitude invalide")]
+    private ?string $latitude = null;
+
+    #[ORM\Column(name: 'longitude', type: 'decimal', precision: 10, scale: 7, nullable: true)]
+    #[Assert\Range(min: -180, max: 180, notInRangeMessage: "Longitude invalide")]
+    private ?string $longitude = null;
+
+    #[ORM\OneToMany(mappedBy: 'etablissement', targetEntity: EtablissementImage::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['ordreAffichage' => 'ASC', 'idImage' => 'ASC'])]
+    private Collection $images;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
+
+    public function getIdEtablissement(): ?int
+    {
+        return $this->idEtablissement;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->idEtablissement;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(string $adresse): static
+    {
+        $this->adresse = $adresse;
+        return $this;
+    }
+
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    public function setVille(string $ville): static
+    {
+        $this->ville = $ville;
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    public function getHoraires(): ?string
+    {
+        return $this->horaires;
+    }
+
+    public function setHoraires(?string $horaires): static
+    {
+        $this->horaires = $horaires;
+        return $this;
+    }
+
+    public function getGammePrix(): ?string
+    {
+        return $this->gammePrix;
+    }
+
+    public function setGammePrix(?string $gammePrix): static
+    {
+        $this->gammePrix = $gammePrix;
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): static
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
+
+    /** @return Collection<int, EtablissementImage> */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImageRecord(EtablissementImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setEtablissement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImageRecord(EtablissementImage $image): static
+    {
+        if ($this->images->removeElement($image) && $image->getEtablissement() === $this) {
+            $image->setEtablissement(null);
+        }
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        foreach ($this->images as $image) {
+            if ($image->getImagePath()) {
+                return $image->getImagePath();
+            }
+        }
+
+        return null;
+    }
+
+    public function setImage(?string $image): static
+    {
+        if ($image === null || trim($image) === '') {
+            return $this;
+        }
+
+        foreach ($this->images as $existing) {
+            $existing->setImagePath($image);
+            return $this;
+        }
+
+        $record = new EtablissementImage();
+        $record->setImagePath($image);
+        $record->setOrdreAffichage(1);
+        $this->addImageRecord($record);
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        $image = $this->getImage();
+        if (!$image) {
+            return null;
+        }
+
+        if (str_starts_with($image, 'http://') || str_starts_with($image, 'https://') || str_starts_with($image, 'data:') || str_starts_with($image, '/')) {
+            return $image;
+        }
+
+        return '/uploads/etablissements/' . ltrim($image, '/');
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->nom;
+    }
+}

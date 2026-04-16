@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page { margin: 32px; }
+        body { font-family: DejaVu Sans, sans-serif; color:#0f172a; font-size:12px; }
+        .hero { background: linear-gradient(135deg,#0f172a,#1e293b); color:#fff; border-radius:22px; padding:26px; }
+        .eyebrow { font-size:10px; text-transform:uppercase; letter-spacing:.22em; color:#cbd5e1; }
+        .title { font-size:30px; font-weight:800; margin:10px 0 4px; }
+        .sub { color:#cbd5e1; font-size:11px; }
+        .section { margin-top:22px; border:1px solid #e2e8f0; border-radius:20px; padding:18px; }
+        .grid { width:100%; }
+        .cell { width:48%; display:inline-block; vertical-align:top; margin-right:2%; margin-bottom:14px; }
+        .label { font-size:10px; text-transform:uppercase; letter-spacing:.15em; color:#64748b; }
+        .value { font-size:18px; font-weight:700; color:#0f172a; margin-top:6px; }
+        .small { font-size:12px; color:#475569; margin-top:6px; }
+        .pill { display:inline-block; padding:6px 12px; border-radius:999px; font-size:11px; font-weight:700; }
+        .ok { background:#dcfce7; color:#166534; }
+        .pending { background:#fef3c7; color:#92400e; }
+        .wait { background:#e2e8f0; color:#334155; }
+        .footer { margin-top:26px; color:#64748b; font-size:11px; text-align:center; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="eyebrow">Tabaany • Confirmation de réservation</div>
+        <div class="title">{{ row.codeConfirmation }}</div>
+        <div class="sub">Document généré le {{ generatedAt|date('d/m/Y H:i') }} • Design cohérent avec l’interface du site</div>
+    </section>
+
+    <section class="section">
+        <div class="grid">
+            <div class="cell">
+                <div class="label">Client</div>
+                <div class="value">{{ row.clientName }}</div>
+                <div class="small">{{ row.clientEmail ?: '—' }}</div>
+            </div>
+            <div class="cell">
+                <div class="label">Service réservé</div>
+                <div class="value">{{ row.displayName }}</div>
+                <div class="small">{{ row.displayCity }}</div>
+            </div>
+            <div class="cell">
+                <div class="label">Début</div>
+                <div class="value">{{ row.dateDebut ? row.dateDebut|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="cell">
+                <div class="label">Fin</div>
+                <div class="value">{{ row.dateFin ? row.dateFin|date('d/m/Y H:i') : '—' }}</div>
+            </div>
+            <div class="cell">
+                <div class="label">Voyageurs</div>
+                <div class="value">{{ row.nbPersonnes }}</div>
+                <div class="small">{{ row.nbChambres ?: 1 }} chambre(s)</div>
+            </div>
+            <div class="cell">
+                <div class="label">Montant total</div>
+                <div class="value">{{ row.montantTotal|number_format(2, '.', ' ') }} TND</div>
+            </div>
+            <div class="cell">
+                <div class="label">Mode de paiement</div>
+                <div class="value">{{ row.modePaiementLabel }}</div>
+            </div>
+            <div class="cell">
+                <div class="label">Statut</div>
+                <div class="value"><span class="pill {{ row.normalizedStatutPaiement == 'Paye' ? 'ok' : (row.normalizedStatutPaiement == 'En cours de paiement' ? 'pending' : 'wait') }}">{{ row.normalizedStatutPaiement }}</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer">
+        Merci d’avoir réservé avec Tabaany. Conservez ce PDF comme preuve de réservation.
+    </div>
+</body>
+</html>

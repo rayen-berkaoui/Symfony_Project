@@ -1,0 +1,24 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Résultat Paymee{% endblock %}
+
+{% block body %}
+<section class="mx-auto max-w-3xl px-4 py-16">
+    <div class="rounded-3xl border border-white/10 bg-dark-300/85 p-8 text-center shadow-luxury">
+        <p class="text-sm uppercase tracking-[0.3em] {{ success ? 'text-emerald-400/70' : 'text-amber-400/70' }}">Paiement Paymee</p>
+        <h1 class="mt-3 text-4xl font-black text-white">{{ success ? 'Paiement confirmé' : 'Paiement non confirmé' }}</h1>
+        <p class="mt-4 text-gray-300">
+            {% if success %}
+                Votre paiement a été validé et vos éléments sont maintenant visibles dans vos réservations.
+            {% else %}
+                Le paiement n'a pas encore pu être confirmé. Vous pouvez revenir au panier ou relancer une vérification manuelle.
+            {% endif %}
+        </p>
+        {% if token %}<p class="mt-4 text-xs text-gray-500">Token Paymee : {{ token }}</p>{% endif %}
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a href="{{ path('app_user_reservation_index') }}" class="rounded-2xl bg-gold-500 px-6 py-4 font-bold text-black transition hover:bg-gold-400">Voir mes réservations</a>
+            <a href="{{ path('app_cart_index') }}" class="rounded-2xl border border-white/10 bg-black/20 px-6 py-4 font-semibold text-white">Retour panier</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

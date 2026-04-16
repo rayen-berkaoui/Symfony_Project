@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter au Panier - {{ etablissement.nom }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{{ path('app_etablissement_index') }}" class="hover:text-gold-400 transition-colors">Établissements</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <a href="{{ path('app_etablissement_show', {'idEtablissement': etablissement.idEtablissement}) }}" class="hover:text-gold-400 transition-colors">{{ etablissement.nom }}</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <span>Ajouter au Panier</span>
+{% endblock %}
+
+{% block body %}
+{% set isHotel = etablissement.type and etablissement.type|lower == 'hotel' %}
+<div class="space-y-8">
+    <div>
+        <p class="text-sm uppercase tracking-[0.35em] text-gold-500/70">Panier intelligent</p>
+        <h1 class="text-4xl font-black text-white">Ajouter un service au panier</h1>
+        <p class="mt-2 text-gray-400">Réservez proprement votre créneau, ajustez la capacité et gardez une logique réaliste de séjour.</p>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div class="card p-0 overflow-hidden">
+            {% if etablissement.imageUrl %}
+                <img src="{{ asset(etablissement.imageUrl) }}" alt="{{ etablissement.nom }}" class="h-72 w-full object-cover">
+            {% else %}
+                <div class="flex h-72 items-center justify-center bg-dark-300">
+                    <i class="fa-solid {{ isHotel ? 'fa-hotel' : 'fa-utensils' }} text-5xl text-gold-500/50"></i>
+                </div>
+            {% endif %}
+            <div class="p-6 space-y-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.24em] text-gold-500/70">{{ etablissement.type|default('Service') }}</p>
+                        <h2 class="mt-2 text-3xl font-black text-white">{{ etablissement.nom }}</h2>
+                        <p class="mt-2 text-gray-400"><i class="fa-solid fa-location-dot mr-2 text-gold-500/60"></i>{{ etablissement.ville }}</p>
+                    </div>
+                    <div class="rounded-2xl border border-gold-500/20 bg-gold-500/10 px-5 py-4 text-right">
+                        <p class="text-xs uppercase tracking-[0.2em] text-gold-500/70">Positionnement</p>
+                        <p class="mt-2 text-2xl font-black text-gold-400">{{ etablissement.gammePrix ?: 'Sur devis' }}</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 leading-7">{{ etablissement.description|default('Aucune description disponible.') }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-5">
+                <div>
+                    <h2 class="text-2xl font-black text-white">Configurer la réservation</h2>
+                    <p class="mt-1 text-sm text-gray-400">{% if isHotel %}Capacité recommandée : 4 voyageurs maximum par chambre.{% else %}Choisissez une période cohérente et le bon nombre de voyageurs.{% endif %}</p>
+                </div>
+                {% if isHotel %}<span class="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-300">Règle capacité active</span>{% endif %}
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'mt-6 space-y-6', 'id': 'etablissement-booking-form', 'novalidate': 'novalidate'}}) }}
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        {{ form_label(form.dateDebut) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'id': 'dateDebut'}}) }}
+                        {{ form_errors(form.dateDebut) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.dateFin) }}
+                        {{ form_widget(form.dateFin, {'attr': {'id': 'dateFin'}}) }}
+                        {{ form_errors(form.dateFin) }}
+                    </div>
+                </div>
+
+                <div class="grid gap-5 md:grid-cols-{{ isHotel ? '3' : '2' }}">
+                    <div>
+                        {{ form_label(form.nbAdultes) }}
+                        {{ form_widget(form.nbAdultes, {'attr': {'id': 'nbAdultes'}}) }}
+                        {{ form_errors(form.nbAdultes) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.nbEnfants) }}
+                        {{ form_widget(form.nbEnfants, {'attr': {'id': 'nbEnfants'}}) }}
+                        {{ form_errors(form.nbEnfants) }}
+                    </div>
+                    {% if isHotel and form.nbChambres is defined %}
+                        <div>
+                            {{ form_label(form.nbChambres) }}
+                            {{ form_widget(form.nbChambres, {'attr': {'id': 'nbChambres'}}) }}
+                            {{ form_errors(form.nbChambres) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="rounded-3xl border border-gold-500/20 bg-black/20 p-6">
+                    <div class="grid gap-3 sm:grid-cols-{{ isHotel ? '4' : '3' }}">
+                        <div class="rounded-2xl bg-dark-300/60 p-4">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Voyageurs</p>
+                            <p class="mt-2 text-2xl font-black text-white" id="displayPersons">1</p>
+                        </div>
+                        {% if isHotel %}
+                            <div class="rounded-2xl bg-dark-300/60 p-4">
+                                <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Chambres</p>
+                                <p class="mt-2 text-2xl font-black text-white" id="displayRooms">1</p>
+                            </div>
+                        {% endif %}
+                        <div class="rounded-2xl bg-dark-300/60 p-4">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Durée</p>
+                            <p class="mt-2 text-2xl font-black text-white" id="displayDays">1</p>
+                        </div>
+                        <div class="rounded-2xl bg-gold-500/10 p-4 border border-gold-500/20 {{ isHotel ? '' : 'sm:col-span-1' }}">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gold-500/70">Estimation</p>
+                            <p class="mt-2 text-2xl font-black text-gold-400" id="estimatedPrice">0.00 TND</p>
+                        </div>
+                    </div>
+                    {% if isHotel %}<p class="mt-4 text-sm text-gray-400" id="roomHint">Conseil : gardez un ratio réaliste entre chambres et voyageurs.</p>{% endif %}
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-4">
+                    <a href="{{ path('app_etablissement_show', {'idEtablissement': etablissement.idEtablissement}) }}" class="btn-dark"><i class="fa-solid fa-arrow-left mr-2"></i>Retour</a>
+                    <button type="submit" class="rounded-2xl bg-gradient-to-r from-gold-500 to-amber-400 px-6 py-3 font-bold text-black shadow-lg shadow-gold-500/20 transition hover:from-gold-400 hover:to-amber-300">
+                        <i class="fa-solid fa-cart-plus mr-2"></i>Ajouter au panier
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    const isHotel = {{ isHotel ? 'true' : 'false' }};
+    const gammePrix = '{{ etablissement.gammePrix|default('')|lower }}';
+
+    function resolveUnitPrice() {
+        if (isHotel) {
+            if (gammePrix.includes('luxe')) return 320;
+            if (gammePrix.includes('haut')) return 240;
+            if (gammePrix.includes('moyen')) return 160;
+            if (gammePrix.includes('eco')) return 90;
+            return 150;
+        }
+        if (gammePrix.includes('luxe') || gammePrix.includes('haut')) return 70;
+        if (gammePrix.includes('moyen')) return 45;
+        return 28;
+    }
+
+    function updateEtablissementEstimate() {
+        const adultes = parseInt(document.getElementById('nbAdultes')?.value || '1', 10);
+        const enfants = parseInt(document.getElementById('nbEnfants')?.value || '0', 10);
+        const rooms = parseInt(document.getElementById('nbChambres')?.value || '1', 10);
+        const start = document.getElementById('dateDebut')?.value;
+        const end = document.getElementById('dateFin')?.value;
+        let days = 1;
+
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const diff = endDate - startDate;
+            days = diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 1;
+        }
+
+        const people = Math.max(1, adultes + enfants);
+        const unit = resolveUnitPrice();
+        let amount = 0;
+
+        if (isHotel) {
+            amount = unit * Math.max(1, rooms) * Math.max(1, days);
+            const hint = document.getElementById('roomHint');
+            if (hint) {
+                const capacity = Math.max(1, rooms) * 4;
+                hint.textContent = people > capacity
+                    ? `Capacité dépassée : ${rooms} chambre(s) couvrent au maximum ${capacity} voyageur(s).`
+                    : `Capacité conseillée : ${rooms} chambre(s) pour ${people} voyageur(s).`;
+                hint.className = people > capacity ? 'mt-4 text-sm text-rose-300' : 'mt-4 text-sm text-gray-400';
+            }
+            const roomDisplay = document.getElementById('displayRooms');
+            if (roomDisplay) roomDisplay.textContent = Math.max(1, rooms);
+        } else {
+            amount = unit * people;
+        }
+
+        document.getElementById('displayPersons').textContent = people;
+        document.getElementById('displayDays').textContent = days;
+        document.getElementById('estimatedPrice').textContent = amount.toFixed(2) + ' TND';
+    }
+
+    ['nbAdultes', 'nbEnfants', 'nbChambres', 'dateDebut', 'dateFin'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('input', updateEtablissementEstimate);
+        document.getElementById(id)?.addEventListener('change', updateEtablissementEstimate);
+    });
+    updateEtablissementEstimate();
+</script>
+{% endblock %}

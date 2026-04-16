@@ -1,0 +1,189 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Succès{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --ok-bg: #0a0f0d;
+        --ok-card: #131b17;
+        --ok-line: rgba(96, 231, 150, 0.25);
+        --ok-accent: #60e796;
+        --ok-text: #e9fff2;
+        --ok-muted: #9bc9ad;
+    }
+
+    .success-wrap {
+        min-height: calc(100vh - 180px);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+    }
+
+    .success-card {
+        width: min(560px, 100%);
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--ok-card);
+        border: 1px solid var(--ok-line);
+        border-radius: 18px;
+        padding: 34px 28px 26px;
+        box-shadow: 0 24px 55px rgba(0, 0, 0, 0.35);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .success-card::before,
+    .success-card::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(24px);
+        pointer-events: none;
+    }
+
+    .success-card::before {
+        width: 180px;
+        height: 180px;
+        background: rgba(96, 231, 150, 0.22);
+        top: -80px;
+        left: -40px;
+    }
+
+    .success-card::after {
+        width: 160px;
+        height: 160px;
+        background: rgba(96, 231, 150, 0.12);
+        bottom: -70px;
+        right: -40px;
+    }
+
+    .check-shell {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(96, 231, 150, 0.12);
+        border: 1px solid rgba(96, 231, 150, 0.35);
+        animation: popIn .55s cubic-bezier(.2, .75, .25, 1.25) both;
+    }
+
+    .check {
+        width: 44px;
+        height: 44px;
+        stroke: var(--ok-accent);
+        stroke-width: 2.6;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 60;
+        stroke-dashoffset: 60;
+        animation: draw .7s .2s ease forwards;
+    }
+
+    .success-title {
+        margin: 0;
+        color: var(--ok-text);
+        font-size: 2rem;
+        letter-spacing: 0.01em;
+    }
+
+    .success-msg {
+        margin: 10px auto 18px;
+        color: var(--ok-muted);
+        max-width: 44ch;
+        line-height: 1.6;
+    }
+
+    .success-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .success-btn {
+        border-radius: 11px;
+        padding: 10px 15px;
+        text-decoration: none;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: transform .15s ease, filter .2s ease;
+    }
+
+    .success-btn.primary {
+        color: #0f2418;
+        background: linear-gradient(135deg, #79f0a8, #57d98b);
+    }
+
+    .success-btn.secondary {
+        color: var(--ok-text);
+        border-color: var(--ok-line);
+        background: rgba(255,255,255,0.02);
+    }
+
+    .success-btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.04);
+    }
+
+    .auto-note {
+        margin-top: 14px;
+        color: var(--ok-muted);
+        font-size: .85rem;
+    }
+
+    @keyframes draw {
+        to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes popIn {
+        from { transform: scale(.35); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="success-wrap">
+    <section class="success-card" aria-live="polite">
+        <div class="check-shell">
+            <svg class="check" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <h1 class="success-title">{{ title|default('Opération réussie') }}</h1>
+        <p class="success-msg">{{ message|default('Votre action a été enregistrée avec succès.') }}</p>
+
+        <div class="success-actions">
+            <a class="success-btn primary" href="{{ nextUrl|default(path('app_etablissement_dashboard')) }}">{{ nextLabel|default('Continuer') }}</a>
+            <a class="success-btn secondary" href="{{ path('app_etablissement_index') }}">Retour accueil module</a>
+        </div>
+
+        <p class="auto-note">Redirection automatique dans <span id="countdown">4</span> secondes...</p>
+    </section>
+</div>
+
+<script>
+(function () {
+    const nextUrl = {{ (nextUrl|default(path('app_etablissement_dashboard')))|json_encode|raw }};
+    const countdownEl = document.getElementById('countdown');
+    let left = 4;
+
+    const timer = setInterval(function () {
+        left -= 1;
+        if (countdownEl) {
+            countdownEl.textContent = String(Math.max(left, 0));
+        }
+        if (left <= 0) {
+            clearInterval(timer);
+            window.location.href = nextUrl;
+        }
+    }, 1000);
+})();
+</script>
+{% endblock %}

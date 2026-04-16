@@ -1,0 +1,399 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Premium - Etablissements{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --bg: #070707;
+        --surface: #101114;
+        --surface-2: #17191e;
+        --surface-3: #1f2228;
+        --border: rgba(255, 194, 0, 0.18);
+        --accent: #ffc200;
+        --text: #ece9df;
+        --muted: #9d9d98;
+        --danger: #e45a5a;
+        --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        color: var(--text);
+        background:
+            radial-gradient(circle at 18% -5%, rgba(255, 194, 0, 0.2), transparent 32%),
+            #070707;
+        font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    .dash-shell {
+        max-width: 1360px;
+        margin: 18px auto;
+        padding: 0 12px 22px;
+    }
+
+    .topbar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .brand {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 1.05rem;
+        text-decoration: none;
+    }
+
+    .nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .nav a {
+        color: var(--muted);
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 8px 12px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: color .2s, border-color .2s, background .2s;
+    }
+
+    .nav a.active {
+        color: var(--accent);
+        border-color: var(--border);
+        background: rgba(255, 194, 0, 0.07);
+        font-weight: 700;
+    }
+
+    .btn-new {
+        text-decoration: none;
+        color: #111;
+        background: var(--accent);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .filters {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr 1fr auto auto;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px;
+        margin-bottom: 16px;
+    }
+
+    .filters input,
+    .filters select,
+    .filters button,
+    .filters a {
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        padding: 0 12px;
+        font-size: 0.85rem;
+    }
+
+    .filters input::placeholder { color: var(--muted); }
+
+    .filters button {
+        cursor: pointer;
+        font-weight: 700;
+        background: rgba(255, 194, 0, 0.14);
+        color: var(--accent);
+    }
+
+    .filters a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: var(--muted);
+    }
+
+    .board-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin: 12px 0 10px;
+    }
+
+    .board-title h1 {
+        margin: 0;
+        color: var(--accent);
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .board-title p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .table-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .table-wrap {
+        overflow: auto;
+        max-height: 62vh;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 940px;
+    }
+
+    thead th {
+        color: var(--accent);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: left;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.01);
+    }
+
+    tbody td {
+        padding: 13px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-size: 0.9rem;
+        vertical-align: middle;
+    }
+
+    tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .name-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(135deg, #5a64ff, #ba5df5);
+        font-size: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .muted { color: var(--muted); }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .badge.restaurant { background: rgba(255, 194, 0, 0.15); color: var(--accent); }
+    .badge.cafe { background: rgba(60, 178, 255, 0.15); color: #68c9ff; }
+    .badge.hotel { background: rgba(135, 124, 255, 0.16); color: #a6a0ff; }
+    .badge.museum { background: rgba(212, 123, 255, 0.16); color: #d99cff; }
+    .badge.bar,
+    .badge.loisir,
+    .badge.autre { background: rgba(255, 255, 255, 0.1); color: #ddd; }
+
+    .actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .action-link,
+    .action-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        border: 1px solid var(--border);
+        background: var(--surface-3);
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .action-btn.danger { color: var(--danger); }
+
+    .empty {
+        padding: 28px;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .page-btn {
+        text-decoration: none;
+        border: 1px solid var(--border);
+        color: var(--text);
+        background: var(--surface-2);
+        border-radius: 9px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+    }
+
+    .page-btn.disabled {
+        opacity: .35;
+        pointer-events: none;
+    }
+
+    .page-info { color: var(--muted); font-size: 0.82rem; }
+
+    @media (max-width: 1024px) {
+        .filters { grid-template-columns: 1fr 1fr; }
+        .filters .full { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 680px) {
+        .topbar { flex-wrap: wrap; }
+        .nav { width: 100%; }
+        .board-title h1 { font-size: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="dash-shell">
+    <header class="topbar">
+        <a href="{{ path('app_etablissement_dashboard') }}" class="brand">🔥 Premium Dashboard</a>
+
+        <nav class="nav">
+            <a href="{{ path('app_etablissement_dashboard') }}" class="active">Tableau Etab.</a>
+            <a href="{{ path('app_activite_dashboard') }}">Tableau Activ.</a>
+            <a href="{{ path('app_etablissement_index') }}">Galerie Etab.</a>
+            <a href="{{ path('app_activite_index') }}">Galerie Activ.</a>
+        </nav>
+
+        <a class="btn-new" href="{{ path('app_etablissement_new') }}">+ Nouveau</a>
+    </header>
+
+    <form method="get" class="filters">
+        <input class="full" type="text" name="q" value="{{ filters.q }}" placeholder="Rechercher par nom, ville, adresse...">
+
+        <select name="ville">
+            <option value="">Toutes les villes</option>
+            {% for gouvernorat, gouvernoratVilles in villesParGouvernorat %}
+                <optgroup label="{{ gouvernorat }}">
+                    {% for ville in gouvernoratVilles %}
+                        <option value="{{ ville }}" {{ filters.ville == ville ? 'selected' : '' }}>{{ ville }}</option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+
+        <select name="gammePrix">
+            <option value="">Toutes gammes</option>
+            {% for gamme in gammesPrix %}
+                <option value="{{ gamme }}" {{ filters.gammePrix == gamme ? 'selected' : '' }}>{{ gamme }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filtrer</button>
+        <a href="{{ path('app_etablissement_dashboard') }}">↻</a>
+    </form>
+
+    <div class="board-title">
+        <h1>📊 Tableau Premium</h1>
+        <p>{{ pagination.total }} résultats - Page {{ pagination.page }}/{{ pagination.totalPages }}</p>
+    </div>
+
+    <section class="table-card">
+        {% if etablissements is empty %}
+            <div class="empty">Aucun établissement trouvé.</div>
+        {% else %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Ville</th>
+                            <th>Type</th>
+                            <th>Gamme</th>
+                            <th>Téléphone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for etablissement in etablissements %}
+                            {% set typeSlug = (etablissement.type|default('autre'))|lower %}
+                            <tr>
+                                <td>
+                                    <div class="name-cell">
+                                        <span class="avatar">{{ (etablissement.nom|default('ET'))|slice(0, 2)|upper }}</span>
+                                        <strong>{{ etablissement.nom }}</strong>
+                                    </div>
+                                </td>
+                                <td>{{ etablissement.ville ?: '-' }}</td>
+                                <td><span class="badge {{ typeSlug }}">{{ etablissement.type ?: 'Autre' }}</span></td>
+                                <td class="muted">{{ etablissement.gammePrix ?: '-' }}</td>
+                                <td class="muted">{{ etablissement.telephone ?: '-' }}</td>
+                                <td>
+                                    <div class="actions">
+                                        <a class="action-link" href="{{ path('app_etablissement_edit', {'idEtablissement': etablissement.idEtablissement}) }}" title="Modifier">✎</a>
+                                        <form method="post" action="{{ path('app_etablissement_delete', {'idEtablissement': etablissement.idEtablissement}) }}" onsubmit="return confirm('Confirmer la suppression ?');" style="margin:0;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ etablissement.idEtablissement) }}">
+                                            <button class="action-btn danger" type="submit" title="Supprimer">🗑</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <a class="page-btn {{ pagination.page <= 1 ? 'disabled' : '' }}" href="{{ pagination.page > 1 ? path('app_etablissement_dashboard', filters|merge({'page': pagination.page - 1})) : '#' }}">Précédent</a>
+                <span class="page-info">Page {{ pagination.page }} / {{ pagination.totalPages }}</span>
+                <a class="page-btn {{ pagination.page >= pagination.totalPages ? 'disabled' : '' }}" href="{{ pagination.page < pagination.totalPages ? path('app_etablissement_dashboard', filters|merge({'page': pagination.page + 1})) : '#' }}">Suivant</a>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
+    <div class="space-y-4">
+        {{ form_row(form.nomCategorie) }}
+        
+        <div class="relative group/textarea">
+            {{ form_row(form.description) }}
+            
+            <button type="button" id="btn-dictation" class="absolute bottom-3 right-3 flex items-center justify-center w-10 h-10 bg-dark-200 border border-gold-500/20 rounded-xl text-gold-400 hover:bg-gold-500/20 hover:text-gold-300 transition-all duration-300 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed" title="Dicter la description">
+                <i class="fa-solid fa-microphone text-lg transition-transform group-hover/textarea:scale-110"></i>
+                <div class="absolute inset-0 rounded-xl border-2 border-red-500 opacity-0 scale-110 transition-all pointer-events-none" id="mic-pulse"></div>
+            </button>
+            <div id="dictation-status" class="absolute -top-6 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 text-gold-400 border border-gold-500/30 opacity-0 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                Prêt à écouter...
+            </div>
+        </div>
+        
+        {{ form_row(form.dateCreation) }}
+        
+        {{ form_rest(form) }}
+    </div>
+
+    <div class="mt-6 flex justify-end">
+        <button class="btn-gold px-6 py-2 rounded-lg font-bold shadow-lg shadow-gold-500/20 w-full sm:w-auto transition-transform hover:-translate-y-1">
+            <i class="fa-solid fa-save mr-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+    </div>
+{{ form_end(form) }}
+
+<script>
+function initSpeechRecognition() {
+    const dictationBtn = document.getElementById('btn-dictation');
+    const descriptionInput = document.getElementById('categorie_description');
+    
+    if (!dictationBtn || !descriptionInput) return;
+
+    // Disconnect old listeners effectively by replacing node
+    const newDictationBtn = dictationBtn.cloneNode(true);
+    dictationBtn.parentNode.replaceChild(newDictationBtn, dictationBtn);
+    
+    const pulseLayer = document.getElementById('mic-pulse');
+    const statusToast = document.getElementById('dictation-status');
+    const iconLabel = newDictationBtn.querySelector('i');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        newDictationBtn.style.display = 'none';
+        console.warn("Speech recognition is not supported in this browser.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR'; // Assumes the app is mainly French configured
+    recognition.interimResults = true;
+    recognition.continuous = false; // Stop when the user stops talking
+
+    let isRecording = false;
+    let originalText = "";
+
+    function showStatus(text, colorClass = 'text-gold-400') {
+        statusToast.textContent = text;
+        statusToast.className = `absolute -bottom-8 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 border border-current opacity-100 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${colorClass}`;
+        
+        setTimeout(() => {
+            if (!isRecording) {
+                statusToast.classList.replace('opacity-100', 'opacity-0');
+            }
+        }, 2000);
+    }
+
+    newDictationBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            originalText = descriptionInput.value;
+            recognition.start();
+        }
+    });
+
+    recognition.onstart = function() {
+        isRecording = true;
+        
+        newDictationBtn.classList.remove('text-gold-400', 'border-gold-500/20');
+        newDictationBtn.classList.add('text-red-500', 'border-red-500/50', 'bg-red-500/10');
+        
+        iconLabel.classList.remove('fa-microphone');
+        iconLabel.classList.add('fa-microphone-lines', 'animate-pulse');
+        
+        pulseLayer.classList.remove('opacity-0', 'scale-110');
+        pulseLayer.classList.add('opacity-100', 'scale-100', 'animate-ping');
+        
+        showStatus('Écoute en cours...', 'text-red-400');
+    };
+
+    recognition.onresult = function(event) {
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
+        }
+        
+        // Append spaces intelligently
+        const separator = originalText && !originalText.endsWith(' ') && !originalText.endsWith('\n') ? ' ' : '';
+        
+        if (finalTranscript !== '') {
+            descriptionInput.value = originalText + separator + finalTranscript;
+            originalText = descriptionInput.value; // update base text with finalised piece
+        } else {
+            descriptionInput.value = originalText + separator + interimTranscript;
+        }
+    };
+
+    function stopRecordingVisuals() {
+        isRecording = false;
+        
+        newDictationBtn.classList.add('text-gold-400', 'border-gold-500/20');
+        newDictationBtn.classList.remove('text-red-500', 'border-red-500/50', 'bg-red-500/10');
+        
+        iconLabel.classList.add('fa-microphone');
+        iconLabel.classList.remove('fa-microphone-lines', 'animate-pulse');
+        
+        pulseLayer.classList.add('opacity-0', 'scale-110');
+        pulseLayer.classList.remove('opacity-100', 'scale-100', 'animate-ping');
+        
+        showStatus('Terminé', 'text-green-400');
+    }
+
+    recognition.onend = function() {
+        if (isRecording) stopRecordingVisuals();
+    };
+
+    recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+            showStatus('Accès micro refusé', 'text-red-500');
+        } else {
+            showStatus('Erreur: ' + event.error, 'text-red-500');
+        }
+        stopRecordingVisuals();
+    };
+}
+
+document.addEventListener('turbo:load', initSpeechRecognition);
+document.addEventListener('DOMContentLoaded', initSpeechRecognition);
+
+if (document.readyState !== 'loading') {
+    initSpeechRecognition();
+}
+</script>

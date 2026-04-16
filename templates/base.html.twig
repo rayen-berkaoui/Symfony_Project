@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Tabaany{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🧭</text></svg>">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            gold: { 400: "#f6d40b", 500: "#f5c518", 600: "#d4a50a" },
+                            dark: { 100: "#283142", 200: "#171f2d", 300: "#101723", 400: "#0a111c" }
+                        }
+                    }
+                }
+            };
+        </script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+        {% if frankenphpHotReload %}
+        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+        {% endif %}
+    </head>
+    {% set route = app.request.attributes.get('_route')|default('') %}
+    {% set isAdmin = is_granted('ROLE_ADMIN') %}
+    <body class="{{ isAdmin ? 'shell-admin' : 'shell-front' }}">
+        {% if isAdmin %}
+            <div class="shell-grid">
+                <aside class="admin-sidebar">
+                    <div class="brand-block">
+                        <div class="brand-chip"><i class="fa-solid fa-compass"></i></div>
+                        <h1 class="brand-title">Tabaany Backoffice</h1>
+                        <p class="brand-subtitle">Pilotage de la plateforme voyage, gestion du contenu et suivi des utilisateurs.</p>
+                    </div>
+
+                    <div class="sidebar-group">
+                        <p class="sidebar-heading">Pilotage</p>
+                        <a href="{{ path('app_dashboard') }}" class="sidebar-link {{ route == 'app_dashboard' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ path('app_admin_users') }}" class="sidebar-link {{ route starts with 'app_admin_user' or route == 'app_admin_users' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-users-gear"></i>
+                            <span>Utilisateurs</span>
+                        </a>
+                    </div>
+
+                    <div class="sidebar-group">
+                        <p class="sidebar-heading">Catalogue</p>
+                        <a href="{{ path('app_lieu_touristique_index') }}" class="sidebar-link {{ route starts with 'app_lieu_touristique' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <span>Lieux touristiques</span>
+                        </a>
+                        <a href="{{ path('app_etablissement_index') }}" class="sidebar-link {{ route starts with 'app_etablissement' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-hotel"></i>
+                            <span>Etablissements</span>
+                        </a>
+                        <a href="{{ path('app_activite_index') }}" class="sidebar-link {{ route starts with 'app_activite' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-ticket"></i>
+                            <span>Activites</span>
+                        </a>
+                        <a href="{{ path('app_categorie_index') }}" class="sidebar-link {{ route starts with 'app_categorie' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>Categories</span>
+                        </a>
+                        <a href="{{ path('app_adresse_index') }}" class="sidebar-link {{ route starts with 'app_adresse' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                            <span>Adresses</span>
+                        </a>
+                    </div>
+
+                    <div class="sidebar-group">
+                        <p class="sidebar-heading">Operations</p>
+                        <a href="{{ path('app_panier_index') }}" class="sidebar-link {{ route starts with 'app_panier' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-cart-flatbed"></i>
+                            <span>Paniers</span>
+                        </a>
+                        <a href="{{ path('app_reservation_index') }}" class="sidebar-link {{ route starts with 'app_reservation' ? 'is-active' : '' }}">
+                            <i class="fa-solid fa-receipt"></i>
+                            <span>Reservations</span>
+                        </a>
+                    </div>
+
+                    <div class="sidebar-user">
+                        <div class="avatar-dot">{{ app.user ? app.user.nom|first|upper : 'A' }}</div>
+                        <div>
+                            <div style="font-weight: 800;">{{ app.user ? app.user.nom ~ ' ' ~ app.user.prenom : 'Administrateur' }}</div>
+                            <div style="color: var(--admin-muted); font-size: 0.88rem;">{{ app.user and app.user.role ? app.user.role.nom : 'ROLE_ADMIN' }}</div>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="shell-main">
+                    <header class="shell-header">
+                        <div class="header-title-wrap">
+                            <span class="header-overline">Administration</span>
+                            <h1 class="header-title">{% block page_heading %}{{ block('title') }}{% endblock %}</h1>
+                            <div class="header-breadcrumb">{{ block('breadcrumb') }}</div>
+                        </div>
+                        <div class="header-actions">
+                            <a href="{{ path('app_home') }}" class="header-pill"><i class="fa-solid fa-globe"></i><span>Voir le site</span></a>
+                            <a href="{{ path('app_profile') }}" class="header-pill"><i class="fa-solid fa-user"></i><span>Profil</span></a>
+                            <a href="{{ path('app_logout') }}" class="btn-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Deconnexion</span></a>
+                        </div>
+                    </header>
+
+                    <div class="flash-stack">
+                        {% for label, messages in app.flashes %}
+                            {% for message in messages %}
+                                <div class="flash-message {{ label == 'error' ? 'danger' : label }}">
+                                    <i class="fa-solid {% if label == 'success' %}fa-circle-check{% elseif label == 'warning' %}fa-triangle-exclamation{% elseif label == 'danger' or label == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                                    <div>{{ message }}</div>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="content-frame">
+                        {{ block('body') }}
+                    </div>
+
+                    <footer class="shell-footer">
+                        <p>&copy; {{ 'now'|date('Y') }} Tabaany Backoffice. Gestion unifiee de la plateforme voyage.</p>
+                    </footer>
+                </div>
+            </div>
+        {% else %}
+            <div class="front-shell">
+                <header class="front-header">
+                    <div class="front-header-inner">
+                        <a href="{{ app.user ? path('app_user_accueil') : path('app_home') }}" class="front-brand">
+                            <span class="front-brand-mark"><i class="fa-solid fa-compass-drafting"></i></span>
+                            <span>
+                                <span class="front-brand-title">Tabaany</span>
+                                <span class="front-brand-subtitle">Voyage, sorties et reservations</span>
+                            </span>
+                        </a>
+
+                        <nav class="front-nav">
+                            <a href="{{ app.user ? path('app_user_accueil') : path('app_home') }}" class="front-nav-link {{ route in ['app_user_accueil', 'app_home'] ? 'is-active' : '' }}">Accueil</a>
+                            <a href="{{ path('app_lieu_touristique_index') }}" class="front-nav-link {{ route starts with 'app_lieu_touristique' ? 'is-active' : '' }}">Lieux</a>
+                            <a href="{{ path('app_etablissement_index') }}" class="front-nav-link {{ route starts with 'app_etablissement' ? 'is-active' : '' }}">Etablissements</a>
+                            <a href="{{ path('app_activite_index') }}" class="front-nav-link {{ route starts with 'app_activite' ? 'is-active' : '' }}">Activites</a>
+                            <a href="{{ path('app_cart_index') }}" class="front-nav-link {{ route starts with 'app_cart' ? 'is-active' : '' }}">Panier</a>
+                            {% if app.user %}<a href="{{ path('app_user_reservation_index') }}" class="front-nav-link {{ route starts with 'app_user_reservation' ? 'is-active' : '' }}">Reservations</a>{% endif %}
+                        </nav>
+
+                        <div class="front-actions">
+                            {% if app.user %}
+                                <a href="{{ path('app_profile') }}" class="btn-dark"><i class="fa-solid fa-user"></i><span>Profil</span></a>
+                                <a href="{{ path('app_logout') }}" class="btn-gold"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>Deconnexion</span></a>
+                            {% else %}
+                                <a href="{{ path('app_login') }}" class="btn-dark"><i class="fa-solid fa-right-to-bracket"></i><span>Connexion</span></a>
+                                <a href="{{ path('app_signup') }}" class="btn-gold"><i class="fa-solid fa-user-plus"></i><span>Inscription</span></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </header>
+
+                <div class="flash-stack">
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="flash-message {{ label == 'error' ? 'danger' : label }}">
+                                <i class="fa-solid {% if label == 'success' %}fa-circle-check{% elseif label == 'warning' %}fa-triangle-exclamation{% elseif label == 'danger' or label == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                                <div>{{ message }}</div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+
+                <main class="front-content">
+                    <section class="front-hero-inline">
+                        <h1>{% block front_heading %}{{ block('title') }}{% endblock %}</h1>
+                        <p>{{ block('breadcrumb') }}</p>
+                    </section>
+                    {{ block('body') }}
+                </main>
+
+                <footer class="front-footer">
+                    <div class="front-footer-inner">
+                        <div>
+                            <strong>Tabaany</strong>
+                            <div>Une plateforme voyage plus fluide, plus claire et plus coherente.</div>
+                        </div>
+                        <div class="inline-list">
+                            <a href="{{ path('app_lieu_touristique_index') }}" class="front-nav-link">Decouvrir</a>
+                            <a href="{{ path('app_cart_index') }}" class="front-nav-link">Panier</a>
+                            {% if app.user %}<a href="{{ path('app_user_reservation_index') }}" class="front-nav-link">Mes reservations</a>{% endif %}
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        {% endif %}
+
+        {% block breadcrumb %}{% if isAdmin %}Gestion centrale de la plateforme{% else %}Explorez la Tunisie, gerez vos selections et reservez en quelques clics.{% endif %}{% endblock %}
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                window.setTimeout(() => {
+                    document.querySelectorAll('.flash-message').forEach((item) => {
+                        item.style.transition = 'opacity .35s ease, transform .35s ease';
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateY(-8px)';
+                        window.setTimeout(() => item.remove(), 360);
+                    });
+                }, 4200);
+            });
+        </script>
+    </body>
+</html>

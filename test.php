@@ -1,0 +1,1 @@
+<?php require "vendor/autoload.php"; $k = new App\Kernel("dev", true); $k->boot(); $em = $k->getContainer()->get("doctrine")->getManager(); $e = new App\Entity\Etablissement(); $e->setNom("T"); $e->setAdresse("A"); $e->setVille("V"); $em->persist($e); $em->flush(); echo "Success";

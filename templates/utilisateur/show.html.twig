@@ -1,0 +1,60 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Utilisateur {{ utilisateur.id }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="hero-card">
+        <h1>{{ utilisateur.nom }} {{ utilisateur.prenom }}</h1>
+        <p class="muted">{{ utilisateur.email }}</p>
+        <div class="nav">
+            <a class="btn solid" href="{{ path('utilisateur_edit', { id: utilisateur.id }) }}">Editer</a>
+            <a class="btn ghost" href="{{ path('utilisateur_index') }}">Retour</a>
+        </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+        <table class="table">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td>{{ utilisateur.id }}</td>
+                </tr>
+                <tr>
+                    <th>Nom</th>
+                    <td>{{ utilisateur.nom }}</td>
+                </tr>
+                <tr>
+                    <th>Prenom</th>
+                    <td>{{ utilisateur.prenom }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ utilisateur.email }}</td>
+                </tr>
+                <tr>
+                    <th>Telephone</th>
+                    <td>{{ utilisateur.numTel }}</td>
+                </tr>
+                <tr>
+                    <th>Role</th>
+                    <td>{{ utilisateur.role ? utilisateur.role.nom : '-' }}</td>
+                </tr>
+                <tr>
+                    <th>Statut</th>
+                    <td>{{ utilisateur.statut }}</td>
+                </tr>
+                <tr>
+                    <th>Date creation</th>
+                    <td>{{ utilisateur.dateCreation ? utilisateur.dateCreation|date('Y-m-d H:i') : '-' }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <form method="post" action="{{ path('utilisateur_delete', { id: utilisateur.id }) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');" style="margin-top: 16px;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
+            <button class="btn ghost" type="submit">Supprimer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

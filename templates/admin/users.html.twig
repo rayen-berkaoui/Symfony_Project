@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs{% endblock %}
+{% block breadcrumb %}Recherche, filtrage, moderation et consultation de tous les comptes{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div style="display:flex; justify-content:space-between; gap:18px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+            <p class="header-overline" style="margin:0 0 10px;">Administration des comptes</p>
+            <h2 style="font-size:clamp(1.9rem, 3vw, 2.7rem); font-weight:900; margin:0 0 10px;">Tous les utilisateurs</h2>
+            <p style="max-width:760px; margin:0; opacity:.8;">Retrouvez rapidement un profil, ajustez son statut et exportez une vue complete pour vos operations de support.</p>
+        </div>
+        <div class="inline-list">
+            <a href="{{ path('app_admin_dashboard') }}" class="btn-dark"><i class="fa-solid fa-arrow-left"></i><span>Retour dashboard</span></a>
+            <a href="{{ path('app_admin_users_export') }}" class="btn-gold"><i class="fa-solid fa-file-export"></i><span>Exporter PDF</span></a>
+        </div>
+    </div>
+</section>
+
+<section class="admin-card">
+    <form method="get" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto auto; gap:14px; align-items:end;">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <div>
+            <label for="search">Recherche</label>
+            <input id="search" type="text" name="search" value="{{ search }}" placeholder="Nom, prenom ou email..." class="input-modern">
+        </div>
+        <div>
+            <label for="status">Statut</label>
+            <select id="status" name="status" class="input-modern">
+                <option value="">Tous</option>
+                <option value="ACTIF" {{ status == 'ACTIF' ? 'selected' : '' }}>Actif</option>
+                <option value="BLOQUE" {{ status == 'BLOQUE' ? 'selected' : '' }}>Bloque</option>
+                <option value="EN_ATTENTE" {{ status == 'EN_ATTENTE' ? 'selected' : '' }}>En attente</option>
+            </select>
+        </div>
+        <div>
+            <label for="role">Role</label>
+            <select id="role" name="role" class="input-modern">
+                <option value="">Tous</option>
+                <option value="ADMIN" {{ role == 'ADMIN' ? 'selected' : '' }}>Admin</option>
+                <option value="TOURISTE" {{ role == 'TOURISTE' ? 'selected' : '' }}>Touriste</option>
+                <option value="PARTENAIRE" {{ role == 'PARTENAIRE' ? 'selected' : '' }}>Partenaire</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-gold"><i class="fa-solid fa-magnifying-glass"></i><span>Filtrer</span></button>
+        <a href="{{ path('app_admin_users', {sort: sort == 'alpha' ? 'date' : 'alpha', search: search, status: status, role: role}) }}" class="btn-dark">
+            <i class="fa-solid fa-sort"></i>
+            <span>{{ sort == 'alpha' ? 'Tri date' : 'Tri A-Z' }}</span>
+        </a>
+    </form>
+</section>
+
+<section class="table-shell">
+    <table>
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>Role</th>
+                <th>Statut</th>
+                <th>Creation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <span class="avatar-dot">{{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}</span>
+                            <div>
+                                <div style="font-weight:800;">{{ user.nom }} {{ user.prenom }}</div>
+                                <div style="color:var(--admin-muted); font-size:.9rem;">{{ user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ user.role.nom }}</td>
+                    <td>
+                        <select onchange="updateStatus({{ user.id }}, this)" class="input-modern" style="min-height:38px; padding:8px 12px; font-size:.84rem;">
+                            <option value="ACTIF" {{ user.statut == 'ACTIF' ? 'selected' : '' }}>ACTIF</option>
+                            <option value="BLOQUE" {{ user.statut == 'BLOQUE' ? 'selected' : '' }}>BLOQUE</option>
+                            <option value="EN_ATTENTE" {{ user.statut == 'EN_ATTENTE' ? 'selected' : '' }}>EN ATTENTE</option>
+                        </select>
+                    </td>
+                    <td>{{ user.dateCreation|date('d/m/Y') }}</td>
+                    <td>
+                        <div class="inline-list">
+                            <a href="{{ path('app_admin_user_view', {id: user.id}) }}" class="btn-dark" style="min-height:38px; padding:0 12px;">Voir</a>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:var(--admin-muted); padding:32px;">Aucun utilisateur ne correspond a votre recherche.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script>
+function updateStatus(userId, selectElement) {
+    fetch(`/admin/users/${userId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: selectElement.value })
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (!data.success) {
+            throw new Error(data.message || 'Mise a jour impossible.');
+        }
+        selectElement.style.borderColor = 'rgba(96,165,250,.5)';
+        setTimeout(() => {
+            selectElement.style.borderColor = 'rgba(255,255,255,.08)';
+        }, 800);
+    })
+    .catch((error) => {
+        alert(error.message || 'Une erreur est survenue.');
+        window.location.reload();
+    });
+}
+</script>
+{% endblock %}

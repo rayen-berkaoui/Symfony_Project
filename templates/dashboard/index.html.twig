@@ -1,0 +1,252 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vue d'ensemble{% endblock %}
+
+{% block breadcrumb %}
+    <span>Vue d'ensemble</span>
+{% endblock %}
+
+{% block body %}
+<div class="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-4 animate-[fade-in_0.5s_ease-out]">
+    <div>
+        <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-yellow-600 mb-2 drop-shadow-[0_4px_15px_rgba(255,215,0,0.4)]">Vue d'ensemble</h1>
+        <p class="text-gray-400 text-lg">Suivez l'activite et gerez votre base de donnees touristique de maniere intuitive.</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{{ path('app_dashboard_excel') }}" class="group flex items-center gap-2 bg-gradient-to-r from-green-600/20 to-green-600/10 hover:from-green-500 hover:to-green-600 border border-green-500/30 hover:border-transparent px-4 py-2.5 rounded-xl text-green-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.1)] hover:shadow-[0_4px_20px_rgba(34,197,94,0.4)]">
+            <i class="fa-solid fa-file-excel text-lg transition-transform group-hover:-translate-y-0.5"></i>
+            <span class="font-semibold">Excel</span>
+        </a>
+        <a href="{{ path('app_dashboard_pdf') }}" class="group flex items-center gap-2 bg-gradient-to-r from-red-600/20 to-red-600/10 hover:from-red-500 hover:to-red-600 border border-red-500/30 hover:border-transparent px-4 py-2.5 rounded-xl text-red-400 hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)] hover:shadow-[0_4px_20px_rgba(239,68,68,0.4)]">
+            <i class="fa-solid fa-file-pdf text-lg transition-transform group-hover:-translate-y-0.5"></i>
+            <span class="font-semibold">PDF</span>
+        </a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">        
+    <!-- Lieux Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-gold-500/10 rounded-2xl p-6 flex flex-col hover:border-gold-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-gold-500/5 rounded-full blur-2xl group-hover:bg-gold-500/10 transition-all duration-500"></div>       
+        <div class="flex justify-between items-start mb-6 relative z-10">       
+            <div>
+                <p class="text-gold-500/70 text-xs font-bold uppercase tracking-widest mb-2">Lieux Touristiques</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-gold-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_lieux }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-500/20 to-gold-700/10 flex items-center justify-center text-gold-500 shadow-[0_0_15px_rgba(255,215,0,0.1)] group-hover:scale-110 transition-transform duration-500">  
+                <i class="fa-solid fa-map-location-dot text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto flex gap-2 relative z-10 w-full justify-between items-center bg-black/40 rounded-lg p-2 border border-white/5">
+            <div class="flex items-center gap-1.5 px-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs font-medium text-green-400">{{ stats.active_lieux }} Actifs</span>
+            </div>
+            <div class="w-px h-6 bg-white/10"></div>
+            <div class="flex items-center gap-1.5 px-2">
+                <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span class="text-xs font-medium text-red-400">{{ stats.inactive_lieux }} Inactifs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paniers Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-blue-500/10 rounded-2xl p-6 flex flex-col hover:border-blue-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>       
+        <div class="flex justify-between items-start mb-6 relative z-10">       
+            <div>
+                <p class="text-blue-500/70 text-xs font-bold uppercase tracking-widest mb-2">Paniers / Carts</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-blue-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_paniers }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:scale-110 transition-transform duration-500"> 
+                <i class="fa-solid fa-cart-shopping text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
+            <a href="{{ path('app_panier_index') }}" class="text-[11px] uppercase tracking-wider text-gray-400 hover:text-blue-400 font-semibold transition-colors"><i class="fa-solid fa-eye mr-1.5 text-blue-500/50"></i>Gerer les paniers</a>
+        </div>
+    </div>
+
+    <!-- Reservations Card -->
+    <div class="group bg-gradient-to-br from-dark-300 to-black hover:from-dark-200 hover:to-dark-300 border border-purple-500/10 rounded-2xl p-6 flex flex-col hover:border-purple-500/30 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] relative overflow-hidden transform hover:-translate-y-2">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500"></div>   
+        <div class="flex justify-between items-start mb-6 relative z-10">       
+            <div>
+                <p class="text-purple-500/70 text-xs font-bold uppercase tracking-widest mb-2">Reservations</p>
+                <h3 class="text-4xl font-black text-white group-hover:text-purple-400 transition-colors drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{{ stats.total_reservations }}</h3>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-700/10 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:scale-110 transition-transform duration-500">
+                <i class="fa-solid fa-ticket text-2xl"></i>
+            </div>
+        </div>
+        <div class="mt-auto relative z-10 w-full bg-black/40 rounded-lg p-2 border border-white/5 flex items-center justify-center">
+            <a href="{{ path('app_reservation_index') }}" class="text-[11px] uppercase tracking-wider text-gray-400 hover:text-purple-400 font-semibold transition-colors"><i class="fa-solid fa-eye mr-1.5 text-purple-500/50"></i>Gerer les Reservations</a>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Section: 3 Charts -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">        
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-gold-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-gold-500 mr-2"></i>Categories</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="categoryPieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-purple-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-purple-500 mr-2"></i>Villes (Adresses)</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="adressePieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card flex flex-col items-center justify-center border-t-2 border-t-green-500">
+        <h2 class="text-lg font-bold text-gray-200 mb-4 w-full border-b border-white/5 pb-2"><i class="fa-solid fa-chart-pie text-green-500 mr-2"></i>Statut Lieux</h2>
+        <div class="relative w-full h-[200px] flex justify-center items-center">
+            <canvas id="statutPieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section Grid -->
+<div class="grid grid-cols-1 gap-6">
+    <!-- Recent Places Table -->
+    <div class="card">
+        <h2 class="text-xl font-bold text-gold-400 mb-6 border-b border-gold-500/10 pb-3">Derniers Lieux Ajoutes</h2>
+        {% if recent_lieux is empty %}
+            <p class="text-gray-500 py-4 text-center">Aucun lieu touristique existant.</p>
+        {% else %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Lieu</th>
+                            <th class="pb-3 text-left font-semibold text-gray-400 uppercase tracking-wider">Categorie</th>
+                            <th class="pb-3 text-right font-semibold text-gray-400 uppercase tracking-wider">Prix</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gold-500/10">
+                        {% for lieu in recent_lieux %}
+                            <tr class="hover:bg-dark-300/50 transition-colors"> 
+                                <td class="py-3">
+                                    <div class="flex flex-col">
+                                        <a href="{{ path('app_lieu_touristique_show', {id: lieu.id}) }}" class="font-medium text-white hover:text-gold-400 transition-colors">{{ lieu.nom }}</a>
+                                        <span class="text-xs text-gray-500">{{ lieu.ville ?: 'Ville non specifiee' }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-dark-300 text-gray-300 border border-gold-500/20">
+                                        {{ lieu.categorie ? lieu.categorie.nomCategorie : 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 text-right">
+                                    <span class="font-mono text-green-400">{{ lieu.prix ?: '0.00' }} DT</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gold-500/10 text-center">     
+                <a href="{{ path('app_lieu_touristique_index') }}" class="text-sm text-gold-500 hover:text-gold-400 font-medium tracking-wide">Voir tout d'un coup d'Å“il &rarr;</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Chart.js CDN & Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function initCharts() {
+    if (!document.getElementById('categoryPieChart')) return;
+    
+    // Destroy existing charts to prevent "Canvas is already in use" error
+    let existingCatChart = Chart.getChart('categoryPieChart');
+    if (existingCatChart) existingCatChart.destroy();
+    
+    let existingAdresseChart = Chart.getChart('adressePieChart');
+    if (existingAdresseChart) existingAdresseChart.destroy();
+    
+    let existingStatutChart = Chart.getChart('statutPieChart');
+    if (existingStatutChart) existingStatutChart.destroy();
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { color: '#E5E5E5', font: { family: "'Inter', sans-serif", size: 11 } } },
+            tooltip: { backgroundColor: 'rgba(10, 10, 10, 0.95)', titleColor: '#FFF', bodyColor: '#FFF', borderColor: 'rgba(255, 215, 0, 0.2)', borderWidth: 1 }
+        }
+    };
+
+    // 1. Chart Categories
+    const labelsData = {{ chart_labels|raw }};
+    const valuesData = {{ chart_data|raw }};
+    if(labelsData && labelsData.length > 0) {
+        new Chart(document.getElementById('categoryPieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    data: valuesData,
+                    backgroundColor: ['rgba(251, 191, 36, 0.9)', 'rgba(6, 182, 212, 0.9)', 'rgba(244, 63, 94, 0.9)', 'rgba(16, 185, 129, 0.9)', 'rgba(139, 92, 246, 0.9)'],
+                    borderColor: 'rgba(30, 41, 59, 1)', borderWidth: 3, hoverOffset: 6
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('categoryPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnees</p>';        
+    }
+
+    // 2. Chart Adresses
+    const adresseLabels = {{ adresse_labels|raw }};
+    const adresseValues = {{ adresse_data|raw }};
+    if(adresseLabels && adresseLabels.length > 0) {
+        new Chart(document.getElementById('adressePieChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: adresseLabels,
+                datasets: [{
+                    data: adresseValues,
+                    backgroundColor: ['rgba(217, 70, 239, 0.9)', 'rgba(20, 184, 166, 0.9)', 'rgba(245, 158, 11, 0.9)', 'rgba(99, 102, 241, 0.9)', 'rgba(239, 68, 68, 0.9)'],
+                    borderColor: 'rgba(30, 41, 59, 1)', borderWidth: 3, hoverOffset: 6
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('adressePieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnees</p>';
+    }
+
+    // 3. Chart Status
+    const activeLieux = {{ stats.active_lieux }};
+    const inactiveLieux = {{ stats.inactive_lieux }};
+    if(activeLieux > 0 || inactiveLieux > 0) {
+        new Chart(document.getElementById('statutPieChart').getContext('2d'), { 
+            type: 'doughnut',
+            data: {
+                labels: ['Actifs', 'Inactifs'],
+                datasets: [{
+                    data: [activeLieux, inactiveLieux],
+                    backgroundColor: ['rgba(34, 197, 94, 0.9)', 'rgba(239, 68, 68, 0.9)'],
+                    borderColor: 'rgba(30, 41, 59, 1)', borderWidth: 3, hoverOffset: 6
+                }]
+            },
+            options: chartOptions
+        });
+    } else {
+        document.getElementById('statutPieChart').parentElement.innerHTML = '<p class="text-gray-600 text-xs text-center w-full">Pas de donnees</p>';
+    }
+}
+document.addEventListener('turbo:load', initCharts);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCharts);
+} else {
+    initCharts();
+}
+</script>
+{% endblock %}
+

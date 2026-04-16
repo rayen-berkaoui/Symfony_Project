@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard administrateur{% endblock %}
+{% block breadcrumb %}Suivi global des utilisateurs, des roles et des actions recentes{% endblock %}
+
+{% block body %}
+<section class="page-hero">
+    <div style="display:flex; justify-content:space-between; gap:18px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+            <p class="header-overline" style="margin:0 0 10px;">Vue d'ensemble</p>
+            <h2 style="font-size:clamp(2rem, 3vw, 3rem); font-weight:900; margin:0 0 10px;">Bonjour {{ app.user.nom }} {{ app.user.prenom }}</h2>
+            <p style="max-width:720px; margin:0; opacity:.8;">Le backoffice a ete repense pour centraliser la supervision des comptes, la moderation et le suivi des donnees voyageurs dans une seule interface claire.</p>
+        </div>
+        <div class="inline-list">
+            <a href="{{ path('app_admin_users') }}" class="btn-gold"><i class="fa-solid fa-users"></i><span>Gerer les utilisateurs</span></a>
+            <a href="{{ path('app_admin_users_export') }}" class="btn-dark"><i class="fa-solid fa-file-pdf"></i><span>Exporter le registre</span></a>
+        </div>
+    </div>
+</section>
+
+<section class="stat-grid">
+    <article class="stat-card">
+        <span class="stat-label">Utilisateurs total</span>
+        <div class="stat-value">{{ totalUsers }}</div>
+        <span class="stat-trend info"><i class="fa-solid fa-people-group"></i> Base complete</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Comptes actifs</span>
+        <div class="stat-value">{{ activeUsers }}</div>
+        <span class="stat-trend success"><i class="fa-solid fa-circle-check"></i> Parcours fluide</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">Comptes bloques</span>
+        <div class="stat-value">{{ blockedUsers }}</div>
+        <span class="stat-trend danger"><i class="fa-solid fa-shield-halved"></i> Moderation</span>
+    </article>
+    <article class="stat-card">
+        <span class="stat-label">En attente</span>
+        <div class="stat-value">{{ pendingUsers }}</div>
+        <span class="stat-trend warning"><i class="fa-solid fa-hourglass-half"></i> Validation</span>
+    </article>
+</section>
+
+<section class="content-grid" style="grid-template-columns: 1.3fr .9fr;">
+    <article class="admin-card">
+        <div style="display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:18px; flex-wrap:wrap;">
+            <div>
+                <h3 style="margin:0 0 8px; font-size:1.3rem; font-weight:800;">Derniers utilisateurs inscrits</h3>
+                <p style="margin:0; color:var(--admin-muted);">Les comptes les plus recents pour suivre rapidement l'activite.</p>
+            </div>
+            <a href="{{ path('app_admin_users') }}" class="btn-dark">Voir tout</a>
+        </div>
+
+        <div class="table-shell">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Role</th>
+                        <th>Statut</th>
+                        <th>Inscription</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recentUsers %}
+                        <tr>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <span class="avatar-dot">{{ user.nom|slice(0,1) }}{{ user.prenom|slice(0,1) }}</span>
+                                    <div>
+                                        <div style="font-weight:800;">{{ user.nom }} {{ user.prenom }}</div>
+                                        <div style="color:var(--admin-muted); font-size:.9rem;">{{ user.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user.role.nom }}</td>
+                            <td>
+                                <span class="status-chip {% if user.statut == 'ACTIF' %}success{% elseif user.statut == 'BLOQUE' %}danger{% else %}warning{% endif %}">{{ user.statut }}</span>
+                            </td>
+                            <td>{{ user.dateCreation|date('d/m/Y H:i') }}</td>
+                            <td>
+                                <a href="{{ path('app_admin_user_view', {id: user.id}) }}" class="btn-dark" style="min-height:38px; padding:0 12px;">Consulter</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:var(--admin-muted);">Aucun utilisateur recent.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="admin-card">
+        <div style="margin-bottom:18px;">
+            <h3 style="margin:0 0 8px; font-size:1.3rem; font-weight:800;">Repartition par role</h3>
+            <p style="margin:0; color:var(--admin-muted);">Comprendre la composition de la base voyageurs et administrateurs.</p>
+        </div>
+
+        <div style="display:grid; gap:14px;">
+            {% set maxCount = 1 %}
+            {% for item in roleStats %}
+                {% if item.userCount > maxCount %}{% set maxCount = item.userCount %}{% endif %}
+            {% endfor %}
+
+            {% for item in roleStats %}
+                {% set width = maxCount > 0 ? (item.userCount / maxCount) * 100 : 0 %}
+                <div style="padding:16px; border-radius:18px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);">
+                    <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:10px;">
+                        <strong>{{ item.nom }}</strong>
+                        <span style="color:var(--admin-muted);">{{ item.userCount }} compte(s)</span>
+                    </div>
+                    <div style="height:10px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden;">
+                        <div style="height:100%; width:{{ width }}%; border-radius:999px; background:linear-gradient(135deg, var(--admin-accent-2), var(--admin-accent));"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

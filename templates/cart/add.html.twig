@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter au Panier - {{ lieu.nom }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{{ path('app_lieu_touristique_index') }}" class="hover:text-gold-400 transition-colors">Lieux</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <a href="{{ path('app_lieu_touristique_show', {'id': lieu.id}) }}" class="hover:text-gold-400 transition-colors">{{ lieu.nom }}</a>
+    <i class="fa-solid fa-chevron-right mx-2 text-xs"></i>
+    <span>Ajouter au Panier</span>
+{% endblock %}
+
+{% block body %}
+<div class="space-y-8">
+    <div>
+        <p class="text-sm uppercase tracking-[0.35em] text-gold-500/70">Panier intelligent</p>
+        <h1 class="text-4xl font-black text-white">Ajouter une visite au panier</h1>
+        <p class="mt-2 text-gray-400">Choisissez la période et le nombre de voyageurs. Le prix estimé se met à jour instantanément.</p>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div class="card p-0 overflow-hidden">
+            {% if lieu.image %}
+                <img src="{{ asset(lieu.image) }}" alt="{{ lieu.nom }}" class="h-72 w-full object-cover">
+            {% else %}
+                <div class="flex h-72 items-center justify-center bg-dark-300">
+                    <i class="fa-solid fa-map-location-dot text-5xl text-gold-500/50"></i>
+                </div>
+            {% endif %}
+            <div class="p-6 space-y-5">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.24em] text-gold-500/70">Lieu touristique</p>
+                        <h2 class="mt-2 text-3xl font-black text-white">{{ lieu.nom }}</h2>
+                        <p class="mt-2 text-gray-400"><i class="fa-solid fa-location-dot mr-2 text-gold-500/60"></i>{{ lieu.ville }}</p>
+                    </div>
+                    <div class="rounded-2xl border border-gold-500/20 bg-gold-500/10 px-5 py-4 text-right">
+                        <p class="text-xs uppercase tracking-[0.2em] text-gold-500/70">Base tarifaire</p>
+                        <p class="mt-2 text-3xl font-black text-gold-400">{{ lieu.prix|number_format(2) }}</p>
+                        <p class="text-xs text-gray-400">TND / personne / jour</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 leading-7">{{ lieu.description }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-5">
+                <div>
+                    <h2 class="text-2xl font-black text-white">Configurer la réservation</h2>
+                    <p class="mt-1 text-sm text-gray-400">La date de fin doit être après la date de début.</p>
+                </div>
+                <span class="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">Validation temps réel</span>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'mt-6 space-y-6', 'id': 'cart-form', 'novalidate': 'novalidate'}}) }}
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        {{ form_label(form.dateDebut) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'id': 'dateDebut'}}) }}
+                        {{ form_errors(form.dateDebut) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.dateFin) }}
+                        {{ form_widget(form.dateFin, {'attr': {'id': 'dateFin'}}) }}
+                        {{ form_errors(form.dateFin) }}
+                    </div>
+                </div>
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        {{ form_label(form.nbAdultes) }}
+                        {{ form_widget(form.nbAdultes, {'attr': {'id': 'nbAdultes'}}) }}
+                        {{ form_errors(form.nbAdultes) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.nbEnfants) }}
+                        {{ form_widget(form.nbEnfants, {'attr': {'id': 'nbEnfants'}}) }}
+                        {{ form_errors(form.nbEnfants) }}
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-gold-500/20 bg-black/20 p-6">
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-2xl bg-dark-300/60 p-4">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Voyageurs</p>
+                            <p class="mt-2 text-2xl font-black text-white" id="displayPersons">1</p>
+                        </div>
+                        <div class="rounded-2xl bg-dark-300/60 p-4">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Jours</p>
+                            <p class="mt-2 text-2xl font-black text-white" id="displayDays">1</p>
+                        </div>
+                        <div class="rounded-2xl bg-gold-500/10 p-4 border border-gold-500/20">
+                            <p class="text-xs uppercase tracking-[0.2em] text-gold-500/70">Estimation</p>
+                            <p class="mt-2 text-2xl font-black text-gold-400" id="estimatedPrice">{{ lieu.prix|number_format(2) }} TND</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-4">
+                    <a href="{{ path('app_lieu_touristique_show', {'id': lieu.id}) }}" class="btn-dark"><i class="fa-solid fa-arrow-left mr-2"></i>Retour</a>
+                    <button type="submit" class="rounded-2xl bg-gradient-to-r from-emerald-500 to-green-400 px-6 py-3 font-bold text-black shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-green-300">
+                        <i class="fa-solid fa-cart-plus mr-2"></i>Ajouter au panier
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    const unitPrice = {{ lieu.prix ?: 0 }};
+    const fields = ['nbAdultes', 'nbEnfants', 'dateDebut', 'dateFin'];
+
+    function updatePrice() {
+        const nbAdultes = parseInt(document.getElementById('nbAdultes')?.value || '1', 10);
+        const nbEnfants = parseInt(document.getElementById('nbEnfants')?.value || '0', 10);
+        const dateDebut = document.getElementById('dateDebut')?.value;
+        const dateFin = document.getElementById('dateFin')?.value;
+
+        const totalPersons = Math.max(1, nbAdultes + nbEnfants);
+        let days = 1;
+
+        if (dateDebut && dateFin) {
+            const start = new Date(dateDebut);
+            const end = new Date(dateFin);
+            const diffTime = end - start;
+            days = diffTime > 0 ? Math.ceil(diffTime / (1000 * 60 * 60 * 24)) : 1;
+        }
+
+        const total = unitPrice * totalPersons * days;
+        document.getElementById('displayPersons').textContent = totalPersons;
+        document.getElementById('displayDays').textContent = days;
+        document.getElementById('estimatedPrice').textContent = total.toFixed(2) + ' TND';
+    }
+
+    fields.forEach((id) => document.getElementById(id)?.addEventListener('input', updatePrice));
+    fields.forEach((id) => document.getElementById(id)?.addEventListener('change', updatePrice));
+    updatePrice();
+</script>
+{% endblock %}

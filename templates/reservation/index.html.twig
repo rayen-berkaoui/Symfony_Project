@@ -1,0 +1,155 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Backoffice réservations{% endblock %}
+
+{% block body %}
+<div class="space-y-8">
+    <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+            <p class="text-sm uppercase tracking-[0.35em] text-gold-500/70">Backoffice</p>
+            <h1 class="text-4xl font-black text-white">Dashboard réservations</h1>
+            <p class="mt-2 text-gray-400">Suivi des paiements, de la rentabilité et des avis clients.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ path('app_reservation_pdf') }}" class="btn-dark"><i class="fa-solid fa-file-pdf mr-2"></i>PDF</a>
+            <a href="{{ path('app_reservation_excel') }}" class="btn-dark"><i class="fa-solid fa-file-excel mr-2"></i>Excel</a>
+        </div>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div class="card"><p class="text-xs uppercase tracking-[0.3em] text-gray-500">Total</p><p class="mt-3 text-4xl font-black text-white">{{ stats.total }}</p></div>
+        <div class="card"><p class="text-xs uppercase tracking-[0.3em] text-gray-500">Payées</p><p class="mt-3 text-4xl font-black text-emerald-300">{{ stats.paye }}</p><p class="mt-2 text-xs text-gray-500">{{ kpi.paidRate }}% du total</p></div>
+        <div class="card"><p class="text-xs uppercase tracking-[0.3em] text-gray-500">En cours</p><p class="mt-3 text-4xl font-black text-amber-300">{{ stats.en_cours }}</p><p class="mt-2 text-xs text-gray-500">{{ kpi.inProgressRate }}% du total</p></div>
+        <div class="card"><p class="text-xs uppercase tracking-[0.3em] text-gray-500">CA validé</p><p class="mt-3 text-4xl font-black text-gold-400">{{ stats.revenue|number_format(2, '.', ' ') }}</p></div>
+        <div class="card"><p class="text-xs uppercase tracking-[0.3em] text-gray-500">Ticket payé moyen</p><p class="mt-3 text-4xl font-black text-sky-300">{{ kpi.avgRevenue|number_format(2, '.', ' ') }}</p></div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+        <div class="card">
+            <h2 class="text-xl font-bold text-white">Performance circulaire</h2>
+            <div class="mt-6 flex items-center justify-center">
+                <div class="relative h-48 w-48">
+                    <svg viewBox="0 0 120 120" class="h-48 w-48 -rotate-90">
+                        <circle cx="60" cy="60" r="42" stroke="rgba(255,255,255,0.08)" stroke-width="12" fill="none" />
+                        <circle cx="60" cy="60" r="42" stroke="#10b981" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="{{ (kpi.paidRate / 100 * 264)|number_format(0, '.', '') }} 264" />
+                        <circle cx="60" cy="60" r="28" stroke="#f59e0b" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="{{ (kpi.inProgressRate / 100 * 176)|number_format(0, '.', '') }} 176" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-3xl font-black text-white">{{ kpi.paidRate }}%</span>
+                        <span class="text-xs uppercase tracking-[0.2em] text-gray-500">payées</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 space-y-2 text-sm">
+                <div class="flex items-center justify-between"><span class="text-gray-400">Payées</span><span class="font-semibold text-white">{{ stats.paye }}</span></div>
+                <div class="flex items-center justify-between"><span class="text-gray-400">En cours</span><span class="font-semibold text-white">{{ stats.en_cours }}</span></div>
+                <div class="flex items-center justify-between"><span class="text-gray-400">En attente</span><span class="font-semibold text-white">{{ stats.en_attente }}</span></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2 class="text-xl font-bold text-white">Barres business</h2>
+            <div class="mt-6 grid gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Paiements validés</p>
+                    <div class="mt-3 h-2 rounded-full bg-black/20"><div class="h-2 rounded-full bg-emerald-400" style="width: {{ kpi.paidRate }}%"></div></div>
+                    <p class="mt-2 text-sm font-semibold text-white">{{ kpi.paidRate }}%</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-gray-500">Paiements en cours</p>
+                    <div class="mt-3 h-2 rounded-full bg-black/20"><div class="h-2 rounded-full bg-amber-400" style="width: {{ kpi.inProgressRate }}%"></div></div>
+                    <p class="mt-2 text-sm font-semibold text-white">{{ kpi.inProgressRate }}%</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <p class="text-xs uppercase tracking-[0.2em] text-gray-500">CA validé</p>
+                    <p class="mt-3 text-2xl font-black text-gold-400">{{ stats.revenue|number_format(2, '.', ' ') }}</p>
+                    <p class="mt-2 text-xs text-gray-500">TND encaissés</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.45fr_0.55fr]">
+        <div class="card">
+            <form class="grid gap-4 lg:grid-cols-4">
+                <input type="text" name="search" value="{{ searchQuery }}" placeholder="Code, client, email..." class="rounded-xl border border-white/10 bg-dark-200 px-4 py-3 text-white lg:col-span-2">
+                <select name="status" class="rounded-xl border border-white/10 bg-dark-200 px-4 py-3 text-white">
+                    <option value="">Tous les statuts</option>
+                    <option value="pay" {{ statusFilter == 'pay' ? 'selected' }}>Payé</option>
+                    <option value="cours" {{ statusFilter == 'cours' ? 'selected' }}>En cours</option>
+                    <option value="attente" {{ statusFilter == 'attente' ? 'selected' }}>En attente</option>
+                </select>
+                <select name="mode" class="rounded-xl border border-white/10 bg-dark-200 px-4 py-3 text-white">
+                    <option value="">Tous les modes</option>
+                    <option value="Paymee" {{ modeFilter == 'Paymee' ? 'selected' }}>Paymee</option>
+                    <option value="Especes" {{ modeFilter == 'Especes' ? 'selected' }}>Espèces</option>
+                </select>
+            </form>
+
+            <div class="mt-6 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.2em] text-gray-500">
+                            <th class="py-3 pr-4">Réservation</th>
+                            <th class="py-3 pr-4">Client</th>
+                            <th class="py-3 pr-4">Service</th>
+                            <th class="py-3 pr-4">Paiement</th>
+                            <th class="py-3 pr-4">Montant</th>
+                            <th class="py-3 pr-4">Statut</th>
+                            <th class="py-3">Actions autorisées</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            {% set panier = reservation.panier %}
+                            {% set client = panier ? panier.utilisateur : null %}
+                            <tr class="border-b border-white/5 align-top">
+                                <td class="py-4 pr-4"><p class="font-bold text-white">{{ reservation.codeConfirmation }}</p><p class="text-xs text-gray-500">{{ reservation.datePaiement|date('d/m/Y H:i') }}</p></td>
+                                <td class="py-4 pr-4">{% if client %}<p class="font-semibold text-white">{{ client.prenom }} {{ client.nom }}</p><p class="text-xs text-gray-500">{{ client.email }}</p>{% else %}<p class="font-semibold text-white">Client indisponible</p><p class="text-xs text-gray-500">Panier ou utilisateur supprimé</p>{% endif %}</td>
+                                <td class="py-4 pr-4">{% if panier %}<p class="font-semibold text-white">{{ panier.displayName ?: ('Panier #' ~ panier.id) }}</p><p class="text-xs text-gray-500">{{ panier.displayCity ?: panier.serviceTypeLabel }}</p>{% else %}<p class="font-semibold text-white">Panier indisponible</p><p class="text-xs text-gray-500">Référence supprimée</p>{% endif %}</td>
+                                <td class="py-4 pr-4 text-gray-300"><i class="fa-solid fa-{{ reservation.modePaiementIcon }} mr-2 text-gold-400"></i>{{ reservation.modePaiementLabel }}</td>
+                                <td class="py-4 pr-4 text-gold-400 font-bold">{{ reservation.montantTotal|number_format(2, '.', ' ') }} TND</td>
+                                <td class="py-4 pr-4"><span class="rounded-full border px-3 py-1 text-xs font-semibold {{ reservation.statutBadgeClass }}">{{ reservation.normalizedStatutPaiement }}</span></td>
+                                <td class="py-4"><div class="flex flex-wrap gap-2"><a href="{{ path('app_reservation_show', {'id': reservation.id}) }}" class="btn-dark">Détail</a>{% if reservation.modePaiementLabel in ['Espèces', 'Paymee'] and reservation.normalizedStatutPaiement != 'Paye' %}<form method="post" action="{{ path('app_reservation_cash_paid', {'id': reservation.id}) }}"><input type="hidden" name="_token" value="{{ csrf_token('cash_paid' ~ reservation.id) }}"><button class="btn-gold" type="submit">{% if reservation.modePaiementLabel == 'Paymee' %}Forcer payé{% else %}Marquer payé{% endif %}</button></form>{% else %}<span class="rounded-2xl border border-white/10 bg-black/10 px-4 py-2 text-xs font-semibold text-gray-400">Aucune modification</span>{% endif %}</div></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="py-10 text-center text-gray-500">Aucune réservation trouvée.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6">{{ knp_pagination_render(reservations) }}</div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="card">
+                <h2 class="text-xl font-bold text-white">Modes de paiement</h2>
+                <div class="mt-4 space-y-3">
+                    {% for row in modeBreakdown %}
+                        <div>
+                            <div class="mb-1 flex items-center justify-between text-sm"><span class="text-gray-300">{{ row.mode_paiement }}</span><span class="text-white font-semibold">{{ row.total }}</span></div>
+                            <div class="h-2 rounded-full bg-black/20"><div class="h-2 rounded-full bg-gold-500" style="width: {{ stats.total ? (row.total / stats.total * 100) : 0 }}%"></div></div>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500">Aucune donnée.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="text-xl font-bold text-white">Derniers avis</h2>
+                <div class="mt-4 space-y-4">
+                    {% for reservation in recentRatings %}
+                        <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <p class="font-semibold text-white">{{ reservation.panier and reservation.panier.utilisateur ? (reservation.panier.utilisateur.prenom ~ ' ' ~ reservation.panier.utilisateur.nom) : 'Client indisponible' }}</p>
+                            <p class="text-gold-400">{{ reservation.starRating }}</p>
+                            <p class="mt-2 text-sm text-gray-400">{{ reservation.reviewComment ?: 'Sans commentaire' }}</p>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500">Aucun avis pour le moment.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{{ form_start(form, {'attr': {'class': 'form-grid'}}) }}
+    <div class="form-row">
+        {{ form_row(form.nomActivite) }}
+        {{ form_row(form.categorie) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.niveau) }}
+        {{ form_row(form.duree) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.prix) }}
+        {{ form_row(form.devise) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.statut) }}
+        {{ form_row(form.etablissement) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.dateDebut) }}
+        {{ form_row(form.dateFin) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.nbPlaces) }}
+        {{ form_row(form.placesDispo) }}
+    </div>
+    <div class="form-row">
+        {{ form_row(form.ageMin) }}
+        {{ form_row(form.adresseDepart) }}
+    </div>
+    {{ form_row(form.equipementInclus) }}
+    {{ form_row(form.conditionsAnnulation) }}
+    {{ form_row(form.description) }}
+
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

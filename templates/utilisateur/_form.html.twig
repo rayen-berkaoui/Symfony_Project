@@ -1,0 +1,25 @@
+{{ form_start(form, { attr: { class: 'form js-validate', novalidate: 'novalidate' } }) }}
+    <div class="form-grid">
+        {{ form_row(form.nom) }}
+        {{ form_row(form.prenom) }}
+    </div>
+    {{ form_row(form.email) }}
+    {{ form_row(form.numTel) }}
+    {{ form_row(form.role) }}
+    {{ form_row(form.statut) }}
+    {% set passwordId = form.plainPassword.vars.id %}
+    <div class="form-row">
+        {{ form_label(form.plainPassword) }}
+        <div class="password-field">
+            {{ form_widget(form.plainPassword) }}
+            <button type="button" class="password-toggle" data-target="{{ passwordId }}" aria-pressed="false" aria-label="Afficher le mot de passe">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            </button>
+        </div>
+        {{ form_errors(form.plainPassword) }}
+    </div>
+    <button class="btn solid">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}
