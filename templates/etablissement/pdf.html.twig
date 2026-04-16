@@ -5,85 +5,234 @@
     <title>Fiche Etablissement</title>
     <style>
         body {
-            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 24px;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
             color: #111111;
-            margin: 24px;
-            font-size: 13px;
-            line-height: 1.5;
+            background: #fffdf4;
         }
-        h1 {
-            margin: 0 0 6px;
-            font-size: 24px;
+        .page {
+            border: 1px solid #d4b106;
+            background: #ffffff;
         }
-        .subtitle {
-            color: #555;
-            margin-bottom: 16px;
-            font-size: 12px;
+        .hero {
+            background: #111111;
+            color: #ffffff;
+            padding: 28px 30px 24px;
         }
-        .section {
-            border: 1px solid #e4e4e4;
-            border-radius: 8px;
-            margin-bottom: 14px;
-            padding: 12px;
-        }
-        .section h2 {
-            margin: 0 0 10px;
-            font-size: 14px;
+        .eyebrow {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #f4c400;
+            color: #111111;
+            font-size: 11px;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: .04em;
-            color: #666;
+            letter-spacing: 1px;
         }
-        table {
+        .hero h1 {
+            margin: 14px 0 8px;
+            font-size: 30px;
+            line-height: 1.15;
+        }
+        .hero p {
+            margin: 0;
+            color: #f3e7a7;
+            font-size: 13px;
+        }
+        .content {
+            padding: 24px;
+        }
+        table.layout {
             width: 100%;
             border-collapse: collapse;
         }
-        td {
-            padding: 6px 0;
+        td.primary {
+            width: 63%;
             vertical-align: top;
-            border-bottom: 1px dashed #ececec;
+            padding-right: 18px;
         }
-        td.label {
-            width: 30%;
-            color: #666;
+        td.secondary {
+            width: 37%;
+            vertical-align: top;
+        }
+        .photo {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border: 1px solid #e6d26a;
+            background: #fff8d6;
+            margin-bottom: 20px;
+        }
+        .placeholder {
+            height: 250px;
+            line-height: 250px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px dashed #d4b106;
+            background: #fff8d6;
+            color: #8c7410;
+            font-size: 13px;
+        }
+        .section {
+            margin-bottom: 18px;
+            padding: 18px;
+            border: 1px solid #f0dfa0;
+            background: #fffef8;
+        }
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 15px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #111111;
+            border-left: 6px solid #f4c400;
+            padding-left: 10px;
+        }
+        .description {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.75;
+            color: #2b2b2b;
+            text-align: justify;
+        }
+        .meta-row {
+            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #2b2b2b;
+        }
+        .meta-label {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #8c7410;
+            letter-spacing: 0.5px;
+        }
+        .info-card {
+            padding: 18px;
+            border: 1px solid #111111;
+            background: #fff7cc;
+            margin-bottom: 18px;
+        }
+        .qr-card {
+            padding: 18px;
+            border: 1px solid #111111;
+            background: #111111;
+            color: #ffffff;
+            text-align: center;
+        }
+        .qr-card img {
+            width: 148px;
+            height: 148px;
+            padding: 8px;
+            background: #ffffff;
+            border: 4px solid #f4c400;
+        }
+        .qr-title {
+            margin: 0 0 14px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #f4c400;
+        }
+        .qr-text {
+            margin: 12px 0 0;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #f8f0ba;
         }
         .footer {
-            margin-top: 14px;
+            padding: 16px 24px 24px;
             font-size: 11px;
-            color: #666;
+            color: #6a6a6a;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>{{ etablissement.nom ?: 'Etablissement' }}</h1>
-    <p class="subtitle">Fiche exportee le {{ "now"|date("d/m/Y H:i") }}</p>
+    <div class="page">
+        <div class="hero">
+            <span class="eyebrow">Fiche Etablissement</span>
+            <h1>{{ etablissement.nom }}</h1>
+            <p>
+                {{ etablissement.type|capitalize|default('Etablissement') }}
+                {% if etablissement.ville %}
+                    • {{ etablissement.ville }}
+                {% endif %}
+            </p>
+        </div>
 
-    <div class="section">
-        <h2>Informations generales</h2>
-        <table>
-            <tr><td class="label">Type</td><td>{{ etablissement.type ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Gamme de prix</td><td>{{ etablissement.gammePrix ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Telephone</td><td>{{ etablissement.telephone ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Email</td><td>{{ etablissement.email ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Horaires</td><td>{{ etablissement.horaires ?: 'Non renseigne' }}</td></tr>
-        </table>
+        <div class="content">
+            <table class="layout">
+                <tr>
+                    <td class="primary">
+                        {% if image_base64 %}
+                            <img src="{{ image_base64 }}" class="photo" alt="Image de l'etablissement">
+                        {% else %}
+                            <div class="placeholder">Aucune image disponible</div>
+                        {% endif %}
+
+                        <div class="section">
+                            <h2 class="section-title">Presentation</h2>
+                            <p class="description">{{ etablissement.description|default('Aucune description fournie')|nl2br }}</p>
+                        </div>
+
+                        <div class="section">
+                            <h2 class="section-title">Localisation</h2>
+                            <div class="meta-row">
+                                <span class="meta-label">Adresse</span>
+                                {{ etablissement.adresse|default('Non renseignee') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Ville</span>
+                                {{ etablissement.ville|default('Non renseignee') }}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="secondary">
+                        <div class="info-card">
+                            <h2 class="section-title">Informations pratiques</h2>
+                            <div class="meta-row">
+                                <span class="meta-label">Telephone</span>
+                                {{ etablissement.telephone|default('Non renseigne') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Email</span>
+                                {{ etablissement.email|default('Non renseigne') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Horaires</span>
+                                {{ etablissement.horaires|default('Non renseigne') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Gamme de prix</span>
+                                {{ etablissement.gammePrix|default('Non renseignee') }}
+                            </div>
+                        </div>
+
+                        <div class="qr-card">
+                            <p class="qr-title">QR Code localisation</p>
+                            {% if qrCode_base64 %}
+                                <img src="{{ qrCode_base64 }}" alt="QR Code Localisation">
+                                <p class="qr-text">Scannez pour ouvrir directement la localisation sur la carte.</p>
+                            {% else %}
+                                <p class="qr-text">Le QR code n'est pas disponible car la localisation est incomplete.</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            Fiche generee automatiquement le {{ 'now'|date('d/m/Y a H:i') }}
+        </div>
     </div>
-
-    <div class="section">
-        <h2>Localisation</h2>
-        <table>
-            <tr><td class="label">Ville</td><td>{{ etablissement.ville ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Adresse</td><td>{{ etablissement.adresse ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Latitude</td><td>{{ etablissement.latitude ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Longitude</td><td>{{ etablissement.longitude ?: 'Non renseigne' }}</td></tr>
-        </table>
-    </div>
-
-    <div class="section">
-        <h2>Description</h2>
-        <p>{{ etablissement.description ?: 'Aucune description fournie.' }}</p>
-    </div>
-
-    <p class="footer">Document genere automatiquement.</p>
 </body>
 </html>

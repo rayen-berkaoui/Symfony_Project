@@ -6,9 +6,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\ActiviteRepository;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: ActiviteRepository::class)]
 #[ORM\Table(name: 'activite')]
+#[Vich\Uploadable]
 class Activite
 {
     #[ORM\Id]
@@ -17,42 +20,38 @@ class Activite
     private ?int $idActivite = null;
 
     #[ORM\Column(name: 'nomActivite', type: 'string', length: 120)]
-    #[Assert\NotBlank(message: "Le nom de l'activité est obligatoire.")]
+    #[Assert\NotBlank(message: "Le nom de l'activitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© est obligatoire.")]
     #[Assert\Length(
-        max: 20,
-        maxMessage: "Le nom de l'activité ne peut pas dépasser {{ limit }} caractères."
+        max: 120,
+        maxMessage: "Le nom de l'activitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© ne peut pas dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©passer {{ limit }} caractÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨res."
     )]
     private ?string $nomActivite = null;
 
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
     #[Assert\Length(
-        min: 10,
-        max: 100,
-        minMessage: "La description doit comporter au moins {{ limit }} caractères.",
-        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères."
+        max: 500,
+        maxMessage: "La description ne peut pas dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©passer {{ limit }} caractÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨res."
     )]
     private ?string $description = null;
 
     #[ORM\Column(name: 'categorie', type: 'string', length: 60, nullable: true)]
-    #[Assert\NotBlank(message: "La catégorie est obligatoire.")]
     private ?string $categorie = null;
 
     #[ORM\Column(name: 'duree', type: 'integer', nullable: true)]
     #[Assert\Range(
-        min: 30,
-        max: 180,
-        notInRangeMessage: "La durée doit être comprise entre {{ min }} et {{ max }} minutes."
+        min: 1,
+        max: 1440,
+        notInRangeMessage: "La durÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e doit ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre comprise entre {{ min }} et {{ max }} minutes."
     )]
     private ?int $duree = null;
 
     #[ORM\Column(name: 'niveau', type: 'string', length: 50, nullable: true)]
-    #[Assert\NotBlank(message: "Le niveau est obligatoire.")]
     private ?string $niveau = null;
 
     #[ORM\Column(name: 'prix', type: 'decimal', precision: 10, scale: 2, nullable: true)]
     #[Assert\GreaterThanOrEqual(
-        value: 15,
-        message: "Le prix doit être supérieur ou égal à 15 DT."
+        value: 0,
+        message: "Le prix doit ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre supÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rieur ou ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gal ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  15 DT."
     )]
     private ?string $prix = null;
 
@@ -60,25 +59,23 @@ class Activite
     private ?string $devise = 'TND';
 
     #[ORM\Column(name: 'date_debut', type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Assert\NotBlank(message: "La date de début est obligatoire.")]
     #[Assert\Type("\DateTimeInterface")]
     private ?\DateTimeInterface $date_debut = null;
 
     #[ORM\Column(name: 'date_fin', type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Assert\NotBlank(message: "La date de fin est obligatoire.")]
     #[Assert\Type("\DateTimeInterface")]
-    #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit être ultérieure à la date de début.")]
+    #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre ultÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rieure ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  la date de dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©but.")]
     private ?\DateTimeInterface $date_fin = null;
 
     #[ORM\Column(name: 'nb_places', type: 'integer', nullable: true)]
-    #[Assert\Positive(message: "Le nombre de places doit être supérieur à zéro.")]
+    #[Assert\Positive(message: "Le nombre de places doit ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre supÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rieur ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  zÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ro.")]
     private ?int $nb_places = null;
 
     #[ORM\Column(name: 'places_dispo', type: 'integer', nullable: true)]
-    #[Assert\PositiveOrZero(message: "Le nombre de places disponibles ne peut pas être négatif.")]
+    #[Assert\PositiveOrZero(message: "Le nombre de places disponibles ne peut pas ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre nÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©gatif.")]
     #[Assert\LessThanOrEqual(
         propertyPath: "nb_places",
-        message: "Les places disponibles ne peuvent pas excéder le nombre de places total."
+        message: "Les places disponibles ne peuvent pas excÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©der le nombre de places total."
     )]
     private ?int $places_dispo = null;
 
@@ -87,8 +84,8 @@ class Activite
 
     #[ORM\Column(name: 'age_min', type: 'integer', nullable: true)]
     #[Assert\GreaterThanOrEqual(
-        value: 12,
-        message: "L'âge minimum doit être d'au moins 12 ans."
+        value: 0,
+        message: "L'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ge minimum doit ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âªtre d'au moins 12 ans."
     )]
     private ?int $age_min = null;
 
@@ -101,15 +98,15 @@ class Activite
     #[ORM\Column(name: 'statut', type: 'string', columnDefinition: "ENUM('disponible','complete','annulee')", nullable: true)]
     #[Assert\Choice(
         choices: ['disponible', 'complete', 'annulee'],
-        message: "Sélectionnez un statut valide."
+        message: "SÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©lectionnez un statut valide."
     )]
     private ?string $statut = 'disponible';
 
     // Foreign Key mapping
     #[ORM\ManyToOne(targetEntity: Etablissement::class)]
     #[ORM\JoinColumn(name: 'idEtablissement', referencedColumnName: 'idEtablissement', nullable: false, onDelete: 'CASCADE')]
-    #[Assert\NotNull(message: "Vous devez associer cette activité à un établissement existant.")]
-    #[Assert\NotBlank(message: "L'établissement est obligatoire.")]
+    #[Assert\NotNull(message: "Vous devez associer cette activitÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  un ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tablissement existant.")]
+    #[Assert\NotBlank(message: "L'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tablissement est obligatoire.")]
     private ?Etablissement $etablissement = null;
 
 
@@ -308,5 +305,49 @@ class Activite
     {
         $this->etablissement = $etablissement;
         return $this;
+    }
+
+    #[Vich\UploadableField(mapping: 'activite_images', fileNameProperty: 'imageName')]
+    private ?File $imageFile = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?string $imageName = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    public function setImageFile(?File $imageFile = null): void
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageName(?string $imageName): void
+    {
+        $this->imageName = $imageName;
+    }
+
+    public function getImageName(): ?string
+    {
+        return $this->imageName;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 }

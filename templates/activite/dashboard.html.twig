@@ -283,6 +283,23 @@
 
     .page-info { color: var(--muted); font-size: 0.82rem; }
 
+    .board-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-analytics {
+        text-decoration: none;
+        color: #111;
+        background: var(--accent);
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        border: 1px solid rgba(255, 194, 0, 0.32);
+    }
+
     @media (max-width: 1024px) {
         .filters { grid-template-columns: 1fr 1fr; }
         .filters .full { grid-column: 1 / -1; }
@@ -292,6 +309,7 @@
         .topbar { flex-wrap: wrap; }
         .nav { width: 100%; }
         .board-title h1 { font-size: 1.5rem; }
+        .board-meta { width: 100%; justify-content: space-between; }
     }
 </style>
 {% endblock %}
@@ -334,7 +352,10 @@
 
     <div class="board-title">
         <h1>📊 Tableau Premium</h1>
-        <p>{{ pagination.total }} résultats - Page {{ pagination.page }}/{{ pagination.totalPages }}</p>
+        <div class="board-meta">
+            <p>{{ pagination.total }} résultats - Page {{ pagination.page }}/{{ pagination.totalPages }}</p>
+            <a class="btn-analytics" href="{{ path('app_activite_analytics') }}">Analytics</a>
+        </div>
     </div>
 
     <section class="table-card">

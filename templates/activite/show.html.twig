@@ -136,6 +136,14 @@
         margin-top: 18px;
     }
 
+    .cover-image {
+        width: 100%;
+        max-height: 360px;
+        object-fit: cover;
+        display: block;
+        border-bottom: 1px solid var(--border);
+    }
+
     .btn {
         border: 1px solid var(--border);
         border-radius: 11px;
@@ -189,6 +197,9 @@
 
     <div class="layout">
         <section class="card">
+            {% if coverImageUrl %}
+                <img class="cover-image" src="{{ coverImageUrl }}" alt="{{ activite.nomActivite }}">
+            {% endif %}
             <div class="section">
                 <h3>Informations principales</h3>
                 <div class="kv">
@@ -216,6 +227,7 @@
                 <div class="actions">
                     <a class="btn" href="{{ path('app_activite_index') }}">Retour</a>
                     <a class="btn primary" href="{{ path('app_activite_edit', {'idActivite': activite.idActivite}) }}">Modifier</a>
+                    <a class="btn" style="background-color: #e76f51; color: white;" href="{{ path('app_activite_export_pdf', {'idActivite': activite.idActivite}) }}">PDF</a>
                     {{ include('activite/_delete_form.html.twig') }}
                 </div>
             </div>

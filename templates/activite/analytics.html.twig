@@ -1,0 +1,667 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Analytics - Dashboard Activités{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .analytics-dashboard {
+            margin-top: 10px;
+        }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            padding: 34px;
+            background:
+                radial-gradient(circle at top right, rgba(255, 196, 0, 0.11), transparent 34%),
+                linear-gradient(135deg, rgba(16, 20, 28, 0.98), rgba(10, 13, 19, 0.98));
+            border: 1px solid rgba(255, 196, 0, 0.16);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 0.85fr;
+            gap: 22px;
+            align-items: center;
+        }
+
+        .hero-title {
+            margin: 0 0 10px;
+            color: #fff1bf;
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .hero-text {
+            margin: 0;
+            color: var(--muted);
+            max-width: 62ch;
+            line-height: 1.65;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            color: #fff1bf;
+            border: 1px solid rgba(255, 196, 0, 0.28);
+            background: rgba(255, 196, 0, 0.08);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 196, 0, 0.42);
+            background: rgba(255, 196, 0, 0.13);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+            max-width: 720px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(8, 10, 14, 0.78);
+            border: 1px solid rgba(255, 196, 0, 0.22);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ffc400;
+            box-shadow: 0 0 0 4px rgba(255, 196, 0, 0.14);
+            transform: translateY(-1px);
+        }
+
+        .btn-search {
+            border: 0;
+            border-radius: 14px;
+            padding: 0 24px;
+            font-weight: 700;
+            color: #161616;
+            background: linear-gradient(135deg, #ffe08b, #ffc400);
+            box-shadow: 0 10px 20px rgba(255, 196, 0, 0.14);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(255, 196, 0, 0.22);
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 12px;
+        }
+
+        .hero-pill,
+        .metric-card,
+        .chart-card,
+        .results-card {
+            background: linear-gradient(180deg, rgba(14, 18, 25, 0.98), rgba(9, 12, 18, 0.98));
+            border: 1px solid rgba(255, 196, 0, 0.12);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-pill {
+            border-radius: 18px;
+            padding: 16px 18px;
+        }
+
+        .hero-pill-label {
+            color: var(--muted);
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 6px;
+        }
+
+        .hero-pill-value {
+            color: #fff1bf;
+            font-size: 1.55rem;
+            font-weight: 800;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin: 22px 0 28px;
+        }
+
+        .metric-card {
+            border-radius: 18px;
+            padding: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 196, 0, 0.08), transparent 60%);
+            pointer-events: none;
+        }
+
+        .metric-label {
+            position: relative;
+            z-index: 1;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            position: relative;
+            z-index: 1;
+            color: #fff1bf;
+            font-size: 2rem;
+            line-height: 1;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .metric-note {
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 196, 0, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            color: #fff1bf;
+            font-size: 1.45rem;
+            margin: 0 0 16px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .results-card,
+        .chart-card {
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .results-head,
+        .chart-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 196, 0, 0.12);
+        }
+
+        .results-head small,
+        .chart-head small {
+            color: var(--muted);
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            text-decoration: none;
+            background: rgba(20, 24, 34, 0.42);
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .search-result-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 196, 0, 0.36);
+            background: rgba(255, 196, 0, 0.05);
+        }
+
+        .search-result-item h6 {
+            margin: 0 0 5px;
+            color: #fff1bf;
+            font-size: 1.02rem;
+        }
+
+        .search-result-item small {
+            color: var(--muted);
+        }
+
+        .badge-type {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 92px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: #161616;
+            background: linear-gradient(135deg, #ffe08b, #ffc400);
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .alert-empty {
+            background: rgba(255, 196, 0, 0.05);
+            border: 1px dashed rgba(255, 196, 0, 0.28);
+            color: var(--muted);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card.doughnut {
+            grid-column: span 4;
+        }
+
+        .chart-card.bar {
+            grid-column: span 4;
+        }
+
+        .chart-card.polar {
+            grid-column: span 4;
+        }
+
+        .chart-title {
+            color: #fff1bf;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .chart-subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 290px;
+            width: 100%;
+        }
+
+        .trend-list {
+            list-style: none;
+            padding: 0;
+            margin: 18px 0 0;
+        }
+
+        .trend-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .trend-list li:last-child {
+            border-bottom: 0;
+        }
+
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(255, 196, 0, 0.14);
+            border: 1px solid rgba(255, 196, 0, 0.18);
+            color: #ffe08b;
+            font-weight: 700;
+        }
+
+        .chart-footer {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1100px) {
+            .hero-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-card.doughnut,
+            .chart-card.bar,
+            .chart-card.polar {
+                grid-column: span 12;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .hero-panel {
+                padding: 22px;
+            }
+
+            .hero-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .btn-search {
+                min-height: 48px;
+            }
+
+            .search-result-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="analytics-dashboard">
+    <div class="hero-panel">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Analytics des Activités</h1>
+                <p class="hero-text">Analysez les activités et identifiez les tendances, les statuts ou la répartition des niveaux. Recherchez directement une activité par mots-clés.</p>
+                <div class="hero-actions">
+                    <a href="{{ path('app_activite_dashboard') }}" class="btn-back">Retour au dashboard activites</a>
+                </div>
+                <form method="get" class="search-form">
+                    <input type="text" name="q" class="search-input" placeholder="Que recherchez-vous ?" value="{{ searchQuery }}">
+                    <button type="submit" class="btn-search">Explorer</button>
+                </form>
+            </div>
+            <div class="hero-side">
+                <div class="hero-pill">
+                    <div class="hero-pill-label">Catégorie Top</div>
+                    <div class="hero-pill-value">{{ topCategory|default('N/A') }}</div>
+                </div>
+                <div class="hero-pill">
+                    <div class="hero-pill-label">Volume total</div>
+                    <div class="hero-pill-value">{{ totalActivites|default(0) }} activités</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Activités Total</div>
+            <div class="metric-value">{{ totalActivites|default(0) }}</div>
+            <div class="metric-note">Références actives dans la base</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Catégories d'Activités</div>
+            <div class="metric-value">{{ totalCategories|default(0) }}</div>
+            <div class="metric-note">Répartition métiers détectée</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Niveaux de difficulté</div>
+            <div class="metric-value">{{ totalNiveaux|default(0) }}</div>
+            <div class="metric-note">Variété proposée au public</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Résultats trouvés</div>
+            <div class="metric-value">{{ totalSearchResults|default(0) }}</div>
+            <div class="metric-note">Correspondances pour la recherche</div>
+        </div>
+    </div>
+
+    {% if searchQuery %}
+        <div class="results-card">
+            <div class="results-head">
+                <div>
+                    <h2 class="section-title">Résultats trouvés pour "{{ searchQuery }}"</h2>
+                    <small>{{ searchResults|length }} correspondances affichées</small>
+                </div>
+            </div>
+
+            {% if searchResults|length > 0 %}
+                <div>
+                    {% for item in searchResults %}
+                        <a href="{{ path('app_activite_show', {'idActivite': item.idActivite}) }}" class="search-result-item">
+                            <div>
+                                <h6>{{ item.nomActivite }}</h6>
+                                <small>{{ item.categorie }} - {{ item.niveau }}</small>
+                            </div>
+                            <span class="badge-type">{{ item.statut|default('disponible') }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert-empty">Aucun résultat trouvé pour cette recherche. Essayez d'autres mots-clés.</div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <h2 class="section-title">Visualisation Graphique</h2>
+    <div class="charts-grid">
+        <div class="chart-card doughnut">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Répartition par statut</div>
+                    <div class="chart-subtitle">Analyse de la disponibilité</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="statutChart"></canvas>
+            </div>
+            <div class="chart-footer">Ex: disponible, complet, annulé.</div>
+        </div>
+
+        <div class="chart-card bar">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Répartition par Catégorie</div>
+                    <div class="chart-subtitle">Les thématiques les plus populaires</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <ul class="trend-list">
+                {% for category in trendingCategories %}
+                    <li>
+                        <span>{{ category.categorie|capitalize }}</span>
+                        <span class="trend-badge">{{ category.total }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="chart-card polar">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Répartition par Niveau</div>
+                    <div class="chart-subtitle">Tendances de difficulté</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="niveauChart"></canvas>
+            </div>
+            <div class="chart-footer">Sachez ce qui intéresse vos clients (débutant, intermédiaire, expert).</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showChartsUnavailableMessage = function(message) {
+                document.querySelectorAll('.chart-container').forEach(function(container) {
+                    container.innerHTML = '<div class="alert-empty">' + message + '</div>';
+                });
+            };
+
+            if (typeof Chart === 'undefined') {
+                showChartsUnavailableMessage('Les graphiques ne peuvent pas se charger pour le moment (Chart.js indisponible). Verifiez votre connexion internet ou l acces CDN.');
+                return;
+            }
+
+            Chart.defaults.color = '#c8b67d';
+            Chart.defaults.borderColor = 'rgba(43, 47, 55, 0.5)';
+            Chart.defaults.font.family = '"Segoe UI", "Trebuchet MS", sans-serif';
+
+            const statutData = {{ distributionStatut|json_encode|raw }};
+            const categoryData = {{ trendingCategories|json_encode|raw }};
+            const niveauData = {{ distributionNiveau|json_encode|raw }};
+
+            const statutLabels = statutData.map(item => item.statut ? item.statut.toUpperCase() : 'INCONNU');
+            const statutValues = statutData.map(item => item.total);
+            const categoryLabels = categoryData.map(item => item.categorie || 'Autre');
+            const categoryValues = categoryData.map(item => item.total);
+            const niveauLabels = niveauData.map(item => item.niveau || 'Standard');
+            const niveauValues = niveauData.map(item => item.total);
+
+            if (statutValues.length === 0 && categoryValues.length === 0 && niveauValues.length === 0) {
+                showChartsUnavailableMessage('Aucune statistique disponible pour le moment. Ajoutez des activites pour alimenter les graphiques.');
+                return;
+            }
+
+            const chartColors = [
+                'rgba(255, 196, 0, 0.84)',
+                'rgba(255, 224, 139, 0.8)',
+                'rgba(255, 184, 0, 0.78)',
+                'rgba(200, 182, 125, 0.8)',
+                'rgba(255, 203, 69, 0.76)',
+                'rgba(206, 184, 123, 0.72)',
+            ];
+
+            new Chart(document.getElementById('statutChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: statutLabels,
+                    datasets: [{
+                        data: statutValues,
+                        backgroundColor: chartColors,
+                        borderColor: '#11151b',
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '66%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#fff1bf', padding: 16, usePointStyle: true }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('categoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        label: 'Activités',
+                        data: categoryValues,
+                        backgroundColor: 'rgba(255, 196, 0, 0.68)',
+                        borderColor: '#ffc400',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        hoverBackgroundColor: 'rgba(255, 196, 0, 0.86)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, color: '#c8b67d' },
+                            grid: { color: 'rgba(43, 47, 55, 0.5)' }
+                        },
+                        x: {
+                            ticks: { color: '#fff1bf' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('niveauChart'), {
+                type: 'polarArea'
+                ,data: {
+                    labels: niveauLabels,
+                    datasets: [{
+                        data: niveauValues,
+                        backgroundColor: [
+                            'rgba(255, 196, 0, 0.64)',
+                            'rgba(255, 224, 139, 0.64)',
+                            'rgba(255, 184, 0, 0.64)',
+                            'rgba(200, 182, 125, 0.64)',
+                            'rgba(255, 203, 69, 0.64)'
+                        ],
+                        borderColor: '#11151b',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: 'rgba(43, 47, 55, 0.5)' },
+                            pointLabels: { display: true, color: '#c8b67d' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#fff1bf', padding: 16, usePointStyle: true }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}
+

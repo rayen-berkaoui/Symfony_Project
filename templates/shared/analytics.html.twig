@@ -1,0 +1,667 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Analytics & Intelligence{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .analytics-dashboard {
+            margin-top: 10px;
+        }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            padding: 34px;
+            background:
+                radial-gradient(circle at top right, rgba(255, 196, 0, 0.11), transparent 34%),
+                linear-gradient(135deg, rgba(16, 20, 28, 0.98), rgba(10, 13, 19, 0.98));
+            border: 1px solid rgba(255, 196, 0, 0.16);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.45fr 0.85fr;
+            gap: 22px;
+            align-items: center;
+        }
+
+        .hero-title {
+            margin: 0 0 10px;
+            color: #fff1bf;
+            font-size: clamp(2rem, 3vw, 3rem);
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .hero-text {
+            margin: 0;
+            color: var(--muted);
+            max-width: 62ch;
+            line-height: 1.65;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            color: #fff3c4;
+            border: 1px solid rgba(255, 196, 0, 0.28);
+            background: rgba(255, 196, 0, 0.08);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-1px);
+            border-color: rgba(255, 196, 0, 0.42);
+            background: rgba(255, 196, 0, 0.13);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+            max-width: 720px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(8, 10, 14, 0.78);
+            border: 1px solid rgba(255, 196, 0, 0.22);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(255, 196, 0, 0.14);
+            transform: translateY(-1px);
+        }
+
+        .btn-search {
+            border: 0;
+            border-radius: 14px;
+            padding: 0 24px;
+            font-weight: 700;
+            color: #161616;
+            background: linear-gradient(135deg, #ffe08b, #ffc400);
+            box-shadow: 0 10px 20px rgba(255, 196, 0, 0.14);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(255, 196, 0, 0.22);
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 12px;
+        }
+
+        .hero-pill,
+        .metric-card,
+        .chart-card,
+        .results-card {
+            background: linear-gradient(180deg, rgba(14, 18, 25, 0.98), rgba(9, 12, 18, 0.98));
+            border: 1px solid rgba(255, 196, 0, 0.12);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-pill {
+            border-radius: 18px;
+            padding: 16px 18px;
+        }
+
+        .hero-pill-label {
+            color: var(--muted);
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 6px;
+        }
+
+        .hero-pill-value {
+            color: #fff3c4;
+            font-size: 1.55rem;
+            font-weight: 800;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin: 22px 0 28px;
+        }
+
+        .metric-card {
+            border-radius: 18px;
+            padding: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 196, 0, 0.08), transparent 60%);
+            pointer-events: none;
+        }
+
+        .metric-label {
+            position: relative;
+            z-index: 1;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            position: relative;
+            z-index: 1;
+            color: #fff1bf;
+            font-size: 2rem;
+            line-height: 1;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .metric-note {
+            position: relative;
+            z-index: 1;
+            color: var(--accent-soft);
+            font-size: 0.9rem;
+        }
+
+        .section-title {
+            color: #fff1bf;
+            font-size: 1.45rem;
+            margin: 0 0 16px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .results-card,
+        .chart-card {
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .results-head,
+        .chart-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 196, 0, 0.12);
+        }
+
+        .results-head small,
+        .chart-head small {
+            color: var(--muted);
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            text-decoration: none;
+            background: rgba(20, 24, 34, 0.42);
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .search-result-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 196, 0, 0.36);
+            background: rgba(255, 196, 0, 0.05);
+        }
+
+        .search-result-item h6 {
+            margin: 0 0 5px;
+            color: #fff1bf;
+            font-size: 1.02rem;
+        }
+
+        .search-result-item small {
+            color: var(--muted);
+        }
+
+        .badge-type {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 92px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            color: #161616;
+            background: linear-gradient(135deg, #ffe08b, #ffc400);
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .alert-empty {
+            background: rgba(255, 196, 0, 0.05);
+            border: 1px dashed rgba(255, 196, 0, 0.28);
+            color: var(--muted);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card.doughnut {
+            grid-column: span 4;
+        }
+
+        .chart-card.bar {
+            grid-column: span 4;
+        }
+
+        .chart-card.polar {
+            grid-column: span 4;
+        }
+
+        .chart-title {
+            color: #fff1bf;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .chart-subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 290px;
+            width: 100%;
+        }
+
+        .trend-list {
+            list-style: none;
+            padding: 0;
+            margin: 18px 0 0;
+        }
+
+        .trend-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .trend-list li:last-child {
+            border-bottom: 0;
+        }
+
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(255, 196, 0, 0.14);
+            border: 1px solid rgba(255, 196, 0, 0.18);
+            color: #ffe08b;
+            font-weight: 700;
+        }
+
+        .chart-footer {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1100px) {
+            .hero-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-card.doughnut,
+            .chart-card.bar,
+            .chart-card.polar {
+                grid-column: span 12;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .hero-panel {
+                padding: 22px;
+            }
+
+            .hero-grid,
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .btn-search {
+                min-height: 48px;
+            }
+
+            .search-result-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="analytics-dashboard">
+    <div class="hero-panel">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Intelligence & Recherche</h1>
+                <p class="hero-text">Analysez les établissements, les activités et les tendances du moment. Vous pouvez rechercher naturellement des expressions comme "hôtel pas cher à Tunis" ou "restaurant avec piscine".</p>
+                <div class="hero-actions">
+                    <a href="{{ path('app_etablissement_dashboard') }}" class="btn-back">Retour au dashboard</a>
+                </div>
+                <form method="get" class="search-form">
+                    <input type="text" name="q" class="search-input" placeholder="Que recherchez-vous ?" value="{{ searchQuery }}">
+                    <button type="submit" class="btn-search">Explorer</button>
+                </form>
+            </div>
+            <div class="hero-side">
+                <div class="hero-pill">
+                    <div class="hero-pill-label">Ville la plus forte</div>
+                    <div class="hero-pill-value">{{ topCity|default('N/A') }}</div>
+                </div>
+                <div class="hero-pill">
+                    <div class="hero-pill-label">Volume total</div>
+                    <div class="hero-pill-value">{{ totalEtablissements|default(0) }} établissements</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Établissements</div>
+            <div class="metric-value">{{ totalEtablissements|default(0) }}</div>
+            <div class="metric-note">Références actives dans la base</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Activités</div>
+            <div class="metric-value">{{ totalActivites|default(0) }}</div>
+            <div class="metric-note">Offres et expériences enregistrées</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Villes suivies</div>
+            <div class="metric-value">{{ totalVilles|default(0) }}</div>
+            <div class="metric-note">Répartition géographique détectée</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Résultats trouvés</div>
+            <div class="metric-value">{{ totalSearchResults|default(0) }}</div>
+            <div class="metric-note">Correspondances pour la requête active</div>
+        </div>
+    </div>
+
+    {% if searchQuery %}
+        <div class="results-card">
+            <div class="results-head">
+                <div>
+                    <h2 class="section-title">Résultats trouvés pour "{{ searchQuery }}"</h2>
+                    <small>{{ searchResults|length }} correspondances affichées</small>
+                </div>
+            </div>
+
+            {% if searchResults|length > 0 %}
+                <div>
+                    {% for item in searchResults %}
+                        <a href="{{ path('app_etablissement_show', {'idEtablissement': item.idEtablissement}) }}" class="search-result-item">
+                            <div>
+                                <h6>{{ item.nom }}</h6>
+                                <small>{{ item.ville }} - {{ item.adresse }}</small>
+                            </div>
+                            <span class="badge-type">{{ item.type|default('autre') }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert-empty">Aucun résultat trouvé pour cette requête. Essayez d'autres mots-clés.</div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <h2 class="section-title">Visualisation Graphique</h2>
+    <div class="charts-grid">
+        <div class="chart-card doughnut">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Répartition par types</div>
+                    <div class="chart-subtitle">Vue circulaire claire sur votre mix d'établissement</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="typeChart"></canvas>
+            </div>
+            <div class="chart-footer">Lecture rapide des catégories les plus présentes.</div>
+        </div>
+
+        <div class="chart-card bar">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Top villes</div>
+                    <div class="chart-subtitle">Classement des villes les plus actives</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="cityChart"></canvas>
+            </div>
+            <ul class="trend-list">
+                {% for city in popularCities %}
+                    <li>
+                        <span>{{ city.ville|capitalize }}</span>
+                        <span class="trend-badge">{{ city.total }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="chart-card polar">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Top activités</div>
+                    <div class="chart-subtitle">Signal visuel des catégories les plus demandées</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="activityChart"></canvas>
+            </div>
+            <div class="chart-footer">Ces données vous aident à repérer les tendances métier.</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showChartsUnavailableMessage = function(message) {
+                document.querySelectorAll('.chart-container').forEach(function(container) {
+                    container.innerHTML = '<div class="alert-empty">' + message + '</div>';
+                });
+            };
+
+            if (typeof Chart === 'undefined') {
+                showChartsUnavailableMessage('Les graphiques ne peuvent pas se charger pour le moment (Chart.js indisponible). Verifiez votre connexion internet ou l acces CDN.');
+                return;
+            }
+
+            Chart.defaults.color = '#c8b67d';
+            Chart.defaults.borderColor = 'rgba(43, 47, 55, 0.5)';
+            Chart.defaults.font.family = '"Segoe UI", "Trebuchet MS", sans-serif';
+
+            const typeData = {{ distributionTypes|json_encode|raw }};
+            const cityData = {{ popularCities|json_encode|raw }};
+            const activityData = {{ trendingActivities|json_encode|raw }};
+
+            const typeLabels = typeData.map(item => item.type ? item.type.toUpperCase() : 'INCONNU');
+            const typeValues = typeData.map(item => item.total);
+            const cityLabels = cityData.map(item => item.ville);
+            const cityValues = cityData.map(item => item.total);
+            const activityLabels = activityData.map(item => item.categorie || 'Autre');
+            const activityValues = activityData.map(item => item.total);
+
+            if (typeValues.length === 0 && cityValues.length === 0 && activityValues.length === 0) {
+                showChartsUnavailableMessage('Aucune statistique disponible pour le moment. Ajoutez des etablissements ou activites pour alimenter les graphiques.');
+                return;
+            }
+
+            const premiumColors = [
+                'rgba(255, 196, 0, 0.84)',
+                'rgba(255, 224, 139, 0.8)',
+                'rgba(255, 184, 0, 0.78)',
+                'rgba(200, 182, 125, 0.8)',
+                'rgba(255, 203, 69, 0.76)',
+                'rgba(88, 214, 141, 0.72)',
+                'rgba(206, 184, 123, 0.78)'
+            ];
+
+            new Chart(document.getElementById('typeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: premiumColors,
+                        borderColor: '#11151b',
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '66%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#eceff5', padding: 16, usePointStyle: true }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('cityChart'), {
+                type: 'bar',
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        label: 'Établissements',
+                        data: cityValues,
+                        backgroundColor: 'rgba(255, 196, 0, 0.68)',
+                        borderColor: '#ffc400',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        hoverBackgroundColor: 'rgba(255, 196, 0, 0.86)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, color: '#c8b67d' },
+                            grid: { color: 'rgba(43, 47, 55, 0.5)' }
+                        },
+                        x: {
+                            ticks: { color: '#eceff5' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('activityChart'), {
+                type: 'polarArea'
+                ,data: {
+                    labels: activityLabels,
+                    datasets: [{
+                        data: activityValues,
+                        backgroundColor: [
+                            'rgba(255, 196, 0, 0.64)',
+                            'rgba(200, 182, 125, 0.64)',
+                            'rgba(88, 214, 141, 0.64)',
+                            'rgba(255, 203, 69, 0.64)',
+                            'rgba(255, 224, 139, 0.64)'
+                        ],
+                        borderColor: '#11151b',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: 'rgba(43, 47, 55, 0.5)' },
+                            pointLabels: { display: true, color: '#c8b67d' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#eceff5', padding: 16, usePointStyle: true }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

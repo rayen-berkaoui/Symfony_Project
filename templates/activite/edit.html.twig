@@ -719,7 +719,8 @@
         </aside>
     </div>
 
-    {{ form_end(form) }}
+    {{ form_rest(form) }}
+    {{ form_end(form, {'render_rest': false}) }}
 </div>
 
 <script>
@@ -897,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'bienetre': ['Serviette', 'Peignoir', 'Tongs', 'Huiles essentielles', 'Thé', 'Tapis de yoga', 'Savon'],
         'aventure': ['Jumelles', 'Carte de randonnée', 'Bâtons de marche', 'Anti-moustique', 'Lampe de poche'],
         'gastronomie': ['Tablier', 'Ustensiles de cuisine', 'Ingrédients', 'Fiches recettes', 'Boissons', 'Dégustation'],
-        'autre': ['Bouteille d''eau', 'Sac à dos']
+        'autre': ["Bouteille d'eau", 'Sac à dos']
     };
 
     function updateSuggestions(selectedCat) {

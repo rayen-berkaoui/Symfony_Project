@@ -5,75 +5,245 @@
     <title>Fiche Activite</title>
     <style>
         body {
-            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 24px;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
             color: #111111;
-            margin: 24px;
-            font-size: 13px;
-            line-height: 1.5;
+            background: #fffdf4;
         }
-        h1 {
-            margin: 0 0 6px;
-            font-size: 24px;
+        .page {
+            border: 1px solid #d4b106;
+            background: #ffffff;
         }
-        .subtitle {
-            color: #555;
-            margin-bottom: 16px;
-            font-size: 12px;
+        .hero {
+            background: #111111;
+            color: #ffffff;
+            padding: 28px 30px 24px;
         }
-        .section {
-            border: 1px solid #e4e4e4;
-            border-radius: 8px;
-            margin-bottom: 14px;
-            padding: 12px;
-        }
-        .section h2 {
-            margin: 0 0 10px;
-            font-size: 14px;
+        .eyebrow {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #f4c400;
+            color: #111111;
+            font-size: 11px;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: .04em;
-            color: #666;
+            letter-spacing: 1px;
         }
-        table {
+        .hero h1 {
+            margin: 14px 0 8px;
+            font-size: 30px;
+            line-height: 1.15;
+        }
+        .hero p {
+            margin: 0;
+            color: #f3e7a7;
+            font-size: 13px;
+        }
+        .content {
+            padding: 24px;
+        }
+        table.layout {
             width: 100%;
             border-collapse: collapse;
         }
-        td {
-            padding: 6px 0;
+        td.primary {
+            width: 63%;
             vertical-align: top;
-            border-bottom: 1px dashed #ececec;
+            padding-right: 18px;
         }
-        td.label {
-            width: 30%;
-            color: #666;
+        td.secondary {
+            width: 37%;
+            vertical-align: top;
+        }
+        .photo {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border: 1px solid #e6d26a;
+            background: #fff8d6;
+            margin-bottom: 20px;
+        }
+        .placeholder {
+            height: 250px;
+            line-height: 250px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px dashed #d4b106;
+            background: #fff8d6;
+            color: #8c7410;
+            font-size: 13px;
+        }
+        .section {
+            margin-bottom: 18px;
+            padding: 18px;
+            border: 1px solid #f0dfa0;
+            background: #fffef8;
+        }
+        .section-title {
+            margin: 0 0 12px;
+            font-size: 15px;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #111111;
+            border-left: 6px solid #f4c400;
+            padding-left: 10px;
+        }
+        .description {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.75;
+            color: #2b2b2b;
+            text-align: justify;
+        }
+        .meta-row {
+            margin-bottom: 10px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #2b2b2b;
+        }
+        .meta-label {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #8c7410;
+            letter-spacing: 0.5px;
+        }
+        .info-card {
+            padding: 18px;
+            border: 1px solid #111111;
+            background: #fff7cc;
+            margin-bottom: 18px;
+        }
+        .qr-card {
+            padding: 18px;
+            border: 1px solid #111111;
+            background: #111111;
+            color: #ffffff;
+            text-align: center;
+        }
+        .qr-card img {
+            width: 148px;
+            height: 148px;
+            padding: 8px;
+            background: #ffffff;
+            border: 4px solid #f4c400;
+        }
+        .qr-title {
+            margin: 0 0 14px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #f4c400;
+        }
+        .qr-text {
+            margin: 12px 0 0;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #f8f0ba;
         }
         .footer {
-            margin-top: 14px;
+            padding: 16px 24px 24px;
             font-size: 11px;
-            color: #666;
+            color: #6a6a6a;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>{{ activite.nomActivite ?: 'Activite' }}</h1>
-    <p class="subtitle">Fiche exportee le {{ "now"|date("d/m/Y H:i") }}</p>
+    <div class="page">
+        <div class="hero">
+            <span class="eyebrow">Fiche Activite</span>
+            <h1>{{ activite.nomActivite }}</h1>
+            <p>{{ activite.categorie|capitalize|default('Activite') }}</p>
+        </div>
 
-    <div class="section">
-        <h2>Informations generales</h2>
-        <table>
-            <tr><td class="label">Categorie</td><td>{{ activite.categorie ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Statut</td><td>{{ activite.statut ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Niveau</td><td>{{ activite.niveau ?: 'Non renseigne' }}</td></tr>
-            <tr><td class="label">Prix</td><td>{{ activite.prix ?: 'Non renseigne' }} {{ activite.devise ?: '' }}</td></tr>
-            <tr><td class="label">Etablissement</td><td>{{ activite.etablissement ? activite.etablissement.nom : 'Non renseigne' }}</td></tr>
-        </table>
+        <div class="content">
+            <table class="layout">
+                <tr>
+                    <td class="primary">
+                        {% if image_base64 %}
+                            <img src="{{ image_base64 }}" class="photo" alt="Image de l'activite">
+                        {% else %}
+                            <div class="placeholder">Aucune image disponible</div>
+                        {% endif %}
+
+                        <div class="section">
+                            <h2 class="section-title">Presentation</h2>
+                            <p class="description">{{ activite.description|default('Aucune description fournie')|nl2br }}</p>
+                        </div>
+
+                        <div class="section">
+                            <h2 class="section-title">Details</h2>
+                            <div class="meta-row">
+                                <span class="meta-label">Lieu / Adresse</span>
+                                {{ activite.adresseDepart|default('Non precisee') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Equipement inclus</span>
+                                {{ activite.equipementInclus|default('Aucun') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Conditions d'annulation</span>
+                                {{ activite.conditionsAnnulation|default('Non precisees') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Etablissement lie</span>
+                                {{ activite.etablissement ? activite.etablissement.nom : 'Independant' }}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="secondary">
+                        <div class="info-card">
+                            <h2 class="section-title">Informations utiles</h2>
+                            <div class="meta-row">
+                                <span class="meta-label">Niveau</span>
+                                {{ activite.niveau|default('Tous niveaux') }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Prix</span>
+                                {{ activite.prix ? activite.prix ~ ' ' ~ activite.devise : 'Gratuit' }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Duree</span>
+                                {{ activite.duree ? activite.duree ~ ' minutes' : 'Non precisee' }}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Dates</span>
+                                {% if activite.dateDebut or activite.dateFin %}
+                                    Du {{ activite.dateDebut ? activite.dateDebut|date('d/m/Y H:i') : '...' }} au {{ activite.dateFin ? activite.dateFin|date('d/m/Y H:i') : '...' }}
+                                {% else %}
+                                    Sur reservation
+                                {% endif %}
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Disponibilite</span>
+                                {{ activite.placesDispo|default('Non limitees') }} / {{ activite.nbPlaces|default('?') }} places ({{ activite.statut|default('Inconnu') }})
+                            </div>
+                        </div>
+
+                        <div class="qr-card">
+                            <p class="qr-title">QR Code localisation</p>
+                            {% if qrCode_base64 %}
+                                <img src="{{ qrCode_base64 }}" alt="QR Code Localisation">
+                                <p class="qr-text">Scannez pour ouvrir directement la localisation sur la carte.</p>
+                            {% else %}
+                                <p class="qr-text">Le QR code n'est pas disponible car la localisation est incomplete.</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            Fiche generee automatiquement le {{ 'now'|date('d/m/Y a H:i') }}
+        </div>
     </div>
-
-    <div class="section">
-        <h2>Description</h2>
-        <p>{{ activite.description ?: 'Aucune description fournie.' }}</p>
-    </div>
-
-    <p class="footer">Document genere automatiquement.</p>
 </body>
 </html>

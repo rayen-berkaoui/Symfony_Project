@@ -14,12 +14,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use App\Service\PdfService;
+use Endroid\QrCode\Builder\BuilderInterface;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 #[Route('/activite')]
 class ActiviteController extends AbstractController
 {
     #[Route('/', name: 'app_activite_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $statut = trim((string) $request->query->get('statut', ''));
@@ -57,16 +61,12 @@ class ActiviteController extends AbstractController
             ->getSingleScalarResult();
 
         $totalPages = max(1, (int) ceil($total / $perPage));
-        if ($page > $totalPages) {
+        if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $qb
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage);
-
-        $activites = $qb->getQuery()->getResult();
-        $imageUrls = $this->buildGalleryImageUrls($activites, $entityManager);
+        $activites = $paginator->paginate($qb, $page, $perPage);
+        $imageUrls = $this->buildGalleryImageUrls((array) $activites->getItems(), $entityManager);
 
         $categories = $entityManager
             ->createQuery('SELECT DISTINCT a.categorie FROM App\\Entity\\Activite a WHERE a.categorie IS NOT NULL ORDER BY a.categorie ASC')
@@ -121,11 +121,17 @@ class ActiviteController extends AbstractController
      */
     private function buildGalleryImageUrls(array $activites, EntityManagerInterface $entityManager): array
     {
+        $fallbackImageUrls = [];
         $ids = [];
         foreach ($activites as $activite) {
             $id = $activite->getIdActivite();
             if ($id !== null) {
                 $ids[] = $id;
+
+                $fallbackImageUrl = $this->buildCoverImageUrl($activite);
+                if ($fallbackImageUrl !== null) {
+                    $fallbackImageUrls[$id] = $fallbackImageUrl;
+                }
             }
         }
 
@@ -158,7 +164,28 @@ class ActiviteController extends AbstractController
             );
         }
 
+        foreach ($fallbackImageUrls as $idActivite => $fallbackImageUrl) {
+            if (!isset($imageUrls[$idActivite])) {
+                $imageUrls[$idActivite] = $fallbackImageUrl;
+            }
+        }
+
         return $imageUrls;
+    }
+
+    private function buildCoverImageUrl(Activite $activite): ?string
+    {
+        $imageName = $activite->getImageName();
+        if ($imageName === null || $imageName === '') {
+            return null;
+        }
+
+        $imagePath = $this->getParameter('kernel.project_dir').'/public/uploads/activites/'.$imageName;
+        if (!is_file($imagePath)) {
+            return null;
+        }
+
+        return '/uploads/activites/'.$imageName;
     }
 
     private function resolveActivityImagePath(string $rawPath): ?string
@@ -207,7 +234,7 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'app_activite_dashboard', methods: ['GET'])]
-    public function dashboard(Request $request, EntityManagerInterface $entityManager): Response
+    public function dashboard(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $statut = trim((string) $request->query->get('statut', ''));
@@ -245,15 +272,11 @@ class ActiviteController extends AbstractController
             ->getSingleScalarResult();
 
         $totalPages = max(1, (int) ceil($total / $perPage));
-        if ($page > $totalPages) {
+        if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $qb
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage);
-
-        $activites = $qb->getQuery()->getResult();
+        $activites = $paginator->paginate($qb, $page, $perPage);
 
         $categories = $entityManager
             ->createQuery('SELECT DISTINCT a.categorie FROM App\\Entity\\Activite a WHERE a.categorie IS NOT NULL ORDER BY a.categorie ASC')
@@ -277,6 +300,40 @@ class ActiviteController extends AbstractController
         ]);
     }
 
+    #[Route('/analytics', name: 'app_activite_analytics', methods: ['GET'])]
+    public function analytics(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $activiteRepo = $entityManager->getRepository(Activite::class);
+        
+        $trendingCategories = $activiteRepo->findTrendingCategories();
+        $distributionStatut = $activiteRepo->getDistributionByStatut();
+        $distributionNiveau = $activiteRepo->getDistributionByNiveau();
+        $totalActivites = $activiteRepo->count([]);
+        
+        $searchResults = [];
+        $searchQuery = $request->query->get('q');
+        if ($searchQuery) {
+            $searchResults = $activiteRepo->intelligentSearch($searchQuery);
+        }
+
+        $topCategory = $trendingCategories[0]['categorie'] ?? 'N/A';
+        $topCategoryCount = (int) ($trendingCategories[0]['total'] ?? 0);
+
+        return $this->render('activite/analytics.html.twig', [
+            'trendingCategories' => $trendingCategories,
+            'distributionStatut' => $distributionStatut,
+            'distributionNiveau' => $distributionNiveau,
+            'totalActivites' => $totalActivites,
+            'totalCategories' => count($trendingCategories),
+            'totalNiveaux' => count(array_filter(array_column($distributionNiveau, 'niveau'))),
+            'totalSearchResults' => count($searchResults),
+            'topCategory' => $topCategory,
+            'topCategoryCount' => $topCategoryCount,
+            'searchResults' => $searchResults,
+            'searchQuery' => $searchQuery
+        ]);
+    }
+
     #[Route('/new', name: 'app_activite_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -289,6 +346,14 @@ class ActiviteController extends AbstractController
             $entityManager->flush();
 
             return $this->redirectToRoute('app_activite_create_success', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true) as $error) {
+                $origin = $error->getOrigin();
+                $label = $origin ? $origin->getName() : 'formulaire';
+                $this->addFlash('error', sprintf('%s: %s', $label, $error->getMessage()));
+            }
         }
 
         return $this->render('activite/new.html.twig', [
@@ -306,40 +371,6 @@ class ActiviteController extends AbstractController
             'nextUrl' => $this->generateUrl('app_activite_dashboard'),
             'nextLabel' => 'Aller au dashboard activités',
         ]);
-    }
-
-    #[Route('/{idActivite}/export-pdf', name: 'app_activite_export_pdf', methods: ['GET'])]
-    public function exportPdf(Activite $activite): Response
-    {
-        $html = (string) $this->runPdfSafely(function () use ($activite): string {
-            return $this->renderView('activite/pdf.html.twig', [
-                'activite' => $activite,
-            ]);
-        });
-        $html = $this->sanitizeUtf8($html);
-
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $options->setDefaultFont('Helvetica');
-
-        $dompdf = new Dompdf($options);
-        $this->runPdfSafely(static function () use ($dompdf, $html): void {
-            $dompdf->loadHtml($html, 'UTF-8');
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-        });
-
-        $safeName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($activite->getNomActivite() ?? 'activite'));
-        $fileName = sprintf('activite-%s.pdf', trim((string) $safeName, '-'));
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
-            ]
-        );
     }
 
     private function sanitizeUtf8(string $value): string
@@ -398,6 +429,7 @@ class ActiviteController extends AbstractController
     {
         return $this->render('activite/show.html.twig', [
             'activite' => $activite,
+            'coverImageUrl' => $this->buildCoverImageUrl($activite),
         ]);
     }
 
@@ -411,6 +443,14 @@ class ActiviteController extends AbstractController
             $entityManager->flush();
 
             return $this->redirectToRoute('app_activite_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors(true) as $error) {
+                $origin = $error->getOrigin();
+                $label = $origin ? $origin->getName() : 'formulaire';
+                $this->addFlash('error', sprintf('%s: %s', $label, $error->getMessage()));
+            }
         }
 
         return $this->render('activite/edit.html.twig', [
@@ -428,5 +468,58 @@ class ActiviteController extends AbstractController
         }
 
         return $this->redirectToRoute('app_activite_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{idActivite}/pdf/export', name: 'app_activite_export_pdf', methods: ['GET'])]
+    public function exportPdf(Activite $activite, PdfService $pdfService, BuilderInterface $customQrCodeBuilder): Response
+    {
+        // 1. URL Map
+        $mapUrl = '';
+        if ($activite->getAdresseDepart()) {
+            $mapUrl = sprintf('https://www.google.com/maps/search/?api=1&query=%s', urlencode($activite->getAdresseDepart()));
+        } elseif ($activite->getEtablissement() && $activite->getEtablissement()->getLatitude() && $activite->getEtablissement()->getLongitude()) {
+            $mapUrl = sprintf('https://www.google.com/maps/search/?api=1&query=%s,%s', $activite->getEtablissement()->getLatitude(), $activite->getEtablissement()->getLongitude());
+        } elseif ($activite->getEtablissement() && $activite->getEtablissement()->getAdresse()) {
+            $mapUrl = sprintf('https://www.google.com/maps/search/?api=1&query=%s', urlencode($activite->getEtablissement()->getAdresse() . ', ' . $activite->getEtablissement()->getVille()));
+        }
+
+        // 2. Base 64 QR Code
+        $qrCodeBase64 = null;
+        if ($mapUrl) {
+            $result = $customQrCodeBuilder->build(
+                data: $mapUrl,
+                size: 150,
+                margin: 0
+            );
+            $qrCodeBase64 = $result->getDataUri();
+        }
+
+        // 3. Base 64 Image de profil
+        $imageBase64 = null;
+        if ($activite->getImageName()) {
+            $imagePath = $this->getParameter('kernel.project_dir') . '/public/uploads/activites/' . $activite->getImageName();
+            if (file_exists($imagePath)) {
+                $type = pathinfo($imagePath, PATHINFO_EXTENSION);
+                $data = file_get_contents($imagePath);
+                $imageBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        }
+
+        $html = $this->renderView('activite/pdf.html.twig', [
+            'activite' => $activite,
+            'qrCode_base64' => $qrCodeBase64,
+            'image_base64' => $imageBase64
+        ]);
+
+        $pdfContent = $pdfService->generatePdf($html);
+
+        $response = new Response($pdfContent);
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'activite-' . $activite->getIdActivite() . '.pdf'
+        ));
+        $response->headers->set('Content-Type', 'application/pdf');
+
+        return $response;
     }
 }

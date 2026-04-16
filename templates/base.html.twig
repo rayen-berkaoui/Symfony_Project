@@ -1,11 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr" dir="ltr">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        {% set page_title %}{% block title %}Welcome!{% endblock %}{% endset %}
+        <title data-original-title="{{ page_title|trim }}">{{ page_title|trim }}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+        <style>
+            .flash {
+                margin: 0 0 12px;
+                padding: 12px 14px;
+                border-radius: 10px;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .flash-error {
+                background: #fff1f1;
+                color: #8a1f1f;
+                border: 1px solid #efb4b4;
+            }
+
+            .flash-success {
+                background: #eefbf1;
+                color: #1f6b38;
+                border: 1px solid #b7e2c2;
+            }
+
+            .lang-switcher {
+                margin-left: 12px;
+                padding: 8px 10px;
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                background: rgba(255, 255, 255, 0.08);
+                color: #ffffff;
+            }
+        </style>
         {% block stylesheets %}
         {% endblock %}
 
@@ -23,12 +54,224 @@
                     <a href="{{ path('app_activite_index') }}" class="{{ app.request.attributes.get('_route') == 'app_activite_index' ? 'is-active' : '' }}">Galerie Activites</a>
                     <a href="{{ path('app_etablissement_dashboard') }}" class="topnav-cta {{ app.request.attributes.get('_route') == 'app_etablissement_dashboard' ? 'is-active' : '' }}">Dashboard Etablissements</a>
                     <a href="{{ path('app_activite_dashboard') }}" class="topnav-cta {{ app.request.attributes.get('_route') == 'app_activite_dashboard' ? 'is-active' : '' }}">Dashboard Activites</a>
+                    <select id="language-switcher" class="lang-switcher" aria-label="Language switcher">
+                        <option value="fr">Français</option>
+                        <option value="en">English</option>
+                        <option value="ar">العربية</option>
+                    </select>
                 </nav>
             </header>
 
             <main class="app-main">
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="flash flash-{{ label }}">{{ message }}</div>
+                    {% endfor %}
+                {% endfor %}
                 {% block body %}{% endblock %}
             </main>
         </div>
+        <script>
+            (function () {
+                const languageSwitcher = document.getElementById('language-switcher');
+                if (!languageSwitcher) {
+                    return;
+                }
+
+                const storageKey = 'ui-language';
+                const cacheKeyPrefix = 'ui-translations-';
+                const selectedLanguage = localStorage.getItem(storageKey) || 'fr';
+                languageSwitcher.value = selectedLanguage;
+
+                const textTargets = [];
+                const attrTargets = [];
+                const titleElement = document.querySelector('title');
+
+                function shouldSkipElement(element) {
+                    if (!element) {
+                        return true;
+                    }
+
+                    const tagName = element.tagName;
+                    return ['SCRIPT', 'STYLE', 'NOSCRIPT', 'CODE', 'PRE'].includes(tagName);
+                }
+
+                function normalizeText(value) {
+                    return (value || '').replace(/\s+/g, ' ').trim();
+                }
+
+                function collectTextTargets(root) {
+                    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                        acceptNode(node) {
+                            if (!node.parentElement || shouldSkipElement(node.parentElement)) {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+
+                            const text = normalizeText(node.nodeValue);
+                            if (!text) {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    });
+
+                    while (walker.nextNode()) {
+                        const node = walker.currentNode;
+                        textTargets.push({
+                            node,
+                            original: normalizeText(node.nodeValue),
+                        });
+                    }
+                }
+
+                function collectAttributeTargets(selector, attribute) {
+                    document.querySelectorAll(selector).forEach((element) => {
+                        const value = element.getAttribute(attribute);
+                        const normalized = normalizeText(value);
+
+                        if (!normalized) {
+                            return;
+                        }
+
+                        attrTargets.push({
+                            element,
+                            attribute,
+                            original: normalized,
+                        });
+                    });
+                }
+
+                collectTextTargets(document.querySelector('.topbar'));
+                collectTextTargets(document.querySelector('.app-main'));
+                collectAttributeTargets('input[placeholder], textarea[placeholder]', 'placeholder');
+
+                function getCache(targetLanguage) {
+                    try {
+                        return JSON.parse(localStorage.getItem(cacheKeyPrefix + targetLanguage) || '{}');
+                    } catch (error) {
+                        return {};
+                    }
+                }
+
+                function setCache(targetLanguage, translations) {
+                    const currentCache = getCache(targetLanguage);
+                    localStorage.setItem(
+                        cacheKeyPrefix + targetLanguage,
+                        JSON.stringify({ ...currentCache, ...translations })
+                    );
+                }
+
+                function applyOriginalLanguage() {
+                    document.documentElement.lang = 'fr';
+                    document.documentElement.dir = 'ltr';
+
+                    if (titleElement) {
+                        const originalTitle = titleElement.getAttribute('data-original-title');
+                        if (originalTitle) {
+                            document.title = originalTitle;
+                        }
+                    }
+
+                    textTargets.forEach((target) => {
+                        target.node.nodeValue = target.original;
+                    });
+
+                    attrTargets.forEach((target) => {
+                        if (target.attribute === 'textContent') {
+                            target.element.textContent = target.original;
+                        } else {
+                            target.element.setAttribute(target.attribute, target.original);
+                        }
+                    });
+                }
+
+                function applyTranslations(translations, targetLanguage) {
+                    textTargets.forEach((target) => {
+                        if (translations[target.original]) {
+                            target.node.nodeValue = translations[target.original];
+                        }
+                    });
+
+                    attrTargets.forEach((target) => {
+                        const translated = translations[target.original];
+                        if (!translated) {
+                            return;
+                        }
+
+                        if (target.attribute === 'textContent') {
+                            target.element.textContent = translated;
+                        } else {
+                            target.element.setAttribute(target.attribute, translated);
+                        }
+                    });
+
+                    if (titleElement) {
+                        const originalTitle = titleElement.getAttribute('data-original-title');
+                        if (originalTitle && translations[originalTitle]) {
+                            document.title = translations[originalTitle];
+                        }
+                    }
+
+                    document.documentElement.lang = targetLanguage;
+                    document.documentElement.dir = targetLanguage === 'ar' ? 'rtl' : 'ltr';
+                }
+
+                async function applyLanguage(targetLanguage) {
+                    localStorage.setItem(storageKey, targetLanguage);
+
+                    if (targetLanguage === 'fr') {
+                        applyOriginalLanguage();
+                        return;
+                    }
+
+                    applyOriginalLanguage();
+
+                    const uniqueTexts = Array.from(new Set([
+                        ...textTargets.map((target) => target.original),
+                        ...attrTargets.map((target) => target.original),
+                        ...(titleElement && titleElement.getAttribute('data-original-title')
+                            ? [titleElement.getAttribute('data-original-title')]
+                            : []),
+                    ]));
+
+                    const cachedTranslations = getCache(targetLanguage);
+                    applyTranslations(cachedTranslations, targetLanguage);
+
+                    const missingTexts = uniqueTexts.filter((text) => !cachedTranslations[text]);
+                    if (missingTexts.length === 0) {
+                        return;
+                    }
+
+                    const response = await fetch('{{ path('app_api_translate') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            target: targetLanguage,
+                            texts: missingTexts,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const translations = data.translations || {};
+                    setCache(targetLanguage, translations);
+                    applyTranslations({ ...cachedTranslations, ...translations }, targetLanguage);
+                }
+
+                languageSwitcher.addEventListener('change', async function () {
+                    await applyLanguage(languageSwitcher.value);
+                });
+
+                if (selectedLanguage !== 'fr') {
+                    applyLanguage(selectedLanguage);
+                }
+            })();
+        </script>
     </body>
 </html>

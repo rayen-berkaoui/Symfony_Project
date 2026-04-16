@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Etablissement;
 use App\Form\EtablissementType;
+use App\Repository\EtablissementRepository;
+use App\Repository\ActiviteRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Doctrine\DBAL\ArrayParameterType;
@@ -15,6 +17,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use App\Service\PdfService;
+use Endroid\QrCode\Builder\BuilderInterface;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 #[Route('/etablissement')]
 class EtablissementController extends AbstractController
@@ -47,7 +53,7 @@ class EtablissementController extends AbstractController
     ];
 
     #[Route('/', name: 'app_etablissement_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $type = trim((string) $request->query->get('type', ''));
@@ -106,16 +112,12 @@ class EtablissementController extends AbstractController
             ->getSingleScalarResult();
 
         $totalPages = max(1, (int) ceil($total / $perPage));
-        if ($page > $totalPages) {
+        if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $qb
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage);
-
-        $etablissements = $qb->getQuery()->getResult();
-        $imageUrls = $this->buildGalleryImageUrls($etablissements, $entityManager);
+        $etablissements = $paginator->paginate($qb, $page, $perPage);
+        $imageUrls = $this->buildGalleryImageUrls((array) $etablissements->getItems(), $entityManager);
 
         $types = $entityManager
             ->createQuery('SELECT DISTINCT e.type FROM App\\Entity\\Etablissement e WHERE e.type IS NOT NULL ORDER BY e.type ASC')
@@ -183,11 +185,17 @@ class EtablissementController extends AbstractController
      */
     private function buildGalleryImageUrls(array $etablissements, EntityManagerInterface $entityManager): array
     {
+        $fallbackImageUrls = [];
         $ids = [];
         foreach ($etablissements as $etablissement) {
             $id = $etablissement->getIdEtablissement();
             if ($id !== null) {
                 $ids[] = $id;
+
+                $fallbackImageUrl = $this->buildCoverImageUrl($etablissement);
+                if ($fallbackImageUrl !== null) {
+                    $fallbackImageUrls[$id] = $fallbackImageUrl;
+                }
             }
         }
 
@@ -220,11 +228,32 @@ class EtablissementController extends AbstractController
             );
         }
 
+        foreach ($fallbackImageUrls as $idEtablissement => $fallbackImageUrl) {
+            if (!isset($imageUrls[$idEtablissement])) {
+                $imageUrls[$idEtablissement] = $fallbackImageUrl;
+            }
+        }
+
         return $imageUrls;
     }
 
+    private function buildCoverImageUrl(Etablissement $etablissement): ?string
+    {
+        $imageName = $etablissement->getImageName();
+        if ($imageName === null || $imageName === '') {
+            return null;
+        }
+
+        $imagePath = $this->getParameter('kernel.project_dir').'/public/uploads/etablissements/'.$imageName;
+        if (!is_file($imagePath)) {
+            return null;
+        }
+
+        return '/uploads/etablissements/'.$imageName;
+    }
+
     #[Route('/dashboard', name: 'app_etablissement_dashboard', methods: ['GET'])]
-    public function dashboard(Request $request, EntityManagerInterface $entityManager): Response
+    public function dashboard(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $type = trim((string) $request->query->get('type', ''));
@@ -283,15 +312,11 @@ class EtablissementController extends AbstractController
             ->getSingleScalarResult();
 
         $totalPages = max(1, (int) ceil($total / $perPage));
-        if ($page > $totalPages) {
+        if ($page > $totalPages && $totalPages > 0) {
             $page = $totalPages;
         }
 
-        $qb
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage);
-
-        $etablissements = $qb->getQuery()->getResult();
+        $etablissements = $paginator->paginate($qb, $page, $perPage);
 
         $types = $entityManager
             ->createQuery('SELECT DISTINCT e.type FROM App\\Entity\\Etablissement e WHERE e.type IS NOT NULL ORDER BY e.type ASC')
@@ -340,7 +365,6 @@ class EtablissementController extends AbstractController
             } else {
                 $entityManager->persist($etablissement);
                 $entityManager->flush();
-                $this->storeUploadedImages($form->get('images')->getData(), $etablissement, $entityManager);
 
                 return $this->redirectToRoute('app_etablissement_create_success', [], Response::HTTP_SEE_OTHER);
             }
@@ -361,40 +385,6 @@ class EtablissementController extends AbstractController
             'nextUrl' => $this->generateUrl('app_etablissement_dashboard'),
             'nextLabel' => 'Aller au dashboard établissements',
         ]);
-    }
-
-    #[Route('/{idEtablissement}/export-pdf', name: 'app_etablissement_export_pdf', methods: ['GET'])]
-    public function exportPdf(Etablissement $etablissement): Response
-    {
-        $html = (string) $this->runPdfSafely(function () use ($etablissement): string {
-            return $this->renderView('etablissement/pdf.html.twig', [
-                'etablissement' => $etablissement,
-            ]);
-        });
-        $html = $this->sanitizeUtf8($html);
-
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        $options->setDefaultFont('Helvetica');
-
-        $dompdf = new Dompdf($options);
-        $this->runPdfSafely(static function () use ($dompdf, $html): void {
-            $dompdf->loadHtml($html, 'UTF-8');
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-        });
-
-        $safeName = preg_replace('/[^a-zA-Z0-9_-]+/', '-', (string) ($etablissement->getNom() ?? 'etablissement'));
-        $fileName = sprintf('etablissement-%s.pdf', trim((string) $safeName, '-'));
-
-        return new Response(
-            $dompdf->output(),
-            Response::HTTP_OK,
-            [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName),
-            ]
-        );
     }
 
     private function sanitizeUtf8(string $value): string
@@ -448,11 +438,48 @@ class EtablissementController extends AbstractController
         }
     }
 
+    #[Route('/analytics', name: 'app_etablissement_analytics', methods: ['GET'])]
+    public function analytics(Request $request, EtablissementRepository $etablissementRepo, ActiviteRepository $activiteRepo): Response
+    {
+        // Récupérations des tendances
+        $popularCities = $etablissementRepo->findPopularCities();
+        $trendingActivities = $activiteRepo->findTrendingCategories();
+        $distributionTypes = $etablissementRepo->getDistributionByType(); // Nouvelle Stat
+        $totalEtablissements = $etablissementRepo->count([]);
+        $totalActivites = $activiteRepo->count([]);
+
+        // Système de recherche simulée depuis la barre de recherche
+        $searchResults = [];
+        $searchQuery = $request->query->get('q');
+        if ($searchQuery) {
+            $searchResults = $etablissementRepo->intelligentSearch($searchQuery);
+        }
+
+        $topCity = $popularCities[0]['ville'] ?? 'N/A';
+        $topCityCount = (int) ($popularCities[0]['total'] ?? 0);
+
+        return $this->render('shared/analytics.html.twig', [
+            'popularCities' => $popularCities,
+            'trendingActivities' => $trendingActivities,
+            'distributionTypes' => $distributionTypes,
+            'totalEtablissements' => $totalEtablissements,
+            'totalActivites' => $totalActivites,
+            'totalVilles' => count($popularCities),
+            'totalCategories' => count(array_filter(array_column($distributionTypes, 'type'))),
+            'totalSearchResults' => count($searchResults),
+            'topCity' => $topCity,
+            'topCityCount' => $topCityCount,
+            'searchResults' => $searchResults,
+            'searchQuery' => $searchQuery
+        ]);
+    }
+
     #[Route('/{idEtablissement}', name: 'app_etablissement_show', methods: ['GET'])]
     public function show(Etablissement $etablissement): Response
     {
         return $this->render('etablissement/show.html.twig', [
             'etablissement' => $etablissement,
+            'coverImageUrl' => $this->buildCoverImageUrl($etablissement),
         ]);
     }
 
@@ -464,7 +491,6 @@ class EtablissementController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-            $this->storeUploadedImages($form->get('images')->getData(), $etablissement, $entityManager);
 
             return $this->redirectToRoute('app_etablissement_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -566,5 +592,56 @@ class EtablissementController extends AbstractController
             'svg' => 'image/svg+xml',
             default => 'application/octet-stream',
         };
+    }
+
+    #[Route('/{idEtablissement}/pdf/export', name: 'app_etablissement_export_pdf', methods: ['GET'])]
+    public function exportPdf(Etablissement $etablissement, PdfService $pdfService, BuilderInterface $customQrCodeBuilder): Response
+    {
+        // 1. URL Map
+        $mapUrl = '';
+        if ($etablissement->getLatitude() && $etablissement->getLongitude()) {
+            $mapUrl = sprintf('https://www.google.com/maps/search/?api=1&query=%s,%s', $etablissement->getLatitude(), $etablissement->getLongitude());
+        } elseif ($etablissement->getAdresse()) {
+            $mapUrl = sprintf('https://www.google.com/maps/search/?api=1&query=%s', urlencode($etablissement->getAdresse() . ', ' . $etablissement->getVille()));
+        }
+
+        // 2. Base 64 QR Code
+        $qrCodeBase64 = null;
+        if ($mapUrl) {
+            $result = $customQrCodeBuilder->build(
+                data: $mapUrl,
+                size: 150,
+                margin: 0
+            );
+            $qrCodeBase64 = $result->getDataUri();
+        }
+
+        // 3. Base 64 Image de profil
+        $imageBase64 = null;
+        if ($etablissement->getImageName()) {
+            $imagePath = $this->getParameter('kernel.project_dir') . '/public/uploads/etablissements/' . $etablissement->getImageName();
+            if (file_exists($imagePath)) {
+                $type = pathinfo($imagePath, PATHINFO_EXTENSION);
+                $data = file_get_contents($imagePath);
+                $imageBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        }
+
+        $html = $this->renderView('etablissement/pdf.html.twig', [
+            'etablissement' => $etablissement,
+            'qrCode_base64' => $qrCodeBase64,
+            'image_base64' => $imageBase64
+        ]);
+
+        $pdfContent = $pdfService->generatePdf($html);
+
+        $response = new Response($pdfContent);
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'etablissement-' . $etablissement->getIdEtablissement() . '.pdf'
+        ));
+        $response->headers->set('Content-Type', 'application/pdf');
+
+        return $response;
     }
 }

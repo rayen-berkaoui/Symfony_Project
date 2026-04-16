@@ -401,8 +401,7 @@
     'horaires': form.horaires.vars.id,
     'description': form.description.vars.id,
     'latitude': form.latitude.vars.id,
-    'longitude': form.longitude.vars.id,
-    'images': form.images.vars.id
+    'longitude': form.longitude.vars.id
 } %}
 
 <div class="etab-page">
@@ -512,12 +511,10 @@
                     </div>
                     <div class="field full">
                         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-                            {{ form_label(form.images) }}
-                            <label class="btn-ghost" for="{{ form.images.vars.id }}">Choisir image(s)</label>
+                            {{ form_label(form.imageFile) }}
                         </div>
-                        {{ form_widget(form.images, {'attr': {'class': 'file-input'}}) }}
-                        <div id="image-preview" class="image-preview"></div>
-                        {{ form_errors(form.images) }}
+                        {{ form_widget(form.imageFile) }}
+                        {{ form_errors(form.imageFile) }}
                     </div>
                 </div>
             </div>

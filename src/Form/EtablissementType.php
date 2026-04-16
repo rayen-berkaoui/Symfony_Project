@@ -12,13 +12,23 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class EtablissementType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nom', TextType::class, ['label' => 'Nom de l\'établissement'])
+            ->add('nom', TextType::class, ['label' => 'Nom de l\'Ã©tablissement'])
+            ->add('imageFile', VichImageType::class, [
+                'required' => false,
+                'allow_delete' => true,
+                'delete_label' => 'Supprimer l\'image de couverture',
+                'download_uri' => true,
+                'image_uri' => true,
+                'asset_helper' => true,
+                'label' => 'Image de couverture',
+            ])
             ->add('description', TextareaType::class, [
                 'required' => false,
                 'attr' => ['maxlength' => 200],
@@ -229,15 +239,6 @@ class EtablissementType extends AbstractType
                     'Après-midi uniquement' => '14:00 - 19:00',
                     'Service continu' => '10:00 - 00:00',
                     'Personnalisé' => 'custom',
-                ],
-            ])
-            ->add('images', FileType::class, [
-                'mapped' => false,
-                'required' => false,
-                'multiple' => true,
-                'label' => 'Choisir image(s)',
-                'attr' => [
-                    'accept' => 'image/*',
                 ],
             ])
         ;

@@ -14,12 +14,22 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class ActiviteType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('imageFile', VichImageType::class, [
+                'required' => false,
+                'allow_delete' => true,
+                'delete_label' => 'Supprimer l\'image de couverture',
+                'download_uri' => true,
+                'image_uri' => true,
+                'asset_helper' => true,
+                'label' => 'Image de couverture de l\'activité',
+            ])
             ->add('nomActivite', TextType::class, ['label' => 'Nom de l\'activité'])
             ->add('description', TextareaType::class, ['required' => false])
             ->add('categorie', ChoiceType::class, [
