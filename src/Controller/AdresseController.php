@@ -56,16 +56,15 @@ final class AdresseController extends AbstractController
     {
         $adresses = $adresseRepository->findAll();
 
-        $pdfOptions = new Options();
+                $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('isHtml5ParserEnabled', true);
+        $pdfOptions->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($pdfOptions);
 
-        $html = "<h1>Liste des Adresses</h1>";
-        $html .= "<table border='1' width='100%' cellpadding='5'><tr><th>Rue</th><th>Ville</th><th>Latitude</th><th>Longitude</th></tr>";
-        foreach ($adresses as $a) {
-            $html .= "<tr><td>{$a->getRue()}</td><td>{$a->getVille()}</td><td>{$a->getLatitude()}</td><td>{$a->getLongitude()}</td></tr>";
-        }
-        $html .= "</table>";
+        $html = $this->renderView('adresse/pdf.html.twig', [
+            'adresses' => $adresses
+        ]);
 
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
@@ -89,7 +88,7 @@ final class AdresseController extends AbstractController
             $entityManager->persist($adresse);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Adresse créée avec succès.');
+            $this->addFlash('success', 'Adresse crÃ©Ã©e avec succÃ¨s.');
 
             return $this->redirectToRoute('app_adresse_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -117,7 +116,7 @@ final class AdresseController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Adresse mise à jour avec succès.');
+            $this->addFlash('success', 'Adresse mise Ã  jour avec succÃ¨s.');
 
             return $this->redirectToRoute('app_adresse_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -134,7 +133,7 @@ final class AdresseController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$adresse->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($adresse);
             $entityManager->flush();
-            $this->addFlash('success', 'Adresse supprimée avec succès.');
+            $this->addFlash('success', 'Adresse supprimÃ©e avec succÃ¨s.');
         } else {
             $this->addFlash('error', 'Token CSRF invalide.');
         }
@@ -142,3 +141,4 @@ final class AdresseController extends AbstractController
         return $this->redirectToRoute('app_adresse_index', [], Response::HTTP_SEE_OTHER);
     }
 }
+

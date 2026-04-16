@@ -1,6 +1,43 @@
-{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
-    <div class="space-y-4">
-        {{ form_widget(form) }}
+﻿<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+{{ form_start(form, {'attr': {'class': 'space-y-4', 'id': 'adresse_form'}}) }}
+    <!-- ONGLETS DE SÉLECTION -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+        <button type="button" id="btn-manual" class="btn-toggle active px-6 py-2 rounded-lg font-bold bg-gold-500 text-white shadow-lg transition w-full sm:w-auto">
+            <i class="fa-solid fa-keyboard mr-2"></i>Saisie Manuelle
+        </button>
+        <button type="button" id="btn-map" class="btn-toggle px-6 py-2 rounded-lg font-bold bg-dark-200 text-white border border-white/10 hover:bg-white/5 transition w-full sm:w-auto">
+            <i class="fa-solid fa-map-location-dot mr-2"></i>Sur la carte
+        </button>
+    </div>
+
+    <!-- SECTION CARTE -->
+    <div id="section-map" class="hidden bg-dark-100 p-4 rounded-xl border border-white/5 transition-all">
+        <div id="map-container" class="rounded-lg overflow-hidden border border-white/10 z-10" style="height: 350px;"></div>
+        
+        <div class="mt-4 p-3 bg-dark-200 rounded-lg border border-white/5">
+            <div class="text-gold-400 font-medium mb-1"><i class="fa-solid fa-location-dot mr-2"></i>Adresse sélectionnée :</div>
+            <div id="map-recap-text" class="text-white text-sm">Cliquez sur la carte pour sélectionner une position.</div>
+        </div>
+        <div class="text-white/60 text-xs mt-2"><i class="fa-solid fa-info-circle mr-1"></i>Les données (rue, ville, coordonnées) seront automatiquement ajoutées au formulaire.</div>
+    </div>
+
+    <!-- SECTION MANUELLE (Champs originaux du formulaire) -->
+    <div id="section-manual" class="transition-all">
+        <div class="space-y-4">
+            {{ form_row(form.rue) }}
+            {{ form_row(form.ville) }}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{ form_row(form.latitude) }}
+                {{ form_row(form.longitude) }}
+            </div>
+            
+            {{ form_row(form.altitude) }}
+            
+            {{ form_rest(form) }}
+        </div>
     </div>
 
     <div class="mt-6 flex justify-end">
@@ -9,3 +46,125 @@
         </button>
     </div>
 {{ form_end(form) }}
+<script>
+function initMapForm() {
+    const btnManual = document.getElementById('btn-manual');
+    const btnMap = document.getElementById('btn-map');
+    const sectionManual = document.getElementById('section-manual');
+    const sectionMap = document.getElementById('section-map');
+    const recapText = document.getElementById('map-recap-text');
+    const mapContainer = document.getElementById('map-container');
+
+    if (!mapContainer || mapContainer.hasAttribute('data-initialized')) return;
+    mapContainer.setAttribute('data-initialized', 'true');
+
+    // Identifiants générés par Symfony pour les champs
+    const latInput = document.getElementById('adresse_latitude') || document.querySelector('[name*="[latitude]"]');        
+    const lngInput = document.getElementById('adresse_longitude') || document.querySelector('[name*="[longitude]"]');      
+    const rueInput = document.getElementById('adresse_rue') || document.querySelector('[name*="[rue]"]');
+    const villeInput = document.getElementById('adresse_ville') || document.querySelector('[name*="[ville]"]');
+    const altInput = document.getElementById('adresse_altitude') || document.querySelector('[name*="[altitude]"]');
+
+    // Auto-switch to manual tab if HTML5 validation fails on a hidden input
+    document.querySelectorAll('form input').forEach(input => {
+        input.addEventListener('invalid', () => {
+            if (sectionManual.classList.contains('hidden') && btnManual) {
+                btnManual.click();
+            }
+        });
+    });
+
+    let startLat = latInput && latInput.value ? parseFloat(latInput.value) : 36.8065;
+    let startLng = lngInput && lngInput.value ? parseFloat(lngInput.value) : 10.1815;
+    let startZoom = latInput && latInput.value ? 13 : 6;
+
+    const map = window.L ? L.map('map-container').setView([startLat, startLng], startZoom) : null;
+    if(map) {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        let marker = L.marker([startLat, startLng]).addTo(map);
+        let mapInitialized = false;
+
+        if (btnManual) {
+            btnManual.addEventListener('click', (e) => {
+                e.preventDefault();
+                btnManual.className = "btn-toggle active px-6 py-2 rounded-lg font-bold bg-gold-500 text-white shadow-lg transition w-full sm:w-auto";
+                btnMap.className = "btn-toggle px-6 py-2 rounded-lg font-bold bg-dark-200 text-white border border-white/10 hover:bg-white/5 transition w-full sm:w-auto";
+                sectionManual.classList.remove('hidden');
+                sectionMap.classList.add('hidden');
+            });
+        }
+
+        if (btnMap) {
+            btnMap.addEventListener('click', (e) => {
+                e.preventDefault();
+                btnMap.className = "btn-toggle active px-6 py-2 rounded-lg font-bold bg-gold-500 text-white shadow-lg transition w-full sm:w-auto";
+                btnManual.className = "btn-toggle px-6 py-2 rounded-lg font-bold bg-dark-200 text-white border border-white/10 hover:bg-white/5 transition w-full sm:w-auto";
+                sectionMap.classList.remove('hidden');
+                sectionManual.classList.add('hidden');
+
+                if (!mapInitialized) {
+                    setTimeout(() => { map.invalidateSize(); map.setView([startLat, startLng], startZoom); mapInitialized = true; }, 150);
+                } else {
+                    setTimeout(() => map.invalidateSize(), 50);
+                }
+            });
+        }
+
+        map.on('click', function(e) {
+            let lat = e.latlng.lat;
+            let lng = e.latlng.lng;
+            
+            marker.setLatLng([lat, lng]);
+            if (altInput && !altInput.value) altInput.value = 0;
+            
+            if (latInput) latInput.value = lat.toFixed(6);
+            if (lngInput) lngInput.value = lng.toFixed(6);
+            
+            recapText.innerHTML = '<span class="text-gold-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Recherche de l\'adresse...</span>';
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.address) {
+                        const adresse = data.address;
+                        const route = adresse.road || adresse.pedestrian || adresse.footway || adresse.path || '';
+                        const numero = adresse.house_number || '';
+                        const fullRue = (numero + ' ' + route).trim();
+                        const ville = adresse.city || adresse.town || adresse.village || adresse.county || '';
+                        
+                        if (rueInput) rueInput.value = fullRue;
+                        if (villeInput) villeInput.value = ville;
+                        
+                        recapText.innerHTML = `
+                            <div class="font-medium">${fullRue || 'Rue inconnue'}</div>
+                            <div class="text-white/60">${ville || 'Ville inconnue'}</div>
+                            <div class="text-white/40 text-xs mt-1">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</div>
+                        `;
+                    } else {
+                        recapText.innerHTML = `
+                            <div class="font-medium text-white/50">Adresse exacte introuvable</div>
+                            <div class="text-white/40 text-xs mt-1">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur reverse geocoding:', err);
+                    recapText.innerHTML = `
+                        <div class="font-medium text-white/50">Erreur lors de la récupération de l'adresse</div>
+                        <div class="text-white/40 text-xs mt-1">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</div>
+                    `;
+                });
+        });
+    }
+}
+
+document.addEventListener('turbo:load', initMapForm);
+document.addEventListener('DOMContentLoaded', initMapForm);
+
+if (document.readyState !== 'loading') {
+    initMapForm();
+}
+</script>
+
+
+

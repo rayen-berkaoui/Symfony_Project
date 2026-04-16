@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\AdresseRepository;
 use App\Repository\CategorieRepository;
+use App\Repository\HistoriqueActionRepository;
 use App\Repository\LieuTouristiqueRepository;
 use App\Repository\PanierRepository;
 use App\Repository\ReservationRepository;
@@ -39,7 +40,7 @@ final class HomeController extends AbstractController
         $revenueTotal = $reservationRepository->createQueryBuilder('r')
             ->select('SUM(r.montantTotal)')
             ->where('r.statutPaiement = :statut')
-            ->setParameter('statut', 'PayÃ©')
+            ->setParameter('statut', 'PayÃƒÂ©')
             ->getQuery()
             ->getSingleScalarResult();
         $stats['revenue_total'] = $revenueTotal ? round((float)$revenueTotal, 2) : 0;
@@ -62,7 +63,8 @@ final class HomeController extends AbstractController
         CategorieRepository $categorieRepository,
         AdresseRepository $adresseRepository,
         PanierRepository $panierRepository,
-        ReservationRepository $reservationRepository
+        ReservationRepository $reservationRepository,
+        HistoriqueActionRepository $historiqueActionRepository
     ): Response {
         $stats = $this->getStats($lieuRepository, $categorieRepository, $adresseRepository, $panierRepository, $reservationRepository);
 
@@ -100,13 +102,26 @@ final class HomeController extends AbstractController
         // Get 5 most recently updated or added places (using ID as a proxy for recency)
         $recentLieux = $lieuRepository->findBy([], ['id' => 'DESC'], 5);
 
+        $adresses = $adresseRepository->findAll();
+        $markers = array_map(function($a) {
+            return [
+                'lat' => $a->getLatitude(),
+                'lng' => $a->getLongitude(),
+                'title' => $a->getRue() . ', ' . $a->getVille()
+            ];
+        }, $adresses);
+
+        $recentActions = $historiqueActionRepository->findLatest(15);
+
         return $this->render('dashboard/index.html.twig', [
             'stats' => $stats,
             'recent_lieux' => $recentLieux,
+            'recent_actions' => $recentActions,
             'chart_labels' => json_encode($chartLabels),
             'chart_data' => json_encode($chartData),
             'adresse_labels' => json_encode($adresseLabels),
             'adresse_data' => json_encode($adresseData),
+            'markersJson' => json_encode($markers),
         ]);
     }
 
@@ -129,15 +144,15 @@ final class HomeController extends AbstractController
         $html .= "<h2>Statistiques Globales</h2>";
         $html .= "<ul>";
         $html .= "<li>Total des Lieux Touristiques : {$stats['total_lieux']} (Actifs: {$stats['active_lieux']}, Inactifs: {$stats['inactive_lieux']})</li>";
-        $html .= "<li>Total des Catégories : {$stats['total_categories']}</li>";
+        $html .= "<li>Total des CatÃ©gories : {$stats['total_categories']}</li>";
         $html .= "<li>Total des Adresses : {$stats['total_adresses']}</li>";
         $html .= "<li>Total des Paniers : {$stats['total_paniers']}</li>";
-        $html .= "<li>Total des RÃ©servations : {$stats['total_reservations']}</li>";
+        $html .= "<li>Total des RÃƒÂ©servations : {$stats['total_reservations']}</li>";
         $html .= "<li>Chiffre d'affaires : {$stats['revenue_total']} DT</li>";
         $html .= "</ul>";
 
-        $html .= "<h2>Derniers Lieux Ajoutés</h2>";
-        $html .= "<table border='1' width='100%' cellpadding='5'><tr><th>Nom</th><th>Catégorie</th><th>Ville</th><th>Prix</th></tr>";
+        $html .= "<h2>Derniers Lieux AjoutÃ©s</h2>";
+        $html .= "<table border='1' width='100%' cellpadding='5'><tr><th>Nom</th><th>CatÃ©gorie</th><th>Ville</th><th>Prix</th></tr>";
         foreach ($recentLieux as $l) {
             $catNom = $l->getCategorie() ? $l->getCategorie()->getNomCategorie() : 'N/A';
             $html .= "<tr><td>{$l->getNom()}</td><td>{$catNom}</td><td>{$l->getVille()}</td><td>{$l->getPrix()} DT</td></tr>";
@@ -177,16 +192,16 @@ final class HomeController extends AbstractController
             $writer->addRow(Row::fromValues(['Total des Lieux', $stats['total_lieux']]));
             $writer->addRow(Row::fromValues(['Lieux Actifs', $stats['active_lieux']]));
             $writer->addRow(Row::fromValues(['Lieux Inactifs', $stats['inactive_lieux']]));
-            $writer->addRow(Row::fromValues(['Total des Catégories', $stats['total_categories']]));
+            $writer->addRow(Row::fromValues(['Total des CatÃ©gories', $stats['total_categories']]));
             $writer->addRow(Row::fromValues(['Total des Adresses', $stats['total_adresses']]));
             $writer->addRow(Row::fromValues(['Total des Paniers', $stats['total_paniers']]));
-            $writer->addRow(Row::fromValues(['Total des RÃ©servations', $stats['total_reservations']]));
+            $writer->addRow(Row::fromValues(['Total des RÃƒÂ©servations', $stats['total_reservations']]));
             $writer->addRow(Row::fromValues(['Chiffre d\'affaires (DT)', $stats['revenue_total']]));
             $writer->addRow(Row::fromValues(['Prix Moyen (DT)', $stats['avg_price']]));
             
             $writer->addRow(Row::fromValues(['']));
-            $writer->addRow(Row::fromValues(['Derniers Lieux Ajoutés']));
-            $writer->addRow(Row::fromValues(['ID', 'Nom', 'Catégorie', 'Ville', 'Prix', 'Statut']));
+            $writer->addRow(Row::fromValues(['Derniers Lieux AjoutÃ©s']));
+            $writer->addRow(Row::fromValues(['ID', 'Nom', 'CatÃ©gorie', 'Ville', 'Prix', 'Statut']));
             
             foreach ($recentLieux as $l) {
                 $catNom = $l->getCategorie() ? $l->getCategorie()->getNomCategorie() : 'N/A';
@@ -214,3 +229,5 @@ final class HomeController extends AbstractController
         return $response;
     }
 }
+
+

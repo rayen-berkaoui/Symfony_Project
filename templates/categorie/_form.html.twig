@@ -1,16 +1,16 @@
-{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
+﻿{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
     <div class="space-y-4">
         {{ form_row(form.nomCategorie) }}
         
         <div class="relative group/textarea">
             {{ form_row(form.description) }}
             
-            <button type="button" id="btn-dictation" class="absolute bottom-3 right-3 flex items-center justify-center w-10 h-10 bg-dark-200 border border-gold-500/20 rounded-xl text-gold-400 hover:bg-gold-500/20 hover:text-gold-300 transition-all duration-300 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed" title="Dicter la description">
+            <button type="button" id="btn-dictation" data-dictation-btn="1" class="absolute bottom-3 right-3 flex items-center justify-center w-10 h-10 bg-dark-200 border border-gold-500/20 rounded-xl text-gold-400 hover:bg-gold-500/20 hover:text-gold-300 transition-all duration-300 z-10 shadow-[0_2px_10px_rgba(0,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed" title="Dicter la description">
                 <i class="fa-solid fa-microphone text-lg transition-transform group-hover/textarea:scale-110"></i>
-                <div class="absolute inset-0 rounded-xl border-2 border-red-500 opacity-0 scale-110 transition-all pointer-events-none" id="mic-pulse"></div>
+                <div class="absolute inset-0 rounded-xl border-2 border-red-500 opacity-0 scale-110 transition-all pointer-events-none" data-mic-pulse="1"></div>
             </button>
-            <div id="dictation-status" class="absolute -top-6 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 text-gold-400 border border-gold-500/30 opacity-0 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
-                Prêt à écouter...
+            <div id="dictation-status" data-dictation-status="1" class="absolute -top-6 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 text-gold-400 border border-gold-500/30 opacity-0 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+                Pret a ecouter...
             </div>
         </div>
         
@@ -27,128 +27,182 @@
 {{ form_end(form) }}
 
 <script>
-function initSpeechRecognition() {
-    const dictationBtn = document.getElementById('btn-dictation');
-    const descriptionInput = document.getElementById('categorie_description');
-    
-    if (!dictationBtn || !descriptionInput) return;
+(() => {
+    function initSpeechRecognition() {
+        const dictationBtn = document.querySelector('[data-dictation-btn="1"]');
+        const descriptionInput = document.getElementById('categorie_description');
 
-    // Disconnect old listeners effectively by replacing node
-    const newDictationBtn = dictationBtn.cloneNode(true);
-    dictationBtn.parentNode.replaceChild(newDictationBtn, dictationBtn);
-    
-    const pulseLayer = document.getElementById('mic-pulse');
-    const statusToast = document.getElementById('dictation-status');
-    const iconLabel = newDictationBtn.querySelector('i');
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        newDictationBtn.style.display = 'none';
-        console.warn("Speech recognition is not supported in this browser.");
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'fr-FR'; // Assumes the app is mainly French configured
-    recognition.interimResults = true;
-    recognition.continuous = false; // Stop when the user stops talking
-
-    let isRecording = false;
-    let originalText = "";
-
-    function showStatus(text, colorClass = 'text-gold-400') {
-        statusToast.textContent = text;
-        statusToast.className = `absolute -bottom-8 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 border border-current opacity-100 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)] ${colorClass}`;
-        
-        setTimeout(() => {
-            if (!isRecording) {
-                statusToast.classList.replace('opacity-100', 'opacity-0');
-            }
-        }, 2000);
-    }
-
-    newDictationBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (isRecording) {
-            recognition.stop();
-        } else {
-            originalText = descriptionInput.value;
-            recognition.start();
+        if (!dictationBtn || !descriptionInput || dictationBtn.dataset.bound === '1') {
+            return;
         }
-    });
 
-    recognition.onstart = function() {
-        isRecording = true;
-        
-        newDictationBtn.classList.remove('text-gold-400', 'border-gold-500/20');
-        newDictationBtn.classList.add('text-red-500', 'border-red-500/50', 'bg-red-500/10');
-        
-        iconLabel.classList.remove('fa-microphone');
-        iconLabel.classList.add('fa-microphone-lines', 'animate-pulse');
-        
-        pulseLayer.classList.remove('opacity-0', 'scale-110');
-        pulseLayer.classList.add('opacity-100', 'scale-100', 'animate-ping');
-        
-        showStatus('Écoute en cours...', 'text-red-400');
-    };
+        dictationBtn.dataset.bound = '1';
 
-    recognition.onresult = function(event) {
-        let interimTranscript = '';
-        let finalTranscript = '';
-        
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
+        const container = dictationBtn.parentElement;
+        const pulseLayer = container ? container.querySelector('[data-mic-pulse="1"]') : null;
+        const statusToast = container ? container.querySelector('[data-dictation-status="1"]') : null;
+        const iconLabel = dictationBtn.querySelector('i');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            dictationBtn.style.display = 'none';
+            console.warn('Speech recognition is not supported in this browser.');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        let isRecording = false;
+        let shouldKeepListening = false;
+        let baseText = '';
+
+        function separatorFor(text) {
+            if (!text) {
+                return '';
+            }
+
+            return /[\s\n]$/.test(text) ? '' : ' ';
+        }
+
+        function showStatus(text, colorClass) {
+            if (!statusToast) {
+                return;
+            }
+
+            statusToast.textContent = text;
+            statusToast.className = 'absolute -top-6 right-0 text-xs font-semibold px-2 py-1 rounded bg-black/80 border border-current opacity-100 transition-opacity pointer-events-none shadow-[0_4px_15px_rgba(0,0,0,0.5)] ' + colorClass;
+
+            setTimeout(() => {
+                if (!isRecording) {
+                    statusToast.classList.remove('opacity-100');
+                    statusToast.classList.add('opacity-0');
+                }
+            }, 2500);
+        }
+
+        function setRecordingVisuals(active) {
+            isRecording = active;
+
+            dictationBtn.classList.toggle('text-red-500', active);
+            dictationBtn.classList.toggle('border-red-500/50', active);
+            dictationBtn.classList.toggle('bg-red-500/10', active);
+            dictationBtn.classList.toggle('text-gold-400', !active);
+            dictationBtn.classList.toggle('border-gold-500/20', !active);
+
+            if (iconLabel) {
+                iconLabel.classList.toggle('fa-microphone', !active);
+                iconLabel.classList.toggle('fa-microphone-lines', active);
+                iconLabel.classList.toggle('animate-pulse', active);
+            }
+
+            if (pulseLayer) {
+                pulseLayer.classList.toggle('opacity-0', !active);
+                pulseLayer.classList.toggle('scale-110', !active);
+                pulseLayer.classList.toggle('opacity-100', active);
+                pulseLayer.classList.toggle('scale-100', active);
+                pulseLayer.classList.toggle('animate-ping', active);
+            }
+        }
+
+        dictationBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            if (isRecording) {
+                shouldKeepListening = false;
+                recognition.stop();
+                return;
+            }
+
+            baseText = descriptionInput.value;
+            shouldKeepListening = true;
+
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error('Speech recognition start error:', error);
+                shouldKeepListening = false;
+                showStatus('Erreur de demarrage', 'text-red-500');
+            }
+        });
+
+        recognition.onstart = () => {
+            setRecordingVisuals(true);
+            showStatus('Ecoute en cours...', 'text-red-400');
+        };
+
+        recognition.onresult = (event) => {
+            let finalChunk = '';
+            let interimChunk = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcriptPart = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalChunk += transcriptPart;
+                } else {
+                    interimChunk += transcriptPart;
+                }
+            }
+
+            if (finalChunk) {
+                const sep = separatorFor(baseText);
+                baseText += sep + finalChunk.trim();
+            }
+
+            if (interimChunk) {
+                descriptionInput.value = baseText + separatorFor(baseText) + interimChunk.trim();
             } else {
-                interimTranscript += event.results[i][0].transcript;
+                descriptionInput.value = baseText;
             }
-        }
-        
-        // Append spaces intelligently
-        const separator = originalText && !originalText.endsWith(' ') && !originalText.endsWith('\n') ? ' ' : '';
-        
-        if (finalTranscript !== '') {
-            descriptionInput.value = originalText + separator + finalTranscript;
-            originalText = descriptionInput.value; // update base text with finalised piece
-        } else {
-            descriptionInput.value = originalText + separator + interimTranscript;
-        }
-    };
 
-    function stopRecordingVisuals() {
-        isRecording = false;
-        
-        newDictationBtn.classList.add('text-gold-400', 'border-gold-500/20');
-        newDictationBtn.classList.remove('text-red-500', 'border-red-500/50', 'bg-red-500/10');
-        
-        iconLabel.classList.add('fa-microphone');
-        iconLabel.classList.remove('fa-microphone-lines', 'animate-pulse');
-        
-        pulseLayer.classList.add('opacity-0', 'scale-110');
-        pulseLayer.classList.remove('opacity-100', 'scale-100', 'animate-ping');
-        
-        showStatus('Terminé', 'text-green-400');
+            descriptionInput.dispatchEvent(new Event('input', { bubbles: true }));
+            descriptionInput.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+
+        recognition.onend = () => {
+            if (shouldKeepListening) {
+                try {
+                    recognition.start();
+                    return;
+                } catch (error) {
+                    console.error('Speech recognition restart error:', error);
+                    shouldKeepListening = false;
+                }
+            }
+
+            setRecordingVisuals(false);
+            showStatus('Termine', 'text-green-400');
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                shouldKeepListening = false;
+                setRecordingVisuals(false);
+                showStatus('Acces micro refuse', 'text-red-500');
+                return;
+            }
+
+            if (event.error === 'no-speech' && shouldKeepListening) {
+                return;
+            }
+
+            shouldKeepListening = false;
+            setRecordingVisuals(false);
+            showStatus('Erreur micro: ' + event.error, 'text-red-500');
+        };
     }
 
-    recognition.onend = function() {
-        if (isRecording) stopRecordingVisuals();
-    };
+    if (!window.__categorieDictationEventsBound) {
+        document.addEventListener('turbo:load', initSpeechRecognition);
+        document.addEventListener('DOMContentLoaded', initSpeechRecognition);
+        window.__categorieDictationEventsBound = true;
+    }
 
-    recognition.onerror = function(event) {
-        console.error('Speech recognition error:', event.error);
-        if (event.error === 'not-allowed') {
-            showStatus('Accès micro refusé', 'text-red-500');
-        } else {
-            showStatus('Erreur: ' + event.error, 'text-red-500');
-        }
-        stopRecordingVisuals();
-    };
-}
-
-document.addEventListener('turbo:load', initSpeechRecognition);
-document.addEventListener('DOMContentLoaded', initSpeechRecognition);
-
-if (document.readyState !== 'loading') {
     initSpeechRecognition();
-}
+})();
 </script>
+

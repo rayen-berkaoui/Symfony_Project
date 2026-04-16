@@ -16,7 +16,16 @@ class LieuTouristiqueRepository extends ServiceEntityRepository
         parent::__construct($registry, LieuTouristique::class);
     }
 
-    public function searchByQuery(string $query, ?int $categorieId = null, ?string $prixMin = null, ?string $prixMax = null, ?bool $statut = null)
+    public function searchByQuery(
+        string $query,
+        ?int $categorieId = null,
+        ?string $prixMin = null,
+        ?string $prixMax = null,
+        ?bool $statut = null,
+        ?float $aroundLat = null,
+        ?float $aroundLng = null,
+        ?float $aroundRadiusKm = null
+    )
     {
         $qb = $this->createQueryBuilder('l')
             ->leftJoin('l.categorie', 'c')
@@ -41,6 +50,27 @@ class LieuTouristiqueRepository extends ServiceEntityRepository
 
         if ($statut !== null) {
             $qb->andWhere('l.statut = :statut')->setParameter('statut', $statut);
+        }
+
+        if ($aroundLat !== null && $aroundLng !== null && $aroundRadiusKm !== null) {
+            $latDelta = $aroundRadiusKm / 111.0;
+            $cosLat = cos(deg2rad($aroundLat));
+            $safeCosLat = max(0.01, abs($cosLat));
+            $lngDelta = $aroundRadiusKm / (111.0 * $safeCosLat);
+
+            $qb
+                ->andWhere('a.latitude BETWEEN :latMin AND :latMax')
+                ->andWhere('a.longitude BETWEEN :lngMin AND :lngMax')
+                ->setParameter('latMin', $aroundLat - $latDelta)
+                ->setParameter('latMax', $aroundLat + $latDelta)
+                ->setParameter('lngMin', $aroundLng - $lngDelta)
+                ->setParameter('lngMax', $aroundLng + $lngDelta)
+                ->addSelect('(ABS(a.latitude - :aroundLat) + ABS(a.longitude - :aroundLng)) AS HIDDEN distanceScore')
+                ->setParameter('aroundLat', $aroundLat)
+                ->setParameter('aroundLng', $aroundLng)
+                ->addOrderBy('distanceScore', 'ASC');
+        } else {
+            $qb->addOrderBy('l.id', 'DESC');
         }
 
         return $qb;

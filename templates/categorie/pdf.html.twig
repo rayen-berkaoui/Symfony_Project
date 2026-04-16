@@ -1,0 +1,29 @@
+﻿{% extends 'pdf_layout.html.twig' %}
+
+{% block title %}Export PDF - CatÃgories{% endblock %}
+
+{% block body %}
+    <h1 class="title">Liste des CatÃgories</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Date de CrÃation</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for categorie in categories %}
+            <tr>
+                <td>{{ categorie.nomCategorie }}</td>
+                <td>{{ categorie.description }}</td>
+                <td>{{ categorie.dateCreation ? categorie.dateCreation|date('Y-m-d') : '' }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">Aucun enregistrement trouvÃ</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

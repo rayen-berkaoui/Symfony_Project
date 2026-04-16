@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Export PDF{% endblock %}</title>
+    <style>
+        body { 
+            background-color: #0A0A0A; 
+            color: #ffffff; 
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFD700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .logo span {
+            color: #ffffff;
+        }
+        .subtitle {
+            color: #888888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            background-color: #1A1A1A;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th { 
+            text-align: left; 
+            padding: 12px; 
+            color: #0A0A0A; 
+            background-color: #FFD700;
+            font-size: 14px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        td { 
+            padding: 12px; 
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2); 
+            color: #E5E5E5; 
+            font-size: 13px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:nth-child(even) td { 
+            background-color: rgba(255, 215, 0, 0.05); 
+        }
+        .title {
+            color: #FFD700;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666666;
+            font-size: 11px;
+            border-top: 1px solid rgba(255, 215, 0, 0.2);
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">TAB<span>AANY</span></div>
+        <div class="subtitle">Gestion des Lieux Touristiques - Document Officiel</div>
+    </div>
+    
+    <div class="content">
+        {% block body %}{% endblock %}
+    </div>
+
+    <div class="footer">
+        Document gÃnÃrÃ le {{ "now"|date('d/m/Y H:i') }} - Tabaany Administration
+    </div>
+</body>
+</html>

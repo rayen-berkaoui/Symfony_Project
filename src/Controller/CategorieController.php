@@ -40,17 +40,15 @@ final class CategorieController extends AbstractController
     {
         $categories = $categorieRepository->findAll();
 
-        $pdfOptions = new Options();
+                $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('isHtml5ParserEnabled', true);
+        $pdfOptions->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($pdfOptions);
 
-        $html = "<h1>Liste des Catégories</h1>";
-        $html .= "<table border='1' width='100%' cellpadding='5'><tr><th>Nom</th><th>Description</th><th>Date de Création</th></tr>";
-        foreach ($categories as $c) {
-            $dateHtml = $c->getDateCreation() ? $c->getDateCreation()->format('Y-m-d') : '';
-            $html .= "<tr><td>{$c->getNomCategorie()}</td><td>{$c->getDescription()}</td><td>{$dateHtml}</td></tr>";
-        }
-        $html .= "</table>";
+        $html = $this->renderView('categorie/pdf.html.twig', [
+            'categories' => $categories
+        ]);
 
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
@@ -74,7 +72,7 @@ final class CategorieController extends AbstractController
             $entityManager->persist($categorie);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Catégorie créée avec succès.');
+            $this->addFlash('success', 'CatÃ©gorie crÃ©Ã©e avec succÃ¨s.');
 
             return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -105,7 +103,7 @@ final class CategorieController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Catégorie mise à jour avec succès.');
+            $this->addFlash('success', 'CatÃ©gorie mise Ã  jour avec succÃ¨s.');
 
             return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -122,7 +120,7 @@ final class CategorieController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$categorie->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($categorie);
             $entityManager->flush();
-            $this->addFlash('success', 'Catégorie supprimée avec succès.');
+            $this->addFlash('success', 'CatÃ©gorie supprimÃ©e avec succÃ¨s.');
         } else {
             $this->addFlash('error', 'Token CSRF invalide.');
         }
@@ -130,3 +128,4 @@ final class CategorieController extends AbstractController
         return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
     }
 }
+

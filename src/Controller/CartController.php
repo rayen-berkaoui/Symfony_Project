@@ -9,6 +9,7 @@ use App\Form\CheckoutType;
 use App\Repository\LieuTouristiqueRepository;
 use App\Repository\EtablissementRepository;
 use App\Repository\PanierRepository;
+use App\Service\ItineraryPlanner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,6 +32,118 @@ final class CartController extends AbstractController
             'cartItems' => $cartItems,
             'totalPrice' => $totalPrice,
             'itemCount' => $itemCount,
+        ]);
+    }
+
+    #[Route('/itinerary', name: 'app_cart_itinerary', methods: ['GET'])]
+    public function itinerary(
+        Request $request,
+        PanierRepository $panierRepository,
+        ItineraryPlanner $itineraryPlanner
+    ): Response {
+        $sessionId = $request->getSession()->getId();
+        $cartItems = $panierRepository->findBySessionId($sessionId);
+
+        if ($cartItems === []) {
+            $this->addFlash('warning', 'Votre panier est vide. Ajoutez des lieux pour générer un itinéraire.');
+
+            return $this->redirectToRoute('app_cart_index');
+        }
+
+        $startAddress = trim((string) $request->query->get('start_address', ''));
+        $startLat = $this->parseFloatQuery($request->query->get('start_lat'));
+        $startLng = $this->parseFloatQuery($request->query->get('start_lng'));
+
+        if (($startLat === null || $startLng === null) && $startAddress !== '') {
+            $parsedCoordinates = $this->parseCoordinatesInput($startAddress);
+            if ($parsedCoordinates !== null) {
+                $startLat = $parsedCoordinates['lat'];
+                $startLng = $parsedCoordinates['lng'];
+            }
+        }
+
+        $transportMode = strtolower(trim((string) $request->query->get('transport_mode', 'car')));
+        if (!in_array($transportMode, ['car', 'walk'], true)) {
+            $transportMode = 'car';
+        }
+
+        $maxBudget = $this->parseFloatQuery($request->query->get('max_budget'));
+        if ($maxBudget !== null && $maxBudget <= 0.0) {
+            $maxBudget = null;
+        }
+
+        $maxDurationHours = $this->parseFloatQuery($request->query->get('max_duration_hours'));
+        if ($maxDurationHours !== null) {
+            $maxDurationHours = max(1.0, min(16.0, $maxDurationHours));
+        }
+
+        $stops = [];
+        $unplannableItems = [];
+
+        foreach ($cartItems as $item) {
+            $lieu = $item->getLieuTouristique();
+            if ($lieu === null) {
+                $unplannableItems[] = [
+                    'label' => sprintf('Panier #%d', (int) $item->getId()),
+                    'reason' => 'Article sans lieu touristique géolocalisable.',
+                ];
+                continue;
+            }
+
+            $adresse = $lieu->getAdresse();
+            if ($adresse === null || $adresse->getLatitude() === null || $adresse->getLongitude() === null) {
+                $unplannableItems[] = [
+                    'label' => (string) ($lieu->getNom() ?? ('Lieu #' . (string) $lieu->getId())),
+                    'reason' => 'Coordonnées GPS manquantes.',
+                ];
+                continue;
+            }
+
+            $stops[] = [
+                'panierId' => $item->getId(),
+                'lieuId' => $lieu->getId(),
+                'name' => (string) ($lieu->getNom() ?? 'Lieu'),
+                'ville' => (string) ($lieu->getVille() ?? $adresse->getVille() ?? ''),
+                'latitude' => (float) $adresse->getLatitude(),
+                'longitude' => (float) $adresse->getLongitude(),
+                'estimatedPrice' => (float) ($item->getPrixEstime() ?? 0),
+                'visitHours' => $this->estimateVisitHours($item),
+            ];
+        }
+
+        if ($stops === []) {
+            $this->addFlash('warning', 'Aucun lieu du panier ne possède des coordonnées valides pour générer un itinéraire.');
+
+            return $this->redirectToRoute('app_cart_index');
+        }
+
+        $startPoint = null;
+        if ($startLat !== null && $startLng !== null) {
+            $startPoint = [
+                'latitude' => $startLat,
+                'longitude' => $startLng,
+                'label' => $startAddress !== '' ? $startAddress : 'Point de départ',
+            ];
+        }
+
+        $plan = $itineraryPlanner->plan(
+            $stops,
+            $startPoint,
+            $transportMode,
+            $maxBudget,
+            $maxDurationHours
+        );
+
+        return $this->render('cart/itinerary.html.twig', [
+            'cartItems' => $cartItems,
+            'plan' => $plan,
+            'unplannableItems' => $unplannableItems,
+            'startAddress' => $startAddress,
+            'startLat' => $startLat,
+            'startLng' => $startLng,
+            'transportMode' => $transportMode,
+            'maxBudget' => $maxBudget,
+            'maxDurationHours' => $maxDurationHours,
         ]);
     }
 
@@ -268,6 +381,64 @@ final class CartController extends AbstractController
             'etablissement' => $etablissement,
             'form' => $form->createView(),
         ]);
+    }
+
+    private function parseFloatQuery(mixed $value): ?float
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $normalized = str_replace(',', '.', trim((string) $value));
+        if ($normalized === '' || !is_numeric($normalized)) {
+            return null;
+        }
+
+        return (float) $normalized;
+    }
+
+    /**
+     * @return array{lat: float, lng: float}|null
+     */
+    private function parseCoordinatesInput(string $value): ?array
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $patterns = [
+            '/^\s*([+-]?\d+(?:[.,]\d+)?)\s*[,;]\s*([+-]?\d+(?:[.,]\d+)?)\s*$/',
+            '/^\s*([+-]?\d+(?:[.,]\d+)?)\s+([+-]?\d+(?:[.,]\d+)?)\s*$/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $trimmed, $matches) !== 1) {
+                continue;
+            }
+
+            $lat = $this->parseFloatQuery($matches[1]);
+            $lng = $this->parseFloatQuery($matches[2]);
+
+            if ($lat === null || $lng === null) {
+                continue;
+            }
+
+            if ($lat < -90.0 || $lat > 90.0 || $lng < -180.0 || $lng > 180.0) {
+                continue;
+            }
+
+            return ['lat' => $lat, 'lng' => $lng];
+        }
+
+        return null;
+    }
+
+    private function estimateVisitHours(Panier $panier): float
+    {
+        $days = max(1, $panier->getNbJours());
+
+        return min(6.0, 1.0 + (($days - 1) * 0.5));
     }
 }
 
