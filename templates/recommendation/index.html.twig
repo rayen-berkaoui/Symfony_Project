@@ -1,0 +1,66 @@
+<h1>Résultats de recommandation</h1>
+
+<h2>Filtres choisis</h2>
+<ul>
+    <li>Ville : {{ filters.ville ?: 'Non précisée' }}</li>
+    <li>Budget : {{ filters.budget ?: 'Non précisé' }}</li>
+    <li>Type : {{ filters.type ?: 'Non précisé' }}</li>
+    <li>Catégorie : {{ filters.categorie ?: 'Non précisée' }}</li>
+</ul>
+
+<hr>
+
+<h2>Établissements recommandés</h2>
+
+{% set exactEtab = data.recommended_etablissements|filter(e => e.score == 100)|length > 0 %}
+
+{% if not exactEtab %}
+    <p><em>Aucun établissement exact trouvé. Voici les suggestions les plus proches.</em></p>
+{% endif %}
+
+<ul>
+    {% for etab in data.recommended_etablissements %}
+        <li style="margin-bottom: 15px;">
+            <strong>{{ etab.nom }}</strong><br>
+            Ville : {{ etab.ville }}<br>
+            Type : {{ etab.type }}<br>
+            Budget : {{ etab.budget ?: 'Non précisé' }}<br>
+            Score : {{ etab.score }}<br>
+
+            {% if etab.image_name %}
+                <img src="{{ asset('uploads/images/' ~ etab.image_name) }}" alt="{{ etab.nom }}" width="120">
+            {% endif %}
+        </li>
+    {% else %}
+        <li>Aucun établissement trouvé.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h2>Activités recommandées</h2>
+
+{% set exactAct = data.recommended_activites|filter(a => a.score == 100)|length > 0 %}
+
+{% if not exactAct %}
+    <p><em>Aucune activité exacte trouvée. Voici les suggestions les plus proches.</em></p>
+{% endif %}
+
+<ul>
+    {% for act in data.recommended_activites %}
+        <li style="margin-bottom: 15px;">
+            <strong>{{ act.nom }}</strong><br>
+            Ville : {{ act.ville }}<br>
+            Catégorie : {{ act.categorie }}<br>
+            Budget : {{ act.budget ?: 'Non précisé' }}<br>
+            Établissement lié : {{ act.etablissement_nom }}<br>
+            Score : {{ act.score }}<br>
+
+            {% if act.image_name %}
+                <img src="{{ asset('uploads/images/' ~ act.image_name) }}" alt="{{ act.nom }}" width="120">
+            {% endif %}
+        </li>
+    {% else %}
+        <li>Aucune activité trouvée.</li>
+    {% endfor %}
+</ul>

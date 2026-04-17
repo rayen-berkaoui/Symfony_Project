@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Etablissement;
+use App\Service\WeatherService;
+use App\Service\RecommendationService;
 use App\Form\EtablissementType;
 use App\Repository\EtablissementRepository;
 use App\Repository\ActiviteRepository;
@@ -53,7 +55,7 @@ class EtablissementController extends AbstractController
     ];
 
     #[Route('/', name: 'app_etablissement_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
+    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator, RecommendationService $recommendationService): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $type = trim((string) $request->query->get('type', ''));
@@ -116,7 +118,10 @@ class EtablissementController extends AbstractController
             $page = $totalPages;
         }
 
-        $etablissements = $paginator->paginate($qb, $page, $perPage);
+        $etablissements = $paginator->paginate($qb, $page, $perPage, [
+            'sortFieldParameterName' => 'knp_sort', // Change le nom du paramètre KnP pour utiliser notre 'sort' manuellement
+            'sortDirectionParameterName' => 'knp_dir',
+        ]);
         $imageUrls = $this->buildGalleryImageUrls((array) $etablissements->getItems(), $entityManager);
 
         $types = $entityManager
@@ -131,9 +136,21 @@ class EtablissementController extends AbstractController
             ->createQuery('SELECT DISTINCT e.gammePrix FROM App\\Entity\\Etablissement e WHERE e.gammePrix IS NOT NULL ORDER BY e.gammePrix ASC')
             ->getSingleColumnResult();
 
+        // -- RECOMMENDATIONS --
+        $recommendations = [];
+        try {
+            $recData = $recommendationService->getRecommendations($ville ?: null, $gammePrix ?: null, $type ?: null, null);
+            if (isset($recData['recommended_etablissements'])) {
+                $recommendations = $recData['recommended_etablissements'];
+            }
+        } catch (\Exception $e) {
+            // Ignore errors if AI service is down
+        }
+
         return $this->render('etablissement/index.html.twig', [
             'etablissements' => $etablissements,
             'imageUrls' => $imageUrls,
+            'recommendations' => $recommendations,
             'filters' => [
                 'q' => $query,
                 'type' => $type,
@@ -475,11 +492,17 @@ class EtablissementController extends AbstractController
     }
 
     #[Route('/{idEtablissement}', name: 'app_etablissement_show', methods: ['GET'])]
-    public function show(Etablissement $etablissement): Response
+    public function show(Etablissement $etablissement, WeatherService $weatherService): Response
     {
+        $weatherData = null;
+        if ($etablissement->getVille()) {
+            $weatherData = $weatherService->getWeather($etablissement->getVille());
+        }
+
         return $this->render('etablissement/show.html.twig', [
             'etablissement' => $etablissement,
             'coverImageUrl' => $this->buildCoverImageUrl($etablissement),
+            'weather' => $weatherData,
         ]);
     }
 

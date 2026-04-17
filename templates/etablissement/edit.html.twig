@@ -519,9 +519,8 @@
                 </div>
             </div>
 
-            <div class="actions">
+            <div class="actions" style="display: flex; gap: 10px; align-items: center;">
                 <a class="btn-secondary" href="{{ path('app_etablissement_index') }}">Annuler</a>
-                {{ include('etablissement/_delete_form.html.twig') }}
                 <button type="submit" class="btn">Mettre à jour</button>
             </div>
         </div>
@@ -554,6 +553,10 @@
         </aside>
     </div>
     {{ form_end(form) }}
+
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        {{ include('etablissement/_delete_form.html.twig') }}
+    </div>
 </div>
 
 <script>

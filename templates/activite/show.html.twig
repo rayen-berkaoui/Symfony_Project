@@ -226,9 +226,7 @@
 
                 <div class="actions">
                     <a class="btn" href="{{ path('app_activite_index') }}">Retour</a>
-                    <a class="btn primary" href="{{ path('app_activite_edit', {'idActivite': activite.idActivite}) }}">Modifier</a>
                     <a class="btn" style="background-color: #e76f51; color: white;" href="{{ path('app_activite_export_pdf', {'idActivite': activite.idActivite}) }}">PDF</a>
-                    {{ include('activite/_delete_form.html.twig') }}
                 </div>
             </div>
         </section>
@@ -243,6 +241,21 @@
                     <div class="summary-item"><span>Statut</span><strong>{{ activite.statut|default('-')|upper }}</strong></div>
                 </div>
             </div>
+
+            {% if weather %}
+            <div class="section">
+                <h3>Météo Actuelle à {{ activite.etablissement.ville }}</h3>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <img src="{{ weather.icon }}" alt="Météo actuelle" style="width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--accent);">{{ weather.temp }}°C</div>
+                </div>
+                <div class="summary-list">
+                    <div class="summary-item"><span>Description</span><strong style="text-transform: capitalize;">{{ weather.description|default('-') }}</strong></div>
+                    <div class="summary-item"><span>Humidité</span><strong>{{ weather.humidity }} %</strong></div>
+                    <div class="summary-item"><span>Vent</span><strong>{{ weather.wind }} m/s</strong></div>
+                </div>
+            </div>
+            {% endif %}
         </aside>
     </div>
 </div>

@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Activite;
+use App\Service\WeatherService;
+use App\Service\RecommendationService;
 use App\Form\ActiviteType;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -23,7 +25,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 class ActiviteController extends AbstractController
 {
     #[Route('/', name: 'app_activite_index', methods: ['GET'])]
-    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
+    public function index(Request $request, EntityManagerInterface $entityManager, PaginatorInterface $paginator, RecommendationService $recommendationService): Response
     {
         $query = trim((string) $request->query->get('q', ''));
         $statut = trim((string) $request->query->get('statut', ''));
@@ -65,16 +67,32 @@ class ActiviteController extends AbstractController
             $page = $totalPages;
         }
 
-        $activites = $paginator->paginate($qb, $page, $perPage);
+        $activites = $paginator->paginate($qb, $page, $perPage, [
+            'sortFieldParameterName' => 'knp_sort',
+            'sortDirectionParameterName' => 'knp_dir',
+        ]);
         $imageUrls = $this->buildGalleryImageUrls((array) $activites->getItems(), $entityManager);
 
         $categories = $entityManager
             ->createQuery('SELECT DISTINCT a.categorie FROM App\\Entity\\Activite a WHERE a.categorie IS NOT NULL ORDER BY a.categorie ASC')
             ->getSingleColumnResult();
 
+        // -- RECOMMENDATIONS --
+        // Use generic parameter mappings for the recommendation API
+        $recommendations = [];
+        try {
+            $recData = $recommendationService->getRecommendations(null, null, null, $categorie ?: null);
+            if (isset($recData['recommended_activites'])) {
+                $recommendations = $recData['recommended_activites'];
+            }
+        } catch (\Exception $e) {
+            // Ignore errors if AI service is down
+        }
+
         return $this->render('activite/index.html.twig', [
             'activites' => $activites,
             'imageUrls' => $imageUrls,
+            'recommendations' => $recommendations,
             'filters' => [
                 'q' => $query,
                 'statut' => $statut,
@@ -425,11 +443,17 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/{idActivite}', name: 'app_activite_show', methods: ['GET'])]
-    public function show(Activite $activite): Response
+    public function show(Activite $activite, WeatherService $weatherService): Response
     {
+        $weatherData = null;
+        if ($activite->getEtablissement() && $activite->getEtablissement()->getVille()) {
+            $weatherData = $weatherService->getWeather($activite->getEtablissement()->getVille());
+        }
+
         return $this->render('activite/show.html.twig', [
             'activite' => $activite,
             'coverImageUrl' => $this->buildCoverImageUrl($activite),
+            'weather' => $weatherData,
         ]);
     }
 
