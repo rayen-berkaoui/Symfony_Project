@@ -1,36 +1,134 @@
 {% extends 'base.html.twig' %}
+{% set hide_topbar = true %}
 
-{% block title %}Inscription{% endblock %}
+{% block title %}Inscription - Tabaani{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/auth-premium.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script defer src="{{ asset('auth-premium.js') }}"></script>
+{% endblock %}
 
 {% block body %}
-<div class="container auth">
-    <div class="auth-card">
-        <h1 class="gradient-text">Inscription</h1>
-        <p class="muted">Renseignez vos informations</p>
+<div class="auth-page auth-page-register" data-auth-page style="--auth-bg: url('{{ asset('images/tabaani-auth-bg.jpg') }}');">
+    <aside class="auth-visual auth-split-left" data-auth-visual>
+        <div class="auth-ornaments" aria-hidden="true">
+            <span class="auth-orb one"></span>
+            <span class="auth-orb two"></span>
+            <span class="auth-orb three"></span>
+        </div>
 
-        {{ form_start(registrationForm, { attr: { class: 'form js-validate', novalidate: 'novalidate' } }) }}
-            <div class="form-grid">
-                {{ form_row(registrationForm.nom) }}
-                {{ form_row(registrationForm.prenom) }}
+        <div class="auth-visual-content">
+            <div class="auth-brand-wrap">
+                <strong class="auth-brand-wordmark">Tabaani</strong>
             </div>
-            {{ form_row(registrationForm.email) }}
-            {{ form_row(registrationForm.numTel) }}
-            {% set passwordId = registrationForm.plainPassword.vars.id %}
-            <div class="form-row">
-                {{ form_label(registrationForm.plainPassword) }}
-                <div class="password-field">
-                    {{ form_widget(registrationForm.plainPassword, {attr: {'data-password-strength': 'true'}}) }}
-                </div>
-                <div class="password-strength-bar" id="password-strength-{{ passwordId }}" style="display: none;">
-                    <div class="strength-indicator"></div>
-                    <div class="strength-text"></div>
-                </div>
-                {{ form_errors(registrationForm.plainPassword) }}
-            </div>
-            <button type="submit" class="btn solid">Creer le compte</button>
-        {{ form_end(registrationForm) }}
 
-        <p class="muted small">Deja un compte? <a href="{{ path('app_login') }}">Se connecter</a></p>
-    </div>
+            <div class="auth-hero-badge">Build your travel profile</div>
+
+            <h1 class="auth-hero-title">
+                <span>Turn inspiration into your next unforgettable journey.</span>
+            </h1>
+
+            <p class="auth-hero-copy">
+                Create your Tabaani account and start saving dream destinations, exploring popular places, and
+                preparing a travel experience that feels premium from the first click.
+            </p>
+
+            <div class="auth-hero-stat-row">
+                <div class="auth-hero-stat">Save favorite escapes</div>
+                <div class="auth-hero-stat">Plan smarter adventures</div>
+                <div class="auth-hero-stat">Join the travel community</div>
+            </div>
+        </div>
+    </aside>
+
+    <section class="auth-panel auth-split-right">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h2 class="auth-page-title">Inscription</h2>
+                <p class="auth-page-subtitle">Create your account in a clean, smooth, and travel-first experience.</p>
+            </div>
+
+            {{ form_start(registrationForm, { attr: { class: 'auth-form js-validate', novalidate: 'novalidate', 'data-auth-form': 'signup' } }) }}
+                <div class="auth-form-grid">
+                    <div class="auth-field form-row">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
+                            </svg>
+                        </span>
+                        {{ form_widget(registrationForm.nom, { attr: { placeholder: ' ', class: 'auth-input' } }) }}
+                        {{ form_label(registrationForm.nom, null, { label_attr: { class: 'auth-label' } }) }}
+                        {{ form_errors(registrationForm.nom) }}
+                    </div>
+
+                    <div class="auth-field form-row">
+                        <span class="field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
+                            </svg>
+                        </span>
+                        {{ form_widget(registrationForm.prenom, { attr: { placeholder: ' ', class: 'auth-input' } }) }}
+                        {{ form_label(registrationForm.prenom, null, { label_attr: { class: 'auth-label' } }) }}
+                        {{ form_errors(registrationForm.prenom) }}
+                    </div>
+                </div>
+
+                <div class="auth-field form-row">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2Z" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    {{ form_widget(registrationForm.email, { attr: { placeholder: ' ', class: 'auth-input' } }) }}
+                    {{ form_label(registrationForm.email, null, { label_attr: { class: 'auth-label' } }) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="auth-field">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.21 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.72c.13.99.35 1.95.7 2.84a2 2 0 0 1-.45 2.11L8 9.92a16 16 0 0 0 6 6l1.25-1.25a2 2 0 0 1 2.11-.45c.89.35 1.85.57 2.84.7a2 2 0 0 1 1.8 2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    {{ form_widget(registrationForm.numTel, { attr: { placeholder: ' ', class: 'auth-input' } }) }}
+                    {{ form_label(registrationForm.numTel, null, { label_attr: { class: 'auth-label' } }) }}
+                    {{ form_errors(registrationForm.numTel) }}
+                </div>
+
+                <div class="auth-field form-row auth-password">
+                    <span class="field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="11" width="18" height="10" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <div class="password-field auth-input-wrap">
+                        {{ form_widget(registrationForm.plainPassword, { attr: { placeholder: ' ', class: 'auth-input', 'data-password-strength': 'true' } }) }}
+                        {{ form_label(registrationForm.plainPassword, null, { label_attr: { class: 'auth-label' } }) }}
+                    </div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+
+                <div class="auth-actions">
+                    <button type="submit" class="auth-submit" data-auth-submit>Creer le compte</button>
+                </div>
+            {{ form_end(registrationForm) }}
+
+            <div class="auth-footer">
+                <span>Deja un compte ?</span>
+                <a href="{{ path('app_login') }}" class="auth-switch-link" data-auth-switch>
+                    Se connecter <span class="arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}

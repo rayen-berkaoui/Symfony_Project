@@ -84,6 +84,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'language', type: 'string', length: 10, nullable: true)]
     private ?string $language = 'fr';
 
+    #[ORM\Column(name: 'oauth_provider', type: 'string', length: 20, nullable: true)]
+    private ?string $oauthProvider = null;
+
+    #[ORM\Column(name: 'oauth_id', type: 'string', length: 191, nullable: true)]
+    private ?string $oauthId = null;
+
+    #[ORM\Column(name: 'needs_phone_update', type: 'boolean', options: ['default' => false])]
+    private bool $needsPhoneUpdate = false;
+
     public function __construct()
     {
         if ($this->dateCreation === null) {
@@ -366,6 +375,42 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLanguage(?string $language): static
     {
         $this->language = $language;
+
+        return $this;
+    }
+
+    public function getOauthProvider(): ?string
+    {
+        return $this->oauthProvider;
+    }
+
+    public function setOauthProvider(?string $oauthProvider): static
+    {
+        $this->oauthProvider = $oauthProvider;
+
+        return $this;
+    }
+
+    public function getOauthId(): ?string
+    {
+        return $this->oauthId;
+    }
+
+    public function setOauthId(?string $oauthId): static
+    {
+        $this->oauthId = $oauthId;
+
+        return $this;
+    }
+
+    public function needsPhoneUpdate(): bool
+    {
+        return $this->needsPhoneUpdate;
+    }
+
+    public function setNeedsPhoneUpdate(bool $needsPhoneUpdate): static
+    {
+        $this->needsPhoneUpdate = $needsPhoneUpdate;
 
         return $this;
     }

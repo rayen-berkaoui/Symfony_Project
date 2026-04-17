@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Form\RegistrationFormType;
 use App\Repository\RoleRepository;
+use App\Repository\UtilisateurRepository;
 use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,7 +19,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class AuthController extends AbstractController
 {
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, UtilisateurRepository $utilisateurRepository): Response
     {
         if ($this->getUser()) {
             if ($this->isGranted('ROLE_ADMIN')) {
@@ -26,10 +28,33 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
+        $lastUsername = $authenticationUtils->getLastUsername();
+        $requiresTotp = false;
+
+        if ($lastUsername !== '') {
+            $user = $utilisateurRepository->findByEmailOrNumTel($lastUsername);
+            $requiresTotp = $user instanceof Utilisateur && $user->isTotpEnabled() === true;
+        }
+
         return $this->render('auth/login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
+            'last_username' => $lastUsername,
             'error' => $authenticationUtils->getLastAuthenticationError(),
+            'requires_totp' => $requiresTotp,
         ]);
+    }
+
+    #[Route('/login/totp-check', name: 'app_login_totp_check', methods: ['POST'])]
+    public function checkTotp(Request $request, UtilisateurRepository $utilisateurRepository): JsonResponse
+    {
+        $identifier = trim((string) $request->request->get('identifier', ''));
+        $requiresTotp = false;
+
+        if ($identifier !== '') {
+            $user = $utilisateurRepository->findByEmailOrNumTel($identifier);
+            $requiresTotp = $user instanceof Utilisateur && $user->isTotpEnabled() === true;
+        }
+
+        return new JsonResponse(['requiresTotp' => $requiresTotp]);
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['GET'])]

@@ -50,4 +50,15 @@ class UtilisateurRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findOneByOauthAccount(string $provider, string $oauthId): ?Utilisateur
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.oauthProvider = :provider')
+            ->andWhere('u.oauthId = :oauthId')
+            ->setParameter('provider', strtolower($provider))
+            ->setParameter('oauthId', $oauthId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

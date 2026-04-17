@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use Doctrine\DBAL\Exception as DbalException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,12 +18,19 @@ class ProfileController extends AbstractController
     {
         $user = $this->getUser();
 
+        if ($user instanceof Utilisateur && $request->isMethod('GET') && $user->needsPhoneUpdate()) {
+            $this->addFlash('warning', 'Veuillez renseigner votre vrai numero de telephone pour finaliser votre compte.');
+        }
+
         if ($request->isMethod('POST') && $user instanceof Utilisateur) {
             if ($this->isCsrfTokenValid('profile_update', (string) $request->request->get('_token'))) {
                 $nom = trim((string) $request->request->get('nom', $user->getNom() ?? ''));
                 $prenom = trim((string) $request->request->get('prenom', $user->getPrenom() ?? ''));
                 $email = trim((string) $request->request->get('email', $user->getEmail() ?? ''));
                 $numTel = trim((string) $request->request->get('num_tel', $user->getNumTel() ?? ''));
+                $totpAction = $request->request->get('totp_action');
+                $totpWasEnabled = $user->isTotpEnabled() === true;
+                $openTotpModal = false;
 
                 if ($nom !== '') {
                     $user->setNom($nom);
@@ -36,8 +44,13 @@ class ProfileController extends AbstractController
                     $user->setEmail($email);
                 }
 
-                if ($numTel !== '' && ctype_digit($numTel)) {
-                    $user->setNumTel((int) $numTel);
+                if ($numTel !== '' && ctype_digit($numTel) && strlen($numTel) === 8) {
+                    $user->setNumTel($numTel);
+                    $user->setNeedsPhoneUpdate(false);
+                } elseif ($user->needsPhoneUpdate()) {
+                    $this->addFlash('error', 'Le numero de telephone doit contenir exactement 8 chiffres.');
+
+                    return $this->redirectToRoute('app_profile', ['phone_required' => 1]);
                 }
 
                 $uploadedFile = $request->files->get('profile_picture');
@@ -54,7 +67,34 @@ class ProfileController extends AbstractController
                     }
                 }
 
-                $entityManager->flush();
+                if ($totpAction === 'enable') {
+                    if ($user->getTotpSecret() === null || $user->getTotpSecret() === '') {
+                        $user->setTotpSecret($this->generateTotpSecret());
+                    }
+
+                    $user->setTotpEnabled(true);
+
+                    if (!$totpWasEnabled) {
+                        $openTotpModal = true;
+                        $this->addFlash('success', 'La double authentification a été activée.');
+                    }
+                } elseif ($totpAction === 'disable' && $totpWasEnabled) {
+                    $user->setTotpEnabled(false);
+                    $user->setTotpSecret(null);
+                    $this->addFlash('success', 'La double authentification a été désactivée.');
+                }
+
+                try {
+                    $entityManager->flush();
+                } catch (DbalException $exception) {
+                    $this->addFlash('error', 'Database connection lost while saving. Please retry in a few seconds.');
+
+                    return $this->redirectToRoute('app_profile', ['phone_required' => $user->needsPhoneUpdate() ? 1 : 0]);
+                }
+            }
+
+            if ($openTotpModal) {
+                return $this->redirectToRoute('app_profile', ['show_2fa' => 1]);
             }
 
             return $this->redirectToRoute('app_profile');
@@ -82,6 +122,19 @@ class ProfileController extends AbstractController
         $this->container->get('security.token_storage')->setToken(null);
         $request->getSession()->invalidate();
 
-        return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_home')]);
+        return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_login')]);
+    }
+
+    private function generateTotpSecret(int $length = 32): string
+    {
+        $secret = '';
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $alphabetLength = strlen($alphabet);
+
+        for ($index = 0; $index < $length; $index++) {
+            $secret .= $alphabet[random_int(0, $alphabetLength - 1)];
+        }
+
+        return $secret;
     }
 }

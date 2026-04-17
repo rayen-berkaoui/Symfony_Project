@@ -133,6 +133,9 @@
 
     .admin-main {
         padding: 2rem;
+        max-width: 1700px;
+        margin: 0 auto;
+        width: 100%;
     }
 
     .hero {
@@ -197,9 +200,9 @@
     }
 
     .hero-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.9rem;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
         margin-top: 1.5rem;
     }
 
@@ -208,10 +211,33 @@
         align-items: center;
         gap: 0.55rem;
         padding: 0.8rem 1rem;
+        margin-top: 1rem;
         border-radius: 999px;
         background: rgba(15, 23, 42, 0.04);
         color: #0f172a;
         font-weight: 600;
+    }
+
+    .hero-metric {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.24);
+        background: rgba(255, 255, 255, 0.75);
+        padding: 0.85rem 0.95rem;
+        display: grid;
+        gap: 0.2rem;
+    }
+
+    .hero-metric strong {
+        font-size: 1.1rem;
+        color: #020617;
+    }
+
+    .hero-metric span {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
     }
 
     .hero-actions {
@@ -254,7 +280,7 @@
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
@@ -295,9 +321,82 @@
     .stat-card.accent-slate { border-top: 4px solid #334155; }
     .stat-card.accent-cyan { border-top: 4px solid #06b6d4; }
 
+    .power-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .power-card {
+        padding: 1.2rem;
+        border-radius: 1.25rem;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
+    }
+
+    .power-card h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: #0f172a;
+    }
+
+    .power-card p {
+        margin: 0.5rem 0 1rem;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .power-meta {
+        display: grid;
+        gap: 0.45rem;
+    }
+
+    .power-meta span {
+        font-size: 0.82rem;
+        color: #475569;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .power-meta strong {
+        color: #0f172a;
+        font-size: 1rem;
+    }
+
+    .power-link {
+        margin-top: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1d4ed8;
+        text-decoration: none;
+    }
+
+    .power-link:hover {
+        color: #1e40af;
+    }
+
+    .power-card.accent-admin {
+        border-top: 4px solid #2563eb;
+    }
+
+    .power-card.accent-security {
+        border-top: 4px solid #0ea5e9;
+    }
+
+    .power-card.accent-governance {
+        border-top: 4px solid #f97316;
+    }
+
     .content-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+        grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
         gap: 1.5rem;
         align-items: start;
     }
@@ -311,6 +410,10 @@
 
     .panel + .panel {
         margin-top: 1.5rem;
+    }
+
+    .quick-controls-panel {
+        margin-bottom: 1.5rem;
     }
 
     .panel-header {
@@ -527,27 +630,36 @@
         background: linear-gradient(90deg, #38bdf8 0%, #2563eb 100%);
     }
 
-    .subtle-grid {
+    .security-review-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1rem;
-        margin-top: 1rem;
     }
 
-    .signal-card {
+    .review-card {
         padding: 1rem;
         border-radius: 1rem;
         background: rgba(15, 23, 42, 0.03);
         border: 1px solid rgba(148, 163, 184, 0.16);
+        display: grid;
+        gap: 0.3rem;
     }
 
-    .signal-card strong {
-        display: block;
-        font-size: 1.1rem;
-        margin-bottom: 0.15rem;
+    .review-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.72rem;
+        color: #64748b;
+        font-weight: 700;
     }
 
-    .signal-card span {
+    .review-value {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .review-meta {
         color: #64748b;
         font-size: 0.88rem;
     }
@@ -634,13 +746,14 @@
     }
 
     @media (max-width: 1280px) {
-        .stats-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-
         .hero,
         .content-grid {
             grid-template-columns: 1fr;
+        }
+
+        .hero-meta,
+        .power-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 
@@ -655,7 +768,12 @@
         }
 
         .stats-grid,
-        .subtle-grid {
+        .security-review-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-meta,
+        .power-grid {
             grid-template-columns: 1fr;
         }
 
@@ -718,12 +836,20 @@
             <div class="sidebar-metric">
                 <small>Total loyalty points</small>
                 <strong>{{ totalLoyaltyPoints }}</strong>
-                <small>Average face confidence: {{ averageFaceConfidence|number_format(2) }}</small>
             </div>
         </div>
     </aside>
 
     <main class="admin-main">
+        {% set sevenDaySignups = 0 %}
+        {% for point in registrationTrend %}
+            {% set sevenDaySignups = sevenDaySignups + point.count %}
+        {% endfor %}
+        {% set activeRate = totalUsers > 0 ? ((activeUsers / totalUsers) * 100)|round(1) : 0 %}
+        {% set blockedRate = totalUsers > 0 ? ((blockedUsers / totalUsers) * 100)|round(1) : 0 %}
+        {% set mfaRate = totalUsers > 0 ? ((totpEnabledUsers / totalUsers) * 100)|round(1) : 0 %}
+        {% set adminCoverage = totalUsers > 0 ? ((adminUsers / totalUsers) * 100)|round(1) : 0 %}
+
         <section class="hero">
             <div class="hero-panel">
                 <span class="eyebrow">Admin Control Center</span>
@@ -732,18 +858,30 @@
                     Welcome back, {{ app.user.prenom ?? 'Admin' }}. Monitor account growth, review security coverage,
                     and move users between active, pending, and blocked states without leaving the dashboard.
                 </p>
+                <div class="hero-pill">Access level: {{ app.user.role.nom ?? 'ADMIN' }}</div>
 
                 <div class="hero-meta">
-                    <span class="hero-pill">{{ totalUsers }} total accounts</span>
-                    <span class="hero-pill">{{ adminUsers }} admin operators</span>
-                    <span class="hero-pill">{{ totpEnabledUsers }} TOTP enabled</span>
-                    <span class="hero-pill">{{ profilePictureUsers }} profiles with photos</span>
+                    <div class="hero-metric">
+                        <strong>{{ activeRate }}%</strong>
+                        <span>active user base</span>
+                    </div>
+                    <div class="hero-metric">
+                        <strong>{{ mfaRate }}%</strong>
+                        <span>MFA adoption</span>
+                    </div>
+                    <div class="hero-metric">
+                        <strong>{{ sevenDaySignups }}</strong>
+                        <span>weekly signups</span>
+                    </div>
                 </div>
             </div>
 
             <div class="hero-actions">
                 {% for action in controlCenter %}
-                    <a class="hero-action" href="{{ path(action.route) }}">
+                    {% set actionHref = action.title == 'Security review'
+                        ? path('app_admin_dashboard') ~ '#security-review'
+                        : path(action.route) %}
+                    <a class="hero-action" href="{{ actionHref }}">
                         <strong>{{ action.title }}</strong>
                         <span>{{ action.description }}</span>
                     </a>
@@ -783,10 +921,100 @@
             </article>
 
             <article class="stat-card accent-cyan">
-                <h3>Security coverage</h3>
-                <span class="stat-value">{{ totpEnabledUsers }}</span>
-                <p>Users who have TOTP enabled for stronger sign-in protection.</p>
+                <h3>7-day signups</h3>
+                <span class="stat-value">{{ sevenDaySignups }}</span>
+                <p>New accounts created during the last week.</p>
             </article>
+        </section>
+
+        <section class="power-grid">
+            <article class="power-card accent-admin">
+                <h3>Admin authority</h3>
+                <p>Keep privileged access measurable and controlled across your organization.</p>
+                <div class="power-meta">
+                    <span><strong>{{ adminUsers }}</strong> elevated accounts</span>
+                    <span><strong>{{ adminCoverage }}%</strong> authority coverage</span>
+                    <span><strong>{{ app.user.role.nom ?? 'ADMIN' }}</strong> your access tier</span>
+                </div>
+            </article>
+
+            <article class="power-card accent-security">
+                <h3>Security command</h3>
+                <p>Monitor identity readiness and strengthen authentication posture daily.</p>
+                <div class="power-meta">
+                    <span><strong>{{ mfaRate }}%</strong> MFA adoption</span>
+                    <span><strong>{{ profilePictureUsers }}</strong> verified profile photos</span>
+                    <span><strong>{{ faceReadyUsers }}</strong> face-ready accounts</span>
+                </div>
+            </article>
+
+            <article class="power-card accent-governance">
+                <h3>Governance queue</h3>
+                <p>Resolve pending reviews and blocked users without leaving the command view.</p>
+                <div class="power-meta">
+                    <span><strong>{{ pendingUsers }}</strong> pending approvals</span>
+                    <span><strong>{{ blockedUsers }}</strong> restricted accounts</span>
+                    <span><strong>{{ blockedRate }}%</strong> blocked rate</span>
+                </div>
+                <a class="power-link" href="{{ path('app_admin_users') }}">Open user governance</a>
+            </article>
+        </section>
+
+        <section class="panel quick-controls-panel">
+            <div class="panel-header">
+                <div>
+                    <h3>Quick account controls</h3>
+                    <p>Change user roles or status directly from the dashboard.</p>
+                </div>
+            </div>
+
+            <div class="quick-grid">
+                {% for user in recentUsers|slice(0, 4) %}
+                    <div class="quick-user">
+                        <div class="user-badge user-avatar">
+                            {% if user.profilePicture %}
+                                <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
+                            {% else %}
+                                {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <div class="quick-user-head">
+                                <div>
+                                    <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
+                                    <span class="user-email">{{ user.email }}</span>
+                                </div>
+                                <span class="status-badge {{ user.statut|lower }}">{{ user.statut }}</span>
+                            </div>
+
+                            <div class="quick-user-actions">
+                                <a href="{{ path('app_admin_user_view', {id: user.id}) }}" class="mini-link">Open profile</a>
+
+                                <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="mini-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('user_status_' ~ user.id) }}">
+                                    <input type="hidden" name="status" value="{{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? constant('App\\Entity\\Utilisateur::STATUT_ACTIF') : constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') }}">
+                                    <button type="submit" class="mini-button {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'primary' : 'danger' }}" {% if user.id == app.user.id %}disabled{% endif %}>
+                                        {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'Reactivate' : 'Block' }}
+                                    </button>
+                                </form>
+
+                                <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="mini-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('user_role_' ~ user.id) }}">
+                                    <select name="role_id" class="mini-select" {% if user.id == app.user.id %}disabled{% endif %}>
+                                        {% for role in availableRoles %}
+                                            <option value="{{ role.id }}" {{ user.role and user.role.id == role.id ? 'selected' : '' }}>{{ role.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="mini-button neutral" {% if user.id == app.user.id %}disabled{% endif %}>Update role</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="muted-copy">No accounts available for quick actions.</p>
+                {% endfor %}
+            </div>
         </section>
 
         <section class="content-grid">
@@ -816,38 +1044,6 @@
                     </div>
                 </div>
 
-                <div class="panel">
-                    <div class="panel-header">
-                        <div>
-                            <h3>Latest accounts</h3>
-                            <p>The newest users entering the platform.</p>
-                        </div>
-                        <a href="{{ path('app_admin_users') }}" class="btn-admin secondary">View all</a>
-                    </div>
-
-                    <div>
-                        {% for user in recentUsers %}
-                            <div class="latest-user">
-                                <div class="user-badge user-avatar">
-                                    {% if user.profilePicture %}
-                                        <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
-                                    {% else %}
-                                        {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
-                                    {% endif %}
-                                </div>
-
-                                <div class="user-info">
-                                    <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
-                                    <span class="user-email">{{ user.email }}</span>
-                                </div>
-
-                                <span class="status-badge {{ user.statut|lower }}">{{ user.statut }}</span>
-                            </div>
-                        {% else %}
-                            <p class="muted-copy">No users available yet.</p>
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
 
             <div>
@@ -884,88 +1080,30 @@
                     {% endfor %}
                 </div>
 
-                <div class="panel">
+                <div class="panel" id="security-review">
                     <div class="panel-header">
                         <div>
-                            <h3>Security signals</h3>
-                            <p>Operational data that helps you monitor account readiness.</p>
+                            <h3>Security review</h3>
+                            <p>Key readiness signals across authentication and identity.</p>
                         </div>
                     </div>
 
-                    <div class="subtle-grid">
-                        <div class="signal-card">
-                            <strong>{{ profilePictureUsers }}</strong>
-                            <span>Profiles with uploaded photos</span>
+                    <div class="security-review-grid">
+                        <div class="review-card">
+                            <span class="review-label">2FA coverage</span>
+                            <span class="review-value">{{ totpEnabledUsers }}</span>
+                            <span class="review-meta">Accounts with TOTP enabled</span>
                         </div>
-                        <div class="signal-card">
-                            <strong>{{ faceReadyUsers }}</strong>
-                            <span>Users ready for face login</span>
+                        <div class="review-card">
+                            <span class="review-label">Profile readiness</span>
+                            <span class="review-value">{{ profilePictureUsers }}</span>
+                            <span class="review-meta">Users with profile photos</span>
                         </div>
-                        <div class="signal-card">
-                            <strong>{{ averageFaceConfidence|number_format(2) }}</strong>
-                            <span>Average face confidence</span>
+                        <div class="review-card">
+                            <span class="review-label">Latest signup</span>
+                            <span class="review-value">{{ latestUser ? latestUser.dateCreation|date('d M') : 'N/A' }}</span>
+                            <span class="review-meta">Most recent account created</span>
                         </div>
-                        <div class="signal-card">
-                            <strong>{{ latestUser ? latestUser.dateCreation|date('d M') : 'N/A' }}</strong>
-                            <span>Latest account creation</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header">
-                        <div>
-                            <h3>Quick account controls</h3>
-                            <p>Change user roles or status directly from the dashboard.</p>
-                        </div>
-                    </div>
-
-                    <div class="quick-grid">
-                        {% for user in recentUsers|slice(0, 4) %}
-                            <div class="quick-user">
-                                <div class="user-badge user-avatar">
-                                    {% if user.profilePicture %}
-                                        <img src="{{ user.profilePicture }}" alt="{{ user.nom }} {{ user.prenom }}">
-                                    {% else %}
-                                        {{ (user.prenom|default('U')|first) ~ (user.nom|default('')|first) }}
-                                    {% endif %}
-                                </div>
-
-                                <div>
-                                    <div class="quick-user-head">
-                                        <div>
-                                            <span class="user-name">{{ user.nom }} {{ user.prenom }}</span>
-                                            <span class="user-email">{{ user.email }}</span>
-                                        </div>
-                                        <span class="status-badge {{ user.statut|lower }}">{{ user.statut }}</span>
-                                    </div>
-
-                                    <div class="quick-user-actions">
-                                        <a href="{{ path('app_admin_user_view', {id: user.id}) }}" class="mini-link">Open profile</a>
-
-                                        <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="mini-form">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('user_status_' ~ user.id) }}">
-                                            <input type="hidden" name="status" value="{{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? constant('App\\Entity\\Utilisateur::STATUT_ACTIF') : constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') }}">
-                                            <button type="submit" class="mini-button {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'primary' : 'danger' }}" {% if user.id == app.user.id %}disabled{% endif %}>
-                                                {{ user.statut == constant('App\\Entity\\Utilisateur::STATUT_BLOQUE') ? 'Reactivate' : 'Block' }}
-                                            </button>
-                                        </form>
-
-                                        <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="mini-form">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('user_role_' ~ user.id) }}">
-                                            <select name="role_id" class="mini-select" {% if user.id == app.user.id %}disabled{% endif %}>
-                                                {% for role in availableRoles %}
-                                                    <option value="{{ role.id }}" {{ user.role and user.role.id == role.id ? 'selected' : '' }}>{{ role.nom }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button type="submit" class="mini-button neutral" {% if user.id == app.user.id %}disabled{% endif %}>Update role</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <p class="muted-copy">No accounts available for quick actions.</p>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
