@@ -1,0 +1,214 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block admin_title %}Dashboard{% endblock %}
+
+{% block admin_body %}
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="admin-page-head admin-page-head--dashboard admin-page-head--split">
+        <div>
+            <h1 class="admin-page-title admin-page-title--xl">Tableau de bord</h1>
+            <p class="admin-lead admin-lead--tight">Dernière mise à jour : {{ 'now'|date('d/m/Y H:i') }}</p>
+        </div>
+        <a href="{{ path('app_admin_export_pdf_dashboard') }}" class="btn btn-primary btn--sm">Exporter PDF (rapport)</a>
+    </div>
+
+    <ul class="admin-kpi-row" aria-label="Indicateurs clés">
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ post_count }}</span><span class="admin-kpi__lbl">Publications</span></li>
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ comment_count }}</span><span class="admin-kpi__lbl">Commentaires</span></li>
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ hashtag_distinct_count }}</span><span class="admin-kpi__lbl">Hashtags</span></li>
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ share_count }}</span><span class="admin-kpi__lbl">Partages</span></li>
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ signalement_pending }}</span><span class="admin-kpi__lbl">Signalements</span></li>
+        <li class="admin-kpi"><span class="admin-kpi__val">{{ ban_active_count }}</span><span class="admin-kpi__lbl">Bloqués (actifs)</span></li>
+    </ul>
+
+    <div class="admin-chart-grid admin-chart-grid--2 admin-section">
+        <section class="admin-panel-chart" aria-labelledby="chart-act-title">
+            <h2 id="chart-act-title" class="admin-panel-chart__title">Activité des 30 derniers jours</h2>
+            <div class="admin-chart-wrap"><canvas id="chart-activity" height="220"></canvas></div>
+        </section>
+        <section class="admin-panel-chart" aria-labelledby="chart-react-title">
+            <h2 id="chart-react-title" class="admin-panel-chart__title">Répartition des réactions</h2>
+            <div class="admin-chart-wrap admin-chart-wrap--pie"><canvas id="chart-reactions" height="220"></canvas></div>
+        </section>
+    </div>
+
+    <div class="admin-chart-grid admin-chart-grid--2 admin-section">
+        <section class="admin-panel-chart" aria-labelledby="chart-tags-title">
+            <h2 id="chart-tags-title" class="admin-panel-chart__title">Top 10 Hashtags</h2>
+            <div class="admin-chart-wrap"><canvas id="chart-hashtags" height="240"></canvas></div>
+        </section>
+        <section class="admin-panel-chart" aria-labelledby="chart-contrib-title">
+            <h2 id="chart-contrib-title" class="admin-panel-chart__title">Top contributeurs (commentaires)</h2>
+            <div class="admin-chart-wrap"><canvas id="chart-contributors" height="240"></canvas></div>
+        </section>
+    </div>
+
+    <div class="admin-chart-grid admin-chart-grid--3 admin-section">
+        <section class="admin-panel-chart" aria-labelledby="chart-sig-title">
+            <h2 id="chart-sig-title" class="admin-panel-chart__title">Signalements par statut</h2>
+            <p class="admin-panel-chart__hint">Module signalement à venir — valeurs à zéro.</p>
+            <div class="admin-chart-wrap admin-chart-wrap--pie"><canvas id="chart-signalements" height="180"></canvas></div>
+        </section>
+        <section class="admin-panel-chart" aria-labelledby="chart-warn-title">
+            <h2 id="chart-warn-title" class="admin-panel-chart__title">Avertissements / bans</h2>
+            <div class="admin-chart-wrap admin-chart-wrap--pie"><canvas id="chart-warnings" height="180"></canvas></div>
+        </section>
+        <section class="admin-panel-chart" aria-labelledby="chart-hour-title">
+            <h2 id="chart-hour-title" class="admin-panel-chart__title">Activité par heure (aujourd’hui)</h2>
+            <div class="admin-chart-wrap"><canvas id="chart-hourly" height="180"></canvas></div>
+        </section>
+    </div>
+
+    <section class="admin-panel-chart admin-panel-chart--wide admin-section" aria-labelledby="chart-top-posts-title">
+        <h2 id="chart-top-posts-title" class="admin-panel-chart__title">Publications les plus commentées</h2>
+        <div class="admin-chart-wrap"><canvas id="chart-top-posts" height="220"></canvas></div>
+    </section>
+{% endblock %}
+
+{% block body_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+    (function () {
+        const gold = '#ffd700';
+        const blue = '#64b5f6';
+        const red = '#ff6b6b';
+        const grid = 'rgba(255,215,0,0.08)';
+        const txt = '#888888';
+
+        const dailyPosts = {{ daily_activity.posts|map(p => p.count)|json_encode|raw }};
+        const dailyComments = {{ daily_activity.comments|map(p => p.count)|json_encode|raw }};
+        const dailyLabels = {{ daily_activity.posts|map(p => p.date|date('d/m'))|json_encode|raw }};
+
+        const hourly = {{ hourly_posts|json_encode|raw }};
+        const hourlyLabels = Array.from({length: 24}, (_, i) => String(i).padStart(2, '0') + ':00');
+
+        let tagLabels = {{ top_hashtags|map(t => '#' ~ t.tag)|json_encode|raw }};
+        let tagData = {{ top_hashtags|map(t => t.count)|json_encode|raw }};
+        if (!tagLabels.length) { tagLabels = ['—']; tagData = [0]; }
+
+        let contribLabels = {{ top_commenters|map(t => t.user_key)|json_encode|raw }};
+        let contribData = {{ top_commenters|map(t => t.count)|json_encode|raw }};
+        if (!contribLabels.length) { contribLabels = ['—']; contribData = [0]; }
+
+        let topPostLabels = {{ most_commented_posts|map(p => '#' ~ p.post_id)|json_encode|raw }};
+        let topPostData = {{ most_commented_posts|map(p => p.comment_count)|json_encode|raw }};
+        if (!topPostLabels.length) { topPostLabels = ['—']; topPostData = [0]; }
+
+        const commonOpts = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: txt } } },
+            scales: {
+                x: { ticks: { color: txt, maxRotation: 45, minRotation: 0 }, grid: { color: grid } },
+                y: { ticks: { color: txt }, grid: { color: grid }, beginAtZero: true }
+            }
+        };
+
+        new Chart(document.getElementById('chart-activity'), {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [
+                    { label: 'Publications', data: dailyPosts, borderColor: gold, backgroundColor: 'rgba(255,215,0,0.08)', tension: 0.25, fill: true },
+                    { label: 'Commentaires', data: dailyComments, borderColor: blue, backgroundColor: 'rgba(100,181,246,0.06)', tension: 0.25, fill: true }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: txt } } },
+                scales: {
+                    x: { ticks: { color: txt, maxRotation: 45, minRotation: 0 }, grid: { color: grid } },
+                    y: { ticks: { color: txt }, grid: { color: grid }, beginAtZero: true, min: 0 }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('chart-reactions'), {
+            type: 'pie',
+            data: {
+                labels: ['Like ({{ pie_like }})', 'Dislike ({{ pie_dislike }})', 'Partages ({{ pie_share }})'],
+                datasets: [{ data: [{{ pie_like }}, {{ pie_dislike }}, {{ pie_share }}], backgroundColor: [gold, red, blue] }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: txt } } } }
+        });
+
+        new Chart(document.getElementById('chart-hashtags'), {
+            type: 'bar',
+            data: {
+                labels: tagLabels,
+                datasets: [{ label: 'Occurrences', data: tagData, backgroundColor: gold }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: commonOpts.scales
+            }
+        });
+
+        new Chart(document.getElementById('chart-contributors'), {
+            type: 'bar',
+            data: {
+                labels: contribLabels,
+                datasets: [{ label: 'Commentaires', data: contribData, backgroundColor: gold }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: commonOpts.scales
+            }
+        });
+
+        new Chart(document.getElementById('chart-signalements'), {
+            type: 'doughnut',
+            data: {
+                labels: ['En attente ({{ signalement_pending }})', 'Résolu ({{ signalement_resolved }})', 'Rejeté ({{ signalement_rejected }})'],
+                datasets: [{ data: [{{ signalement_pending }}, {{ signalement_resolved }}, {{ signalement_rejected }}], backgroundColor: [gold, red, blue] }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: txt, font: { size: 11 } } } } }
+        });
+
+        new Chart(document.getElementById('chart-warnings'), {
+            type: 'pie',
+            data: {
+                labels: ['Ban temporaire ({{ warnings.alert1 }})', 'Expiré ({{ warnings.alert2 }})', 'Permanent ({{ warnings.blocked }})'],
+                datasets: [{ data: [{{ warnings.alert1 }}, {{ warnings.alert2 }}, {{ warnings.blocked }}], backgroundColor: [gold, red, blue] }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: txt, font: { size: 11 } } } } }
+        });
+
+        new Chart(document.getElementById('chart-hourly'), {
+            type: 'bar',
+            data: {
+                labels: hourlyLabels,
+                datasets: [{ label: 'Posts', data: hourly, backgroundColor: gold }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: commonOpts.scales
+            }
+        });
+
+        new Chart(document.getElementById('chart-top-posts'), {
+            type: 'bar',
+            data: {
+                labels: topPostLabels,
+                datasets: [{ label: 'Commentaires', data: topPostData, backgroundColor: gold }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: commonOpts.scales
+            }
+        });
+    })();
+    </script>
+{% endblock %}

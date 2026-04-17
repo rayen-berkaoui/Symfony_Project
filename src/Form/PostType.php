@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Post;
+use App\Validation\ValidationLimits;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -13,10 +14,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\All;
-use Symfony\Component\Validator\Constraints\Count;
-use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\Image;
 
 class PostType extends AbstractType
 {
@@ -36,6 +33,7 @@ class PostType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'label' => 'Hashtags (séparez par des virgules ou espaces) :',
+                'constraints' => ValidationLimits::hashtagsFieldConstraints(),
                 'attr' => [
                     'placeholder' => '#sport, #vacances, #tech, #musique, #art…',
                     'class' => 'form-control',
@@ -50,25 +48,8 @@ class PostType extends AbstractType
                 'label' => false,
                 'attr' => [
                     'class' => 'tbn-file-input sr-only',
-                    'accept' => 'image/jpeg,image/png,image/gif,image/webp',
                 ],
-                'constraints' => [
-                    new Count(['max' => 12]),
-                    new All([
-                        'constraints' => [
-                            new Image([
-                                'maxSize' => '5M',
-                                'mimeTypes' => [
-                                    'image/jpeg',
-                                    'image/png',
-                                    'image/gif',
-                                    'image/webp',
-                                ],
-                                'mimeTypesMessage' => 'Chaque fichier doit être une image JPEG, PNG, GIF ou WebP (5 Mo max).',
-                            ]),
-                        ],
-                    ]),
-                ],
+                'constraints' => ValidationLimits::postImageFilesConstraints(),
             ])
             ->add('videoFile', FileType::class, [
                 'mapped' => false,
@@ -76,19 +57,8 @@ class PostType extends AbstractType
                 'label' => false,
                 'attr' => [
                     'class' => 'tbn-file-input sr-only',
-                    'accept' => 'video/mp4,video/webm,video/quicktime',
                 ],
-                'constraints' => [
-                    new File([
-                        'maxSize' => '40M',
-                        'mimeTypes' => [
-                            'video/mp4',
-                            'video/webm',
-                            'video/quicktime',
-                        ],
-                        'mimeTypesMessage' => 'Choisissez une vidéo MP4, WebM ou MOV (40 Mo max).',
-                    ]),
-                ],
+                'constraints' => [ValidationLimits::postVideoFileConstraint()],
             ]);
 
         if ($allowMediaRemove) {

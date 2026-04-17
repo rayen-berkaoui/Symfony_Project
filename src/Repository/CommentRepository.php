@@ -46,4 +46,20 @@ class CommentRepository extends ServiceEntityRepository
 
         return $out;
     }
+
+    /**
+     * @return list<Comment>
+     */
+    public function findAllPaginated(int $limit, int $offset): array
+    {
+        $limit = max(1, min(200, $limit));
+        $offset = max(0, $offset);
+
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.createdAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

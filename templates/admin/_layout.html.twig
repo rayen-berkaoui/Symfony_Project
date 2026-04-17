@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% block admin_title %}Administration{% endblock %} — Tabaani{% endblock %}
+
+{% block body %}
+<div class="admin-app">
+    {% include 'admin/_nav.html.twig' %}
+    <div class="admin-content">
+        {% block admin_body %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}{% endblock %}

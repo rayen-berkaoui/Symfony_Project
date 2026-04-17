@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Chat — Tabaani Connect{% endblock %}
+{% block title %}Salon de discussion — Tabaani Connect{% endblock %}
 
 {% block body %}
 <div class="tbn-chat-page">
@@ -19,67 +19,114 @@
     <div class="tbn-chat-subbar">
         <div class="tbn-chat-subbar__head">
             <div class="tbn-chat-subbar__title">
-                <h1 class="tbn-page-title tbn-page-title--chat">Espace Chat</h1>
+                <h1 class="tbn-page-title tbn-page-title--chat">Salon de discussion</h1>
             </div>
-            <p class="tbn-chat-subbar__online"><strong>{{ online_count }}</strong> connecté(s)</p>
+            <p class="tbn-chat-subbar__online">Estimation d’activité : <strong id="tbn-chat-online-count">{{ online_count }}</strong></p>
         </div>
         <div class="tbn-chat-subbar__identity">
-            <div class="pseudo-bar pseudo-bar--chat">
-                {% if sessionUserKey %}
-                    <span>Connecté en tant que <strong>{{ sessionUserKey }}</strong></span>
-                {% else %}
-                    <span>Pour écrire dans le chat :</span>
-                {% endif %}
-                <form method="post" action="{{ path('app_chat_set_pseudo') }}" class="pseudo-form">
-                    <input type="hidden" name="_token" value="{{ csrf_token('pseudo_chat') }}">
-                    <label for="chat-bar-user-key" class="sr-only">Pseudo</label>
-                    <input id="chat-bar-user-key" type="text" name="user_key" value="{{ sessionUserKey }}" placeholder="votre pseudo" autocomplete="username">
-                    <button type="submit" class="btn btn-primary btn--sm">Enregistrer</button>
-                </form>
-            </div>
             {% if sessionUserKey %}
-                <form method="post" action="{{ path('app_chat_leave') }}" class="tbn-inline-form tbn-chat-leave-form">
+                <p class="tbn-chat-session-line">
+                    <span class="tbn-chat-session-line__label">Pseudo actif :</span>
+                    <strong class="chat-username tbn-chat-session-line__name" style="--chat-user-hue: {{ sessionUserKey|chat_user_hue }};">{{ sessionUserKey }}</strong>
+                </p>
+                <form method="post" action="{{ path('app_chat_leave') }}" class="tbn-inline-form tbn-chat-leave-form" novalidate>
                     <input type="hidden" name="_token" value="{{ csrf_token('chat_leave') }}">
                     <button type="submit" class="btn btn-ghost btn--sm">Quitter le salon</button>
                 </form>
+            {% else %}
+                <p class="tbn-muted tbn-chat-pseudo-hint">
+                    <a href="{{ path('app_home') }}">Définissez votre pseudo depuis l’accueil</a> pour participer à la discussion.
+                </p>
             {% endif %}
         </div>
     </div>
 
     <div class="tbn-chat-main">
-        <div id="chat-log" class="chat-log tbn-chat-log" aria-label="Fil de discussion">
+        <div id="chat-log" class="chat-log tbn-chat-log" aria-label="Messages du salon">
             {% for m in messages|reverse %}
-                <div class="chat-line" data-msg-id="{{ m.id }}">
-                    <div class="chat-meta"><strong>{{ m.userKey }}</strong> — {{ m.createdAt ? m.createdAt|date('d/m/Y H:i') : '—' }}</div>
+                {% set is_broadcast = m.userKey == constant('App\\Chat\\ChatAdmin::BROADCAST_USER_KEY') %}
+                <div class="chat-line{% if is_broadcast %} chat-line--admin{% endif %}" data-msg-id="{{ m.id }}">
+                    <div class="chat-meta">
+                        {% if is_broadcast %}
+                            <strong>{{ m.userKey }}</strong>
+                        {% else %}
+                            <strong class="chat-username" style="--chat-user-hue: {{ m.userKey|chat_user_hue }};">{{ m.userKey }}</strong>
+                        {% endif %}
+                        — {{ m.createdAt ? m.createdAt|date('d/m/Y H:i') : '—' }}
+                    </div>
                     <div class="chat-body">{{ m.content }}</div>
                 </div>
             {% else %}
-                <p class="tbn-muted tbn-chat-empty">Aucun message encore. Soyez le premier !</p>
+                <p class="tbn-muted tbn-chat-empty">Le salon est encore silencieux — lancez la conversation.</p>
             {% endfor %}
         </div>
-        <aside class="tbn-chat-sidebar" aria-label="Présence">
+        <aside class="tbn-chat-sidebar" aria-label="Estimation de présence">
             <div class="tbn-chat-sidebar__head">
                 <span aria-hidden="true">👥</span>
-                <span>En ligne</span>
+                <span>Activité</span>
             </div>
-            <p class="tbn-chat-sidebar__body tbn-muted">Estimation sur les 30 dernières minutes : <strong class="tbn-gold-text">{{ online_count }}</strong></p>
+            <p class="tbn-chat-sidebar__body tbn-muted">Présence active : <strong class="tbn-gold-text" id="tbn-chat-online-count-side">{{ online_count }}</strong> utilisateur(s).</p>
         </aside>
     </div>
 
     <footer class="tbn-chat-footer">
-        {{ form_start(form, { attr: { class: 'tbn-chat-footer__form' } }) }}
+        {{ form_start(form, { attr: { class: 'tbn-chat-footer__form', novalidate: 'novalidate' } }) }}
             {% if not sessionUserKey %}
-                <p class="tbn-chat-footer__hint">Enregistrez votre pseudo dans la barre ci-dessus pour envoyer un message.</p>
+                <p class="tbn-chat-footer__hint">Identifiez-vous sur <a href="{{ path('app_home') }}">l’accueil</a> pour écrire dans le salon.</p>
             {% endif %}
             <div class="tbn-chat-footer__row">
                 {{ form_widget(form.content, {
-                    attr: { class: 'tbn-input tbn-chat-footer__input', placeholder: sessionUserKey ? 'Votre message…' : 'Enregistrez d’abord votre pseudo…', rows: 2 }
+                    attr: { class: 'tbn-input tbn-chat-footer__input', placeholder: sessionUserKey ? 'Saisissez votre message…' : 'Pseudo requis — via l’accueil', rows: 2 }
                         |merge(sessionUserKey ? {} : { readonly: 'readonly' }),
                 }) }}
-                <button type="submit" class="btn btn-primary"{% if not sessionUserKey %} disabled{% endif %}>Envoyer</button>
+                <button type="submit" class="btn btn-primary"{% if not sessionUserKey %} disabled{% endif %}>Envoyer le message</button>
             </div>
             {{ form_errors(form.content) }}
         {{ form_end(form) }}
     </footer>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    (function () {
+        var pingUrl = {{ path('app_chat_presence_ping')|json_encode|raw }};
+        var topCount = document.getElementById('tbn-chat-online-count');
+        var sideCount = document.getElementById('tbn-chat-online-count-side');
+
+        function applyOnlineCount(n) {
+            if (topCount) {
+                topCount.textContent = String(n);
+            }
+            if (sideCount) {
+                sideCount.textContent = String(n);
+            }
+        }
+
+        function ping() {
+            fetch(pingUrl, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            }).then(function (r) {
+                if (!r.ok) {
+                    return null;
+                }
+                return r.json();
+            }).then(function (data) {
+                if (!data || typeof data.online === 'undefined') {
+                    return;
+                }
+                var n = parseInt(String(data.online), 10);
+                if (!isNaN(n) && n >= 0) {
+                    applyOnlineCount(n);
+                }
+            }).catch(function () {});
+        }
+
+        ping();
+        window.setInterval(ping, 25000);
+    })();
+    </script>
 {% endblock %}

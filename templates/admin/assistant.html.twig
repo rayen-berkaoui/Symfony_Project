@@ -1,0 +1,358 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block admin_title %}Console briefing{% endblock %}
+
+{% block admin_body %}
+    <header class="admin-assistant-hero admin-section">
+        <div class="admin-assistant-hero__text">
+            <p class="admin-assistant-hero__eyebrow">Fonction propre à cette page</p>
+            <h1 class="admin-page-title admin-page-title--xl">Briefing opérationnel</h1>
+            <p class="admin-assistant-hero__lead">
+                Ici vous obtenez ce que le <strong>dashboard seul n’affiche pas</strong> :
+                l’<strong>écart depuis votre dernière ouverture de cette console</strong> (état mémorisé en session),
+                un <strong>rapport de changements par période</strong> (24h, 72h, 7j, 30j),
+                une <strong>file de priorités</strong> déclenchée par des règles métier,
+                et des <strong>recommandations guidées</strong> pour décider plus vite.
+                Le chat en bas sert à approfondir les analyses.
+            </p>
+        </div>
+        <div class="admin-assistant-hero__badge" aria-hidden="true">
+            <span class="admin-assistant-hero__badge-inner">Delta<br>+ file</span>
+        </div>
+    </header>
+
+    <section class="admin-briefing-visit admin-section" aria-labelledby="brief-visit-title">
+        <h2 id="brief-visit-title" class="admin-briefing-block__title">Depuis votre dernière ouverture de cette console</h2>
+        {% if briefing.visit.first_open %}
+            <p class="admin-briefing-visit__p">Première ouverture : une <strong>ligne de base</strong> est enregistrée. Au prochain chargement, vous verrez les écarts sur les compteurs suivis (publications, commentaires, alertes, blocages, volumes 7 j).</p>
+        {% else %}
+            {% if briefing.visit.recorded_at %}
+                <p class="admin-briefing-visit__meta">Référence précédente : {{ briefing.visit.recorded_at }}</p>
+            {% endif %}
+            {% if briefing.visit.lines|length > 0 %}
+                <ul class="admin-briefing-visit__list">
+                    {% for line in briefing.visit.lines %}
+                        <li>{{ line }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="admin-briefing-visit__empty">Aucun écart sur les compteurs suivis — situation stable depuis la dernière ouverture.</p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="admin-section" aria-labelledby="brief-report-title">
+        <h2 id="brief-report-title" class="admin-briefing-block__title">Rapport intelligent des changements</h2>
+        <div class="admin-assistant-suggestions" role="group" aria-label="Période d'analyse">
+            <span class="admin-assistant-suggestions__label">Fenêtre :</span>
+            {% for w in briefing.report.windows %}
+                <a
+                    class="admin-assistant-chip{% if w.active %} is-active{% endif %}"
+                    href="{{ path('app_admin_assistant', { range: w.value }) }}"
+                >{{ w.label }}</a>
+            {% endfor %}
+        </div>
+
+        <div class="admin-assistant-metrics">
+            {% for m in briefing.report.metrics %}
+                <div class="admin-assistant-metric">
+                    <span class="admin-assistant-metric__label">{{ m.label }}</span>
+                    <span class="admin-assistant-metric__value">{{ m.value }}</span>
+                    <span class="admin-assistant-metric__hint">{{ m.hint }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if briefing.report.highlights|length > 0 %}
+            <ul class="admin-briefing-anomalies__list">
+                {% for line in briefing.report.highlights %}
+                    <li>{{ line }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="admin-briefing-priority admin-section" aria-labelledby="brief-prio-title">
+        <h2 id="brief-prio-title" class="admin-briefing-block__title">À traiter en priorité <span class="admin-briefing-block__hint">(règles automatiques)</span></h2>
+        {% if briefing.priority|length > 0 %}
+            <ul class="admin-briefing-priority__grid">
+                {% for item in briefing.priority %}
+                    <li class="admin-briefing-priority__card admin-briefing-priority__card--{{ item.severity }}">
+                        <span class="admin-briefing-priority__sev">{{ item.severity|upper }}</span>
+                        <h3 class="admin-briefing-priority__h">{{ item.title }}</h3>
+                        <p class="admin-briefing-priority__rationale">{{ item.rationale }}</p>
+                        <a href="{{ path(item.route, item.params ?? {}) }}" class="admin-briefing-priority__action">{{ item.action_label }} →</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="admin-briefing-visit__empty">Aucune alerte prioritaire détectée par les règles actuelles. Poursuivre la veille habituelle.</p>
+        {% endif %}
+    </section>
+
+    <section class="admin-briefing-cross admin-section" aria-labelledby="brief-cross-title">
+        <h2 id="brief-cross-title" class="admin-briefing-block__title">Indicateur croisé</h2>
+        <div class="admin-briefing-cross__card">
+            <h3 class="admin-briefing-cross__h">{{ briefing.cross_signal.title }}</h3>
+            <p class="admin-briefing-cross__val">{{ briefing.cross_signal.value }}</p>
+            <p class="admin-briefing-cross__detail">{{ briefing.cross_signal.detail }}</p>
+        </div>
+    </section>
+
+    {% if briefing.anomalies|length > 0 %}
+    <section class="admin-briefing-anomalies admin-section" aria-labelledby="brief-ano-title">
+        <h2 id="brief-ano-title" class="admin-briefing-block__title">Signaux automatiques</h2>
+        <ul class="admin-briefing-anomalies__list">
+            {% for a in briefing.anomalies %}
+                <li>{{ a }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <section class="admin-section" aria-labelledby="brief-ai-guidance-title">
+        <h2 id="brief-ai-guidance-title" class="admin-briefing-block__title">Conseils et orientations (AI)</h2>
+        <ol class="admin-assistant-insights__list">
+            {% for tip in briefing.ai_guidance %}
+                <li>{{ tip }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    <section class="admin-assistant-workspace admin-section" aria-labelledby="assistant-title"
+        id="tbn-admin-assistant"
+        data-ask-url="{{ path('app_admin_assistant_ask') }}"
+        data-csrf="{{ csrf_token('admin_assistant_ask') }}">
+        <script type="application/json" id="tbn-assistant-snapshot">{{ assistant_snapshot|json_encode|raw }}</script>
+
+        <div class="admin-assistant-workspace__head">
+            <h2 id="assistant-title" class="admin-assistant-workspace__title">Questions complémentaires</h2>
+            <p class="admin-assistant-workspace__subtitle">Langage naturel — réponses structurées (tendances, listes, liens). Les suggestions ci-dessous ne répètent pas le briefing : elles explorent d’autres angles.</p>
+        </div>
+
+        <div class="admin-assistant-suggestions" role="group" aria-label="Suggestions">
+            <span class="admin-assistant-suggestions__label">Essayer :</span>
+            <button type="button" class="admin-assistant-chip" data-prompt="Quoi de neuf depuis ma dernière visite sur cette page ?">Delta depuis dernière visite</button>
+            <button type="button" class="admin-assistant-chip" data-prompt="Tendance publications et commentaires sur 7 jours">Tendance 7 jours</button>
+            <button type="button" class="admin-assistant-chip" data-prompt="Top hashtags et classement">Top hashtags</button>
+            <button type="button" class="admin-assistant-chip" data-prompt="Synthèse complète du dashboard">Synthèse globale</button>
+        </div>
+
+        <div class="admin-assistant-chat__log" id="tbn-admin-assistant-log" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+        <div class="admin-assistant-composer">
+            <label class="admin-field__label" for="tbn-admin-assistant-input">Votre requête</label>
+            <form class="admin-assistant-chat__form" method="post" action="#" novalidate data-turbo="false">
+                <textarea id="tbn-admin-assistant-input" class="admin-input admin-assistant-chat__input" rows="3"autocomplete="off"></textarea>
+                <div class="admin-assistant-chat__actions">
+                    <button type="submit" class="btn btn-primary admin-assistant-send" id="tbn-admin-assistant-send">
+                        <span class="admin-assistant-send__label">Analyser</span>
+                    </button>
+                    <span class="admin-assistant-chat__status" id="tbn-admin-assistant-status" aria-live="polite"></span>
+                </div>
+            </form>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+(function () {
+    var root = document.getElementById('tbn-admin-assistant');
+    if (!root) return;
+    var logEl = document.getElementById('tbn-admin-assistant-log');
+    var input = document.getElementById('tbn-admin-assistant-input');
+    var form = root.querySelector('form');
+    var btn = document.getElementById('tbn-admin-assistant-send');
+    var statusEl = document.getElementById('tbn-admin-assistant-status');
+    var askUrl = root.getAttribute('data-ask-url');
+    var csrf = root.getAttribute('data-csrf');
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function trendClass(dir) {
+        if (dir === 'up') return 'admin-assistant-metric__trend--up';
+        if (dir === 'down') return 'admin-assistant-metric__trend--down';
+        return 'admin-assistant-metric__trend--flat';
+    }
+
+    function trendArrow(dir) {
+        if (dir === 'up') return '▲';
+        if (dir === 'down') return '▼';
+        return '◆';
+    }
+
+    function renderEnvelope(env, reply) {
+        if (!env || typeof env !== 'object') {
+            return '<div class="admin-assistant-msg__body">' + esc(reply || '') + '</div>';
+        }
+        var html = '';
+        html += '<div class="admin-assistant-card">';
+        html += '<div class="admin-assistant-card__head">';
+        html += '<h3 class="admin-assistant-card__title">' + esc(env.headline || '') + '</h3>';
+        if (env.subhead) {
+            html += '<p class="admin-assistant-card__sub">' + esc(env.subhead) + '</p>';
+        }
+        html += '</div>';
+        if (env.metrics && env.metrics.length) {
+            html += '<div class="admin-assistant-metrics">';
+            for (var i = 0; i < env.metrics.length; i++) {
+                var m = env.metrics[i];
+                html += '<div class="admin-assistant-metric">';
+                html += '<span class="admin-assistant-metric__label">' + esc(m.label) + '</span>';
+                html += '<span class="admin-assistant-metric__value">' + esc(String(m.value)) + '</span>';
+                if (m.hint) {
+                    html += '<span class="admin-assistant-metric__hint">' + esc(m.hint) + '</span>';
+                }
+                if (m.trend && m.trend_label) {
+                    html += '<span class="admin-assistant-metric__trend ' + trendClass(m.trend) + '"><span class="admin-assistant-metric__arrow" aria-hidden="true">' + trendArrow(m.trend) + '</span> ' + esc(m.trend_label) + '</span>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+        if (reply) {
+            html += '<p class="admin-assistant-card__reply">' + esc(reply).replace(/\n/g, '<br>') + '</p>';
+        }
+        if (env.insights && env.insights.length) {
+            html += '<div class="admin-assistant-insights"><span class="admin-assistant-insights__title">Recommandations</span><ol class="admin-assistant-insights__list">';
+            for (var j = 0; j < env.insights.length; j++) {
+                html += '<li>' + esc(env.insights[j]) + '</li>';
+            }
+            html += '</ol></div>';
+        }
+        if (env.detail) {
+            html += '<details class="admin-assistant-detail"><summary>Détail technique</summary><pre class="admin-assistant-detail__pre">' + esc(env.detail) + '</pre></details>';
+        }
+        if (env.lists && env.lists.length) {
+            for (var k = 0; k < env.lists.length; k++) {
+                var L = env.lists[k];
+                if (!L.items || !L.items.length) continue;
+                html += '<div class="admin-assistant-listblock"><h4 class="admin-assistant-listblock__title">' + esc(L.title) + '</h4><ul class="admin-assistant-listblock__ul">';
+                for (var z = 0; z < L.items.length; z++) {
+                    html += '<li>' + esc(L.items[z]) + '</li>';
+                }
+                html += '</ul></div>';
+            }
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function timeStr() {
+        var d = new Date();
+        return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    }
+
+    function appendBubble(role, innerHtml) {
+        var wrap = document.createElement('article');
+        wrap.className = 'admin-assistant-msg admin-assistant-msg--' + role;
+        wrap.innerHTML = '<div class="admin-assistant-msg__shell">' + innerHtml + '</div>';
+        logEl.appendChild(wrap);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function appendUser(text) {
+        appendBubble('user', '<span class="admin-assistant-msg__meta">Vous · ' + timeStr() + '</span><div class="admin-assistant-msg__body">' + esc(text) + '</div>');
+    }
+
+    function appendBot(reply, related, envelope, intent, confidence) {
+        var conf = confidence || 'high';
+        var intentLabel = intent ? '<span class="admin-assistant-msg__intent">' + esc(intent) + '</span>' : '';
+        var confBadge = '<span class="admin-assistant-msg__confidence admin-assistant-msg__confidence--' + esc(conf) + '">' + esc(conf) + '</span>';
+        var head = '<div class="admin-assistant-msg__toolbar">' + intentLabel + confBadge + '<span class="admin-assistant-msg__meta">Analyse · ' + timeStr() + '</span></div>';
+        var body = renderEnvelope(envelope, reply);
+        var rel = '';
+        if (related && related.length) {
+            rel += '<div class="admin-assistant-msg__related">';
+            for (var i = 0; i < related.length; i++) {
+                var r = related[i];
+                rel += '<a class="admin-assistant-msg__link" href="' + esc(r.url) + '">' + esc(r.label) + '</a>';
+            }
+            rel += '</div>';
+        }
+        appendBubble('bot', head + body + rel);
+    }
+
+    function showTyping() {
+        var el = document.createElement('div');
+        el.className = 'admin-assistant-typing';
+        el.id = 'tbn-assistant-typing';
+        el.setAttribute('aria-hidden', 'true');
+        el.innerHTML = '<span></span><span></span><span></span>';
+        logEl.appendChild(el);
+        logEl.scrollTop = logEl.scrollHeight;
+    }
+    function hideTyping() {
+        var t = document.getElementById('tbn-assistant-typing');
+        if (t) t.remove();
+    }
+
+    appendBot(
+        'Le briefing en haut de page est la valeur principale de cet écran. Utilisez cette zone pour creuser (tendances, hashtags, synthèse).',
+        [],
+        {
+            headline: 'Zone d’analyse complémentaire',
+            subhead: 'Ne remplace pas le delta ni la file de priorités',
+            metrics: [],
+            insights: [
+                'Le delta « dernière ouverture » est mis à jour à chaque chargement de cette page.',
+                'Les priorités utilisent des seuils (alertes, expirations de ban, chute d’activité, post très commenté).'
+            ],
+            detail: null,
+            lists: []
+        },
+        'hint',
+        'high'
+    );
+
+    root.querySelectorAll('.admin-assistant-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            var p = chip.getAttribute('data-prompt');
+            if (p) {
+                input.value = p;
+                input.focus();
+            }
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var msg = (input.value || '').trim();
+        if (!msg) {
+            statusEl.textContent = 'Saisie requise.';
+            return;
+        }
+        statusEl.textContent = '';
+        btn.disabled = true;
+        appendUser(msg);
+        input.value = '';
+        showTyping();
+
+        fetch(askUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ _token: csrf, message: msg })
+        }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, json: j }; }); })
+        .then(function (res) {
+            hideTyping();
+            btn.disabled = false;
+            if (!res.ok || !res.json || !res.json.ok) {
+                var err = (res.json && res.json.message) ? res.json.message : 'Erreur (' + res.status + ').';
+                appendBot(err, [], null, 'error', 'low');
+                return;
+            }
+            var j = res.json;
+            appendBot(j.reply || '', j.related || [], j.envelope, j.intent, j.confidence);
+        }).catch(function () {
+            hideTyping();
+            btn.disabled = false;
+            appendBot('Connexion interrompue.', [], null, 'error', 'low');
+        });
+    });
+})();
+</script>
+{% endblock %}

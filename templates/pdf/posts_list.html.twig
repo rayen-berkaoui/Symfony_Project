@@ -1,0 +1,32 @@
+{% extends 'pdf/base_pdf.html.twig' %}
+
+{% block pdf_body %}
+    <h1 class="pdf-doc-title">Export publications (liste paginée)</h1>
+    {% if pdf_source_url %}
+        <div class="pdf-source"><strong>Source (interface web) :</strong> {{ pdf_source_url }}</div>
+    {% endif %}
+
+    <p class="pdf-muted">
+        Page liste <strong>{{ list_page }}</strong> / <strong>{{ list_total_pages }}</strong>
+        — {{ list_per_page }} enregistrement(s) par page — total publications : <strong>{{ list_total }}</strong>.
+    </p>
+
+    <table class="pdf-data-table">
+        <thead>
+            <tr><th>ID</th><th>Date</th><th>Auteur (clé)</th><th>Extrait du contenu</th></tr>
+        </thead>
+        <tbody>
+        {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
+                <td>{{ post.authorKey|default('—') }}</td>
+                {% set excerpt = post.content|striptags %}
+                <td>{{ excerpt|length > 220 ? excerpt|slice(0, 220) ~ '…' : excerpt }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4">Aucune publication sur cette page.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

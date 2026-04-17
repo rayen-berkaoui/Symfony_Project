@@ -11,9 +11,14 @@
         primary_label: '+ Nouvelle publication',
     } %}
 
-    <header class="tbn-feed-head">
-        <p class="tbn-kicker">Édition</p>
-        <h1 class="tbn-page-title">Modifier la publication #{{ post.id }}</h1>
+    <header class="tbn-feed-head tbn-feed-head__row">
+        <div>
+            <p class="tbn-kicker">Édition</p>
+            <h1 class="tbn-page-title">Modifier la publication #{{ post.id }}</h1>
+        </div>
+        {% if viewer_is_author %}
+            <a href="{{ path('app_post_export_pdf', { id: post.id }) }}" class="btn btn-ghost">Exporter PDF</a>
+        {% endif %}
     </header>
     {% include 'post/_form.html.twig' with {
         submit_label: 'Mettre à jour',

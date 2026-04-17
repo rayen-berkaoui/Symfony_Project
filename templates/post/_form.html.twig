@@ -1,9 +1,24 @@
-{{ form_start(form, { attr: { class: 'post-form', enctype: 'multipart/form-data' } }) }}
+{{ form_start(form, { attr: { class: 'post-form', enctype: 'multipart/form-data', novalidate: 'novalidate' } }) }}
     {% for message in app.flashes('danger') %}
         <div class="flash flash-danger">{{ message }}</div>
     {% endfor %}
     {{ form_row(form.content) }}
     {{ form_row(form.hashtags) }}
+
+    {% set content_input_id = form.content.vars.id %}
+    {% set hashtags_input_id = form.hashtags.vars.id %}
+    <div class="tbn-smart-hashtag-suggestions-wrap">
+        <h3 class="tbn-smart-hashtag-suggestions-wrap__title">Suggestions IA hashtags</h3>
+        <p class="tbn-smart-hashtag-suggestions-wrap__hint">Elles se mettent à jour automatiquement selon le contenu saisi.</p>
+        <div
+            id="tbn-smart-hashtag-suggestions"
+            class="tbn-smart-hashtag-suggestions"
+            data-endpoint="{{ path('app_ai_smart_hashtag_suggest') }}"
+            data-content-input-id="{{ content_input_id }}"
+            data-hashtags-input-id="{{ hashtags_input_id }}"
+            aria-live="polite"
+        ></div>
+    </div>
 
     {% set image_input_id = form.imageFiles.vars.id %}
     {% set video_input_id = form.videoFile.vars.id %}

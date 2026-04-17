@@ -1,0 +1,36 @@
+{% extends 'pdf/base_pdf.html.twig' %}
+
+{% block pdf_body %}
+    <h1 class="pdf-doc-title">{{ pdf_doc_title|default('Fiche publication #' ~ post.id) }}</h1>
+    {% if pdf_source_url %}
+        <div class="pdf-source"><strong>Source (page publique) :</strong> {{ pdf_source_url }}</div>
+    {% endif %}
+
+    <div class="pdf-block">
+        <strong>Publié le</strong> {{ post.createdAt|date('d/m/Y H:i') }}
+        {% if post.updatedAt %} — <strong>Mis à jour</strong> {{ post.updatedAt|date('d/m/Y H:i') }}{% endif %}
+        <br>
+        <strong>Auteur (clé)</strong> : {{ post.authorKey|default('—') }}
+    </div>
+
+    <h2 class="pdf-doc-title" style="font-size:11pt;">Contenu</h2>
+    <div class="pdf-block" style="white-space: pre-wrap;">{{ post.content|striptags }}</div>
+
+    <h2 class="pdf-doc-title" style="font-size:11pt;">Commentaires ({{ post.comments|length }})</h2>
+    <table class="pdf-data-table">
+        <thead><tr><th>#</th><th>Date</th><th>Utilisateur</th><th>Texte</th></tr></thead>
+        <tbody>
+        {% for c in post.comments %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td>{{ c.createdAt|date('d/m/Y H:i') }}</td>
+                <td>{{ c.userKey }}</td>
+                {% set ct = c.content|striptags %}
+                <td>{{ ct|length > 180 ? ct|slice(0, 180) ~ '…' : ct }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4">Aucun commentaire.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

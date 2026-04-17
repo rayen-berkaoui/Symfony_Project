@@ -45,6 +45,20 @@ class PostRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function countPostsContainingHashtag(string $normalizedTag): int
+    {
+        $tag = mb_strtolower(trim($normalizedTag), 'UTF-8');
+        $tag = ltrim($tag, '#');
+        if ('' === $tag || !preg_match('/^[\p{L}\p{N}_]+$/u', $tag)) {
+            return 0;
+        }
+
+        return (int) $this->getEntityManager()->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM posts WHERE hashtags_index IS NOT NULL AND LOWER(CONCAT(\' \', hashtags_index, \' \')) LIKE ?',
+            ['%|'.$tag.'|%']
+        );
+    }
+
     private function applyListFilters(QueryBuilder $qb, ?string $q, ?string $hashtag, ?\DateTimeImmutable $dateFrom, ?\DateTimeImmutable $dateTo): void
     {
         if (null !== $q && '' !== $q) {

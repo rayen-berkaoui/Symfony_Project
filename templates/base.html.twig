@@ -21,7 +21,20 @@
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
         {% endif %}
     </head>
-    <body class="tbn-app">
+    <body class="tbn-app" data-tbn-unread-initial="{{ tbn_notification_unread_count() }}">
         {% block body %}{% endblock %}
+        <div id="tbn-confirm-modal" class="tbn-confirm-modal" hidden data-tbn-confirm-root>
+            <div class="tbn-confirm-modal__backdrop" data-tbn-confirm-close type="button" tabindex="-1" aria-label="Fermer"></div>
+            <div class="tbn-confirm-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="tbn-confirm-modal-title">
+                <div class="tbn-confirm-modal__accent" aria-hidden="true"></div>
+                <h2 id="tbn-confirm-modal-title" class="tbn-confirm-modal__title">Confirmation</h2>
+                <p id="tbn-confirm-modal-message" class="tbn-confirm-modal__message"></p>
+                <div class="tbn-confirm-modal__actions">
+                    <button type="button" class="tbn-confirm-modal__btn tbn-confirm-modal__btn--ghost" data-tbn-confirm-cancel>Annuler</button>
+                    <button type="button" class="tbn-confirm-modal__btn tbn-confirm-modal__btn--danger" data-tbn-confirm-ok>Confirmer</button>
+                </div>
+            </div>
+        </div>
+        {% block body_scripts %}{% endblock %}
     </body>
 </html>

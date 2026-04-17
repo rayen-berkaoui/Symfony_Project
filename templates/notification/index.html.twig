@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notifications — Tabaani Connect{% endblock %}
+
+{% block body %}
+<div class="connect-wrap connect-wrap--feed">
+    {% include '_partials/tbn_topbar.html.twig' with {
+        back_href: path('app_post_index'),
+        back_label: '← Retour',
+        primary_href: path('app_post_new'),
+        primary_label: '+ Nouvelle publication',
+    } %}
+
+    {% for message in app.flashes('warning') %}
+        <div class="flash flash-warning">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+
+    <header class="tbn-feed-head">
+        <p class="tbn-kicker">Centre de notifications</p>
+        <div class="tbn-feed-head__row">
+            <h1 class="tbn-page-title tbn-page-title--feed">Notifications de {{ sessionUserKey }}</h1>
+            <p class="tbn-feed-head__stat">{{ notifications|length }} notification{% if notifications|length > 1 %}s{% endif %}</p>
+        </div>
+    </header>
+
+    <section class="tbn-notification-list" aria-label="Notifications">
+        {% for n in notifications %}
+            <article class="tbn-notification-card{% if not n.isRead %} is-unread{% endif %}">
+                <div class="tbn-notification-card__meta">
+                    <span class="tbn-notification-card__type">{{ n.type|replace({'_': ' '})|upper }}</span>
+                    <span>{{ n.createdAt ? n.createdAt|date('d/m/Y H:i') : '—' }}</span>
+                </div>
+                <p class="tbn-notification-card__message">{{ n.message }}</p>
+                <div class="tbn-notification-card__actions">
+                    {% if n.post %}
+                        <a href="{{ path('app_post_show', { id: n.post.id }) }}" class="btn btn-ghost btn--sm">Voir la publication</a>
+                    {% endif %}
+                    {% if n.comment %}
+                        <span class="tbn-muted">Commentaire #{{ n.comment.id }}</span>
+                    {% endif %}
+                    <form method="post" action="{{ path('app_notification_delete', { id: n.id }) }}" class="tbn-inline-form" novalidate data-tbn-confirm="Supprimer cette notification ?">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_notification' ~ n.id) }}">
+                        <button type="submit" class="btn btn-danger btn--sm">Supprimer</button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <p class="tbn-comments-empty">Aucune notification pour l’instant.</p>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

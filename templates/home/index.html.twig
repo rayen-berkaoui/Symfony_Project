@@ -6,8 +6,25 @@
 <div class="tbn-landing">
     {% include '_partials/tbn_topbar.html.twig' with {
         show_admin: true,
-        admin_href: '#',
+        admin_href: path('app_admin_dashboard'),
     } %}
+
+    <div class="tbn-landing__pseudo-strip">
+        <div class="pseudo-bar pseudo-bar--landing">
+            {% if sessionUserKey %}
+                <span>Session active — pseudo <strong class="chat-username" style="--chat-user-hue: {{ sessionUserKey|chat_user_hue }};">{{ sessionUserKey }}</strong></span>
+            {% else %}
+                <span>Un pseudo unique suffit pour le chat, les posts et vos réactions :</span>
+            {% endif %}
+            <form method="post" action="{{ path('app_chat_set_pseudo') }}" class="pseudo-form" novalidate>
+                <input type="hidden" name="_token" value="{{ csrf_token('pseudo_chat') }}">
+                <input type="hidden" name="_redirect" value="app_home">
+                <label for="home-pseudo-user-key" class="sr-only">Identifiant affiché</label>
+                <input id="home-pseudo-user-key" type="text" name="user_key" value="{{ sessionUserKey }}" placeholder="Ex. votre_pseudo" autocomplete="username">
+                <button type="submit" class="btn btn-primary btn--sm">Valider</button>
+            </form>
+        </div>
+    </div>
 
     <main class="tbn-landing__main">
         <header class="tbn-landing__intro">
@@ -23,9 +40,9 @@
                         <rect x="3" y="4" width="3" height="16" rx="1" stroke="currentColor" stroke-width="1.75"/>
                     </svg>
                 </div>
-                <h2 class="tbn-landing-card__title">Espace Postes</h2>
+                <h2 class="tbn-landing-card__title">Publications</h2>
                 <p class="tbn-landing-card__desc"></p>
-                <a href="{{ path('app_post_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Accéder</a>
+                <a href="{{ path('app_post_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Ouvrir le fil</a>
             </article>
             <article class="tbn-landing-card">
                 <div class="tbn-landing-card__icon-wrap" aria-hidden="true">
@@ -34,9 +51,9 @@
                         <path d="M8.5 10.5h7M8.5 14h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <h2 class="tbn-landing-card__title">Espace Chat</h2>
+                <h2 class="tbn-landing-card__title">Salon de chat</h2>
                 <p class="tbn-landing-card__desc"></p>
-                <a href="{{ path('app_chat_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Accéder</a>
+                <a href="{{ path('app_chat_index') }}" class="btn btn-primary tbn-landing-card__cta"><span class="tbn-btn-lead" aria-hidden="true">→</span> Rejoindre le salon</a>
             </article>
         </div>
     </main>

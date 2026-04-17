@@ -1,0 +1,194 @@
+{% extends 'admin/_layout.html.twig' %}
+{% block admin_title %}Utilisateurs bloqués{% endblock %}
+
+{% block admin_body %}
+    {% for message in app.flashes('success') %}
+        <div class="flash flash-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('warning') %}
+        <div class="flash flash-warning">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('danger') %}
+        <div class="flash flash-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="admin-page-head admin-page-head--split">
+        <div>
+            <h1 class="admin-page-title">Utilisateurs bloqués</h1>
+            <p class="admin-lead admin-lead--tight">
+                <span class="admin-pill">{{ ban_active_count }} bans actifs</span>
+                <span class="admin-pill">{{ total }} total — page {{ page }} / {{ total_pages }}</span>
+            </p>
+        </div>
+        <a href="{{ path('app_admin_blocked') }}" class="btn btn-primary btn--sm">Actualiser</a>
+    </div>
+
+    <section class="admin-panel admin-panel--form" aria-labelledby="badword-alerts-title">
+        <h2 id="badword-alerts-title" class="admin-subtitle">Alertes Bad Words (validation admin)</h2>
+        {% if bad_word_alerts is empty %}
+            <p class="admin-empty">Aucune alerte en attente.</p>
+        {% else %}
+            <ul class="admin-list">
+                {% for alert in bad_word_alerts %}
+                    <li class="admin-list__item">
+                        <div class="admin-list__body">
+                            <span class="admin-list__meta">Alerte #{{ alert.id }} · {{ alert.createdAt|date('d/m/Y H:i') }}</span>
+                            <p class="admin-list__excerpt">{{ alert.message }}</p>
+                        </div>
+                        <div class="admin-list__actions">
+                            <form method="post" action="{{ path('app_admin_blocked') }}" class="tbn-inline-form" novalidate>
+                                <input type="hidden" name="_action" value="alert_block">
+                                <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_badword_alert_action' ~ alert.id) }}">
+                                <button type="submit" class="btn btn-primary btn--sm">Confirmer blocage</button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_blocked') }}" class="tbn-inline-form" novalidate>
+                                <input type="hidden" name="_action" value="alert_ignore">
+                                <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_badword_alert_action' ~ alert.id) }}">
+                                <button type="submit" class="btn btn-ghost btn--sm">Ignorer</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </section>
+
+    <section class="admin-panel admin-panel--form" aria-labelledby="ban-add-title">
+        <h2 id="ban-add-title" class="admin-subtitle">Nouveau bannissement</h2>
+        <form method="post" action="{{ path('app_admin_blocked') }}" class="admin-ban-form" novalidate>
+            <input type="hidden" name="_action" value="add">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_chat_ban_add') }}">
+
+            <label class="admin-field">
+                <span class="admin-field__label">Utilisateur</span>
+                <input type="text" name="user_key" class="admin-input" autocomplete="off">
+            </label>
+
+            <label class="admin-field">
+                <span class="admin-field__label">Raison</span>
+                <input type="text" name="reason" class="admin-input">
+            </label>
+
+            <label class="admin-field">
+                <span class="admin-field__label">Jusqu’à (vide = permanent)</span>
+                <input type="datetime-local" name="expires_at" class="admin-input">
+            </label>
+
+            <fieldset class="admin-field">
+                <legend class="admin-field__label">Portée du blocage</legend>
+                <label><input type="checkbox" name="scope_all" value="1"> Tout</label>
+                <label><input type="checkbox" name="scope_chat" value="1"> Chat</label>
+                <label><input type="checkbox" name="scope_posts" value="1"> Publications</label>
+                <label><input type="checkbox" name="scope_comments" value="1"> Commentaires</label>
+                <label><input type="checkbox" name="scope_reactions" value="1"> Réactions</label>
+                <label><input type="checkbox" name="scope_shares" value="1"> Partages</label>
+            </fieldset>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+    </section>
+
+    <div class="admin-table-panel">
+        <table class="admin-data-table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Raison</th>
+                    <th scope="col">Portée</th>
+                    <th scope="col">Banni le</th>
+                    <th scope="col">Jusqu’à</th>
+                    <th scope="col">Restant</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if bans is empty %}
+                <tr><td colspan="9" class="admin-data-table__empty">Aucun contenu dans la table</td></tr>
+            {% else %}
+                {% for ban in bans %}
+                    {% set active = ban.expiresAt is null or ban.expiresAt > date('now') %}
+                    <tr>
+                        <td data-label="#">{{ ban.id }}</td>
+                        <td data-label="Utilisateur"><strong>{{ ban.userKey }}</strong></td>
+                        <td data-label="Raison">{{ ban.reason|default('—') }}</td>
+                        <td data-label="Portée">
+                            {% set scopes = ban.enabledScopes %}
+                            {% if scopes is empty %}
+                                —
+                            {% else %}
+                                {{ scopes|join(', ') }}
+                            {% endif %}
+                        </td>
+                        <td data-label="Banni le">{{ ban.createdAt|date('d/m/Y H:i') }}</td>
+                        <td data-label="Jusqu’à">{% if ban.expiresAt %}{{ ban.expiresAt|date('d/m/Y H:i') }}{% else %}<em>Permanent</em>{% endif %}</td>
+                        <td data-label="Restant">
+                            {% if ban.expiresAt and active %}
+                                {% set secs = ban.expiresAt|date('U') - 'now'|date('U') %}
+                                {% if secs > 0 %}{{ (secs / 3600)|round(1) }} h{% else %}—{% endif %}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td data-label="Statut">
+                            {% if active %}
+                                <span class="admin-badge admin-badge--ban">Actif</span>
+                            {% else %}
+                                <span class="admin-badge admin-badge--muted">Expiré</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Actions">
+                            <form method="post" action="{{ path('app_admin_blocked') }}" class="tbn-inline-form" novalidate data-tbn-confirm="Lever ce bannissement ?">
+                                <input type="hidden" name="_action" value="delete">
+                                <input type="hidden" name="id" value="{{ ban.id }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_chat_ban_delete' ~ ban.id) }}">
+                                <button type="submit" class="btn btn-ghost btn--sm admin-btn-danger">Débloquer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <footer class="tbn-pagination" aria-label="Pagination bannissements admin">
+        <div class="tbn-pagination__cell tbn-pagination__cell--info">
+            <p class="tbn-pagination__info">
+                <span class="tbn-pagination__info-label">Affichage</span>
+                <span class="tbn-pagination__info-range">{{ display_from }} – {{ display_to }}</span>
+                <span class="tbn-pagination__info-sep">sur</span>
+                <span class="tbn-pagination__info-total">{{ total }}</span>
+            </p>
+        </div>
+        <div class="tbn-pagination__cell tbn-pagination__cell--per">
+            <form method="get" action="{{ path('app_admin_blocked') }}" class="tbn-pagination__per-form" novalidate>
+                <input type="hidden" name="page" value="1">
+                <label class="tbn-pagination__per-label" for="admin-blocked-per-page">Par page</label>
+                <div class="tbn-pagination__select-wrap">
+                    <select id="admin-blocked-per-page" name="per_page" class="tbn-pagination__select" onchange="this.form.submit()">
+                        {% for n in [10, 20, 50] %}
+                            <option value="{{ n }}"{% if per_page == n %} selected{% endif %}>{{ n }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+        <nav class="tbn-pagination__cell tbn-pagination__cell--nav" aria-label="Pages">
+            {% if page > 1 %}
+                <a class="tbn-pagination__btn tbn-pagination__btn--prev" href="{{ path('app_admin_blocked', { page: page - 1, per_page: per_page }) }}">Précédent</a>
+            {% else %}
+                <span class="tbn-pagination__btn tbn-pagination__btn--prev is-disabled">Précédent</span>
+            {% endif %}
+            <span class="tbn-pagination__page-indicator"><span class="tbn-pagination__page-label">Page</span> <strong>{{ page }}</strong><span class="tbn-pagination__page-slash">/</span>{{ total_pages }}</span>
+            {% if page < total_pages %}
+                <a class="tbn-pagination__btn tbn-pagination__btn--next" href="{{ path('app_admin_blocked', { page: page + 1, per_page: per_page }) }}">Suivant</a>
+            {% else %}
+                <span class="tbn-pagination__btn tbn-pagination__btn--next is-disabled">Suivant</span>
+            {% endif %}
+        </nav>
+    </footer>
+{% endblock %}

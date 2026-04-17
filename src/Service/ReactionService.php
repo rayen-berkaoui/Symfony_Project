@@ -15,6 +15,7 @@ class ReactionService
     public function __construct(
         private readonly ActivityRepository $activityRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly NotificationService $notificationService,
     ) {
     }
 
@@ -33,6 +34,7 @@ class ReactionService
 
         if (null === $existing) {
             $this->persistNewReaction($post, null, $userKey, $desiredType);
+            $this->notificationService->notifyReactionOnPost($post, $userKey, $desiredType);
 
             return;
         }
@@ -69,6 +71,7 @@ class ReactionService
         if (null === $existing) {
             $this->persistNewReaction($post, $comment, $userKey, $desiredType);
             $this->syncCommentCounters($comment);
+            $this->notificationService->notifyReactionOnComment($comment, $userKey, $desiredType);
 
             return;
         }

@@ -7,6 +7,17 @@
             {% endif %}
         </div>
         <div class="tbn-topbar__right">
+            {% set notif_count = tbn_notification_unread_count() %}
+            <a href="{{ path('app_notification_index') }}" class="tbn-notif-link{% if notif_count > 0 %} is-unread{% endif %}" aria-label="Notifications">
+                <span class="tbn-notif-link__icon" aria-hidden="true">🔔</span>
+                <span class="tbn-notif-link__label">Notifications</span>
+                {% if notif_count > 0 %}
+                    <span class="tbn-notif-link__state">Non lu</span>
+                {% endif %}
+                {% if notif_count > 0 %}
+                    <span class="tbn-notif-link__badge">{{ notif_count }}</span>
+                {% endif %}
+            </a>
             {% if show_admin|default(false) %}
                 <a href="{{ admin_href|default('#') }}" class="btn btn-primary btn--sm"{% if admin_href|default('#') == '#' %} aria-disabled="true"{% endif %}>Administration</a>
             {% endif %}

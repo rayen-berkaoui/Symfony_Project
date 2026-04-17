@@ -1,34 +1,53 @@
-<div class="share-bar share-bar--premium" role="group" aria-label="Partager sur les réseaux">
-    <a class="share-chip share-chip--wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text={{ waText|url_encode }}" data-log-share="whatsapp">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'wa' }) }}</span>
-        <span class="share-chip__text">WhatsApp</span>
-    </a>
-    <a class="share-chip share-chip--fb" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u={{ postPublicUrl|url_encode }}" data-log-share="facebook">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'fb' }) }}</span>
-        <span class="share-chip__text">Facebook</span>
-    </a>
-    <a class="share-chip share-chip--x" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?url={{ postPublicUrl|url_encode }}&text={{ sharePlain|url_encode }}" data-log-share="twitter">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'x' }) }}</span>
-        <span class="share-chip__text">X</span>
-    </a>
-    <a class="share-chip share-chip--li" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url={{ postPublicUrl|url_encode }}" data-log-share="linkedin">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'li' }) }}</span>
-        <span class="share-chip__text">LinkedIn</span>
-    </a>
-    <a class="share-chip share-chip--tg" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url={{ postPublicUrl|url_encode }}&text={{ sharePlain|url_encode }}" data-log-share="telegram">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'tg' }) }}</span>
-        <span class="share-chip__text">Telegram</span>
-    </a>
-    <a class="share-chip share-chip--mail" href="mailto:?subject={{ mailSubject|url_encode }}&body={{ mailBody|url_encode }}" data-log-share="email">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'mail' }) }}</span>
-        <span class="share-chip__text">E-mail</span>
-    </a>
-    <button type="button" class="share-chip share-chip--copy" id="share-copy-btn">
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'link' }) }}</span>
-        <span class="share-chip__text">Copier le lien</span>
-    </button>
-    <button type="button" class="share-chip share-chip--native" id="share-native-btn" hidden>
-        <span class="share-chip__icon" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'share' }) }}</span>
-        <span class="share-chip__text">Partager…</span>
-    </button>
-</div>
+<nav class="tbn-share-v2" aria-label="Raccourcis de partage">
+    <ul class="tbn-share-v2__grid" role="list">
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-wa" target="_blank" rel="noopener noreferrer" href="https://wa.me/?text={{ waText|url_encode }}" data-log-share="whatsapp">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'wa' }) }}</span>
+                <span class="tbn-share-v2__label">WhatsApp</span>
+            </a>
+        </li>
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-fb" target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/sharer/sharer.php?u={{ postPublicUrl|url_encode }}" data-log-share="facebook">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'fb' }) }}</span>
+                <span class="tbn-share-v2__label">Facebook</span>
+            </a>
+        </li>
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-x" target="_blank" rel="noopener noreferrer" href="https://twitter.com/intent/tweet?url={{ postPublicUrl|url_encode }}&text={{ sharePlain|url_encode }}" data-log-share="twitter">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'x' }) }}</span>
+                <span class="tbn-share-v2__label">X</span>
+            </a>
+        </li>
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-li" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/sharing/share-offsite/?url={{ postPublicUrl|url_encode }}" data-log-share="linkedin">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'li' }) }}</span>
+                <span class="tbn-share-v2__label">LinkedIn</span>
+            </a>
+        </li>
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-tg" target="_blank" rel="noopener noreferrer" href="https://t.me/share/url?url={{ postPublicUrl|url_encode }}&text={{ sharePlain|url_encode }}" data-log-share="telegram">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'tg' }) }}</span>
+                <span class="tbn-share-v2__label">Telegram</span>
+            </a>
+        </li>
+        <li>
+            <a class="tbn-share-v2__tile tbn-share-v2__tile--accent-mail" href="mailto:?subject={{ mailSubject|url_encode }}&body={{ mailBody|url_encode }}" data-log-share="email">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'mail' }) }}</span>
+                <span class="tbn-share-v2__label">E-mail</span>
+            </a>
+        </li>
+        <li>
+            <button type="button" class="tbn-share-v2__tile tbn-share-v2__tile--accent-copy" id="share-copy-btn" aria-describedby="share-copy-hint">
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'link' }) }}</span>
+                <span class="tbn-share-v2__label">Copier le lien</span>
+            </button>
+            <span id="share-copy-hint" class="sr-only">Copie l’URL canonique dans le presse-papiers</span>
+        </li>
+        <li>
+            <button type="button" class="tbn-share-v2__tile tbn-share-v2__tile--accent-native" id="share-native-btn" hidden>
+                <span class="tbn-share-v2__ico" aria-hidden="true">{{ include('_partials/tbn_icon_svg.html.twig', { name: 'share' }) }}</span>
+                <span class="tbn-share-v2__label">Partager via l’appareil…</span>
+            </button>
+        </li>
+    </ul>
+</nav>

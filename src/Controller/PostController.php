@@ -3,19 +3,26 @@
 namespace App\Controller;
 
 use App\Entity\Activity;
+use App\Entity\ChatBan;
 use App\Entity\Comment;
 use App\Entity\Post;
-use App\Entity\Share;
 use App\Form\CommentType;
 use App\Form\PostType;
 use App\Repository\ActivityRepository;
+use App\Repository\ChatBanRepository;
 use App\Repository\CommentRepository;
 use App\Exception\ActivityMigrationNeededException;
+use App\Repository\NotificationRepository;
 use App\Repository\PostRepository;
 use App\Repository\ShareRepository;
+use App\Service\AutoSummaryService;
+use App\Service\NotificationService;
+use App\Service\PdfExportService;
 use App\Service\PostMediaUploadService;
 use App\Service\PostTagIndexBuilder;
 use App\Service\ReactionService;
+use App\Service\SocialShareService;
+use App\Validation\ValidationLimits;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -35,10 +42,17 @@ class PostController extends AbstractController
         private readonly CommentRepository $commentRepository,
         private readonly ActivityRepository $activityRepository,
         private readonly ShareRepository $shareRepository,
+        private readonly NotificationRepository $notificationRepository,
+        private readonly ChatBanRepository $chatBanRepository,
         private readonly ReactionService $reactionService,
+        private readonly NotificationService $notificationService,
         private readonly EntityManagerInterface $entityManager,
         private readonly PostMediaUploadService $postMediaUploadService,
         private readonly PostTagIndexBuilder $postTagIndexBuilder,
+        private readonly AutoSummaryService $autoSummaryService,
+        private readonly SocialShareService $socialShareService,
+        private readonly ValidatorInterface $validator,
+        private readonly PdfExportService $pdfExportService,
     ) {
     }
 
@@ -50,6 +64,43 @@ class PostController extends AbstractController
         }
 
         return trim((string) $request->request->get('user_key', ''));
+    }
+
+    private function getSessionUserKey(Request $request): ?string
+    {
+        $fromSession = $request->getSession()->get('connect_user_key');
+        if (!\is_string($fromSession)) {
+            return null;
+        }
+
+        $key = trim($fromSession);
+
+        return '' !== $key ? $key : null;
+    }
+
+    private function isScopeBlocked(string $userKey, string $scope): bool
+    {
+        return $this->chatBanRepository->isUserCurrentlyBannedForScope($userKey, $scope);
+    }
+
+    private function isSessionPostAuthor(Request $request, Post $post): bool
+    {
+        $sessionKey = $this->getSessionUserKey($request);
+        if (null === $sessionKey) {
+            return false;
+        }
+
+        $authorKey = $post->getAuthorKey();
+        if (null === $authorKey) {
+            return false;
+        }
+
+        $authorKey = trim((string) $authorKey);
+        if ('' === $authorKey) {
+            return false;
+        }
+
+        return mb_strtolower($sessionKey, 'UTF-8') === mb_strtolower($authorKey, 'UTF-8');
     }
 
     #[Route(name: 'app_post_index', methods: ['GET'])]
@@ -86,6 +137,14 @@ class PostController extends AbstractController
         $postCommentCounts = [] !== $ids ? $this->commentRepository->countCommentsByPostIds($ids) : [];
         $postShareCounts = [] !== $ids ? $this->shareRepository->countSharesByPostIds($ids) : [];
 
+        $postSummaries = [];
+        foreach ($posts as $p) {
+            if (!$p instanceof Post) {
+                continue;
+            }
+            $postSummaries[(int) $p->getId()] = $this->autoSummaryService->summarize((string) ($p->getContent() ?? ''), 240);
+        }
+
         $displayFrom = $total > 0 ? $offset + 1 : 0;
         $displayTo = $total > 0 ? min($offset + \count($posts), $total) : 0;
 
@@ -119,6 +178,7 @@ class PostController extends AbstractController
             'post_dislikes' => $postDislikes,
             'post_comment_counts' => $postCommentCounts,
             'post_share_counts' => $postShareCounts,
+            'post_summaries' => $postSummaries,
         ]);
     }
 
@@ -178,7 +238,15 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Commentaire introuvable.');
         }
 
+        $sessionKey = trim((string) ($request->getSession()->get('connect_user_key') ?? ''));
+        if ('' === $sessionKey || $sessionKey !== trim((string) $comment->getUserKey())) {
+            $this->addFlash('warning', 'Identifiez-vous sur l’accueil avec le même pseudo que ce commentaire pour le modifier.');
+
+            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+        }
+
         $form = $this->createForm(CommentType::class, $comment);
+        $form->remove('userKey');
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -213,6 +281,13 @@ class PostController extends AbstractController
             throw $this->createAccessDeniedException('Jeton CSRF invalide.');
         }
 
+        $sessionKey = trim((string) ($request->getSession()->get('connect_user_key') ?? ''));
+        if ('' === $sessionKey || $sessionKey !== trim((string) $comment->getUserKey())) {
+            $this->addFlash('warning', 'Seul l’auteur du commentaire peut le supprimer (même pseudo que sur l’accueil).');
+
+            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+        }
+
         $this->entityManager->remove($comment);
         $this->entityManager->flush();
         $this->addFlash('success', 'Commentaire supprimé.');
@@ -233,8 +308,9 @@ class PostController extends AbstractController
         }
 
         $key = trim((string) $request->request->get('user_key', ''));
-        if ('' === $key) {
-            $this->addFlash('warning', 'Identifiant vide.');
+        $violations = $this->validator->validate($key, ValidationLimits::userKeyValueConstraints());
+        if (\count($violations) > 0) {
+            $this->addFlash('warning', (string) $violations[0]->getMessage());
         } else {
             $request->getSession()->set('connect_user_key', $key);
             $this->addFlash('success', 'Identifiant enregistré pour cette session.');
@@ -264,14 +340,22 @@ class PostController extends AbstractController
 
         $userKey = $this->getConnectUserKey($request);
         if ('' === $userKey) {
-            $this->addFlash('warning', 'Indiquez votre identifiant (bloc ci-dessous ou via un commentaire).');
-        } else {
-            try {
-                $this->reactionService->togglePostReaction($post, $userKey, $type);
-                $this->addFlash('success', 'Réaction enregistrée.');
-            } catch (ActivityMigrationNeededException $e) {
-                $this->addFlash('danger', $e->getMessage());
-            }
+            $this->addFlash('warning', 'Enregistrez votre pseudo sur l’accueil pour réagir.');
+
+            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($this->isScopeBlocked($userKey, ChatBan::SCOPE_REACTIONS)) {
+            $this->addFlash('warning', 'Votre identifiant est bloqué pour les réactions.');
+
+            return $this->redirectToRoute('app_post_show', ['id' => $id], Response::HTTP_SEE_OTHER);
+        }
+
+        try {
+            $this->reactionService->togglePostReaction($post, $userKey, $type);
+            $this->addFlash('success', 'Réaction enregistrée.');
+        } catch (ActivityMigrationNeededException $e) {
+            $this->addFlash('danger', $e->getMessage());
         }
 
         return $this->redirectToRoute('app_post_show', ['id' => $id], Response::HTTP_SEE_OTHER);
@@ -303,21 +387,29 @@ class PostController extends AbstractController
 
         $userKey = $this->getConnectUserKey($request);
         if ('' === $userKey) {
-            $this->addFlash('warning', 'Indiquez votre identifiant (bloc ci-dessous ou via un commentaire).');
-        } else {
-            try {
-                $this->reactionService->toggleCommentReaction($comment, $userKey, $type);
-                $this->addFlash('success', 'Réaction enregistrée.');
-            } catch (ActivityMigrationNeededException $e) {
-                $this->addFlash('danger', $e->getMessage());
-            }
+            $this->addFlash('warning', 'Enregistrez votre pseudo sur l’accueil pour réagir.');
+
+            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($this->isScopeBlocked($userKey, ChatBan::SCOPE_REACTIONS)) {
+            $this->addFlash('warning', 'Votre identifiant est bloqué pour les réactions.');
+
+            return $this->redirectToRoute('app_post_show', ['id' => $id], Response::HTTP_SEE_OTHER);
+        }
+
+        try {
+            $this->reactionService->toggleCommentReaction($comment, $userKey, $type);
+            $this->addFlash('success', 'Réaction enregistrée.');
+        } catch (ActivityMigrationNeededException $e) {
+            $this->addFlash('danger', $e->getMessage());
         }
 
         return $this->redirectToRoute('app_post_show', ['id' => $id], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}/share/log', name: 'app_post_share_log', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function shareLog(Request $request, ValidatorInterface $validator, int $id): JsonResponse
+    public function shareLog(Request $request, int $id): JsonResponse
     {
         $post = $this->postRepository->find($id);
         if (!$post instanceof Post) {
@@ -329,30 +421,51 @@ class PostController extends AbstractController
         }
 
         $platform = strtolower(trim((string) $request->request->get('platform', '')));
-        $allowed = ['whatsapp', 'facebook', 'twitter', 'linkedin', 'telegram', 'email', 'copie_lien', 'native'];
-        if (!\in_array($platform, $allowed, true)) {
-            return new JsonResponse(['ok' => false, 'error' => 'platform'], Response::HTTP_BAD_REQUEST);
-        }
-
         $userKey = $this->getConnectUserKey($request);
-        if ('' === $userKey) {
-            return new JsonResponse(['ok' => true, 'logged' => false]);
+        $result = $this->socialShareService->recordShareLog($post, $userKey, $platform);
+
+        if (!($result['ok'] ?? false)) {
+            return match ((string) ($result['error'] ?? '')) {
+                'invalid_platform' => new JsonResponse(['ok' => false, 'error' => 'platform'], Response::HTTP_BAD_REQUEST),
+                'banned_for_shares' => new JsonResponse(['ok' => false, 'error' => 'banned_for_shares'], Response::HTTP_FORBIDDEN),
+                'validation' => new JsonResponse(['ok' => false, 'error' => 'validation'], Response::HTTP_BAD_REQUEST),
+                default => new JsonResponse(['ok' => false, 'error' => 'validation'], Response::HTTP_BAD_REQUEST),
+            };
         }
 
-        $share = new Share();
-        $share->setPost($post);
-        $share->setUserKey($userKey);
-        $share->setPlatform($platform);
+        return new JsonResponse(['ok' => true, 'logged' => (bool) ($result['logged'] ?? false)]);
+    }
 
-        $violations = $validator->validate($share);
-        if (\count($violations) > 0) {
-            return new JsonResponse(['ok' => false, 'error' => 'validation'], Response::HTTP_BAD_REQUEST);
+    #[Route('/{id}/export/pdf', name: 'app_post_export_pdf', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function exportPostPdf(Request $request, int $id): Response
+    {
+        $post = $this->postRepository->find($id);
+        if (!$post instanceof Post) {
+            throw $this->createNotFoundException('Publication introuvable.');
         }
 
-        $this->entityManager->persist($share);
-        $this->entityManager->flush();
+        if (!$this->isSessionPostAuthor($request, $post)) {
+            if (null === $post->getAuthorKey() || '' === trim((string) $post->getAuthorKey())) {
+                $this->addFlash('warning', 'Cette publication ne peut pas être exportée en PDF auteur : aucun auteur enregistré (publication ancienne).');
+            } else {
+                $this->addFlash('warning', 'Export PDF réservé à l’auteur : connectez-vous avec le même identifiant que celui enregistré pour la publication.');
+            }
 
-        return new JsonResponse(['ok' => true, 'logged' => true]);
+            return $this->redirectToRoute('app_post_show', ['id' => $id], Response::HTTP_SEE_OTHER);
+        }
+
+        $post->getComments()->toArray();
+
+        $publicUrl = $this->generateUrl('app_post_show', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);
+        $issuer = $this->getSessionUserKey($request) ?? 'auteur';
+
+        return $this->pdfExportService->buildPdfResponse('pdf/post_detail.html.twig', [
+            'post' => $post,
+            'pdf_doc_title' => 'Export auteur — publication #'.$post->getId(),
+            'pdf_source_url' => $publicUrl,
+            'pdf_admin_user' => $issuer.' (auteur)',
+            'pdf_logo_data_uri' => $this->pdfExportService->getOptionalLogoDataUri(),
+        ], 'tabaani-connect-publication-auteur-'.$id.'-'.(new \DateTimeImmutable())->format('Ymd'));
     }
 
     #[Route('/{id}', name: 'app_post_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
@@ -372,11 +485,27 @@ class PostController extends AbstractController
         }
 
         $commentForm = $this->createForm(CommentType::class, $comment);
+        $commentForm->remove('userKey');
         $commentForm->handleRequest($request);
 
+        if ($commentForm->isSubmitted() && '' === trim((string) ($request->getSession()->get('connect_user_key') ?? ''))) {
+            $this->addFlash('warning', 'Enregistrez votre pseudo sur l’accueil pour commenter.');
+
+            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($commentForm->isSubmitted() && $commentForm->isValid()) {
+            $commentUserKey = trim((string) ($request->getSession()->get('connect_user_key') ?? ''));
+            $comment->setUserKey($commentUserKey);
+            if ($this->isScopeBlocked($commentUserKey, ChatBan::SCOPE_COMMENTS)) {
+                $this->addFlash('warning', 'Votre identifiant est bloqué pour les commentaires.');
+
+                return $this->redirectToRoute('app_post_show', ['id' => $post->getId()], Response::HTTP_SEE_OTHER);
+            }
+
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
+            $this->notificationService->notifyCommentOnPost($post, $comment);
             $request->getSession()->set('connect_user_key', $comment->getUserKey());
             $this->addFlash('success', 'Commentaire publié.');
 
@@ -400,31 +529,28 @@ class PostController extends AbstractController
             }
         }
 
-        $decoded = html_entity_decode(strip_tags((string) $post->getContent()), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $sharePlain = trim((string) preg_replace('/\s+/u', ' ', $decoded));
-        if (mb_strlen($sharePlain, 'UTF-8') > 160) {
-            $sharePlain = mb_substr($sharePlain, 0, 160, 'UTF-8').'…';
-        }
+        $postSummary = $this->autoSummaryService->summarize((string) ($post->getContent() ?? ''), 260);
+
         $postPublicUrl = $this->generateUrl('app_post_show', ['id' => $post->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
-        $waText = $sharePlain.' '.$postPublicUrl;
-        $mailSubject = 'Tabaani Connect — Publication #'.$post->getId();
-        $mailBody = $sharePlain."\n\n".$postPublicUrl;
+        $shareData = $this->socialShareService->buildSharePageData($post, $postPublicUrl);
 
         return $this->render('post/show.html.twig', [
             'post' => $post,
             'commentForm' => $commentForm,
             'sessionUserKey' => $sessionUserKey,
+            'viewer_is_author' => $this->isSessionPostAuthor($request, $post),
             'postLikesCount' => $postLikesCount,
             'postDislikesCount' => $postDislikesCount,
             'userPostReaction' => $userPostReaction,
             'commentReactions' => $commentReactions,
+            'post_summary' => $postSummary,
+            'postPublicUrl' => $shareData['post_public_url'],
+            'sharePlain' => $shareData['share_plain'],
+            'waText' => $shareData['wa_text'],
+            'mailSubject' => $shareData['mail_subject'],
+            'mailBody' => $shareData['mail_body'],
             'shareCount' => $this->shareRepository->countByPost($post),
             'recentShares' => $this->shareRepository->findRecentByPost($post, 20),
-            'postPublicUrl' => $postPublicUrl,
-            'sharePlain' => $sharePlain,
-            'waText' => $waText,
-            'mailSubject' => $mailSubject,
-            'mailBody' => $mailBody,
         ]);
     }
 
@@ -441,10 +567,18 @@ class PostController extends AbstractController
     public function new(Request $request): Response
     {
         $post = new Post();
+        $post->setAuthorKey($this->getSessionUserKey($request));
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $authorKey = trim((string) $post->getAuthorKey());
+            if ($this->isScopeBlocked($authorKey, ChatBan::SCOPE_POSTS)) {
+                $this->addFlash('warning', 'Votre identifiant est bloqué pour les publications.');
+
+                return $this->redirectToRoute('app_post_new', [], Response::HTTP_SEE_OTHER);
+            }
+
             $this->appendHashtagsToContent($post, $form->has('hashtags') ? $form->get('hashtags')->getData() : null);
             $post->setHashtagsIndex($this->postTagIndexBuilder->build((string) $post->getContent()));
             try {
@@ -519,6 +653,7 @@ class PostController extends AbstractController
         return $this->render('post/edit.html.twig', [
             'post' => $post,
             'form' => $form,
+            'viewer_is_author' => $this->isSessionPostAuthor($request, $post),
         ]);
     }
 
@@ -536,6 +671,7 @@ class PostController extends AbstractController
         }
 
         $this->postMediaUploadService->purgePostMediaFromDisk($post);
+        $this->notificationRepository->deleteByPost($post);
         $this->entityManager->remove($post);
         $this->entityManager->flush();
         $this->addFlash('success', 'Publication supprimée.');

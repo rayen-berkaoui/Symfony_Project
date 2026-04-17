@@ -1,0 +1,33 @@
+{% extends 'pdf/base_pdf.html.twig' %}
+
+{% block pdf_body %}
+    <h1 class="pdf-doc-title">Export commentaires (liste paginée)</h1>
+    {% if pdf_source_url %}
+        <div class="pdf-source"><strong>Source (interface web) :</strong> {{ pdf_source_url }}</div>
+    {% endif %}
+
+    <p class="pdf-muted">
+        Page liste <strong>{{ list_page }}</strong> / <strong>{{ list_total_pages }}</strong>
+        — {{ list_per_page }} par page — total : <strong>{{ list_total }}</strong>.
+    </p>
+
+    <table class="pdf-data-table">
+        <thead>
+            <tr><th>ID</th><th>Post</th><th>Date</th><th>Utilisateur</th><th>Extrait</th></tr>
+        </thead>
+        <tbody>
+        {% for c in comments %}
+            {% set excerpt = c.content|striptags %}
+            <tr>
+                <td>{{ c.id }}</td>
+                <td>#{{ c.post ? c.post.id : '—' }}</td>
+                <td>{{ c.createdAt|date('d/m/Y H:i') }}</td>
+                <td>{{ c.userKey }}</td>
+                <td>{{ excerpt|length > 160 ? excerpt|slice(0, 160) ~ '…' : excerpt }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">Aucun commentaire sur cette page.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

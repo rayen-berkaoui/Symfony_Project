@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ShareRepository;
+use App\Validation\ValidationLimits;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,12 +24,13 @@ class Share
 
     #[ORM\Column(name: 'user_key', length: 255)]
     #[Assert\NotBlank(message: 'L’identifiant utilisateur est obligatoire.')]
-    #[Assert\Length(max: 255)]
+    #[Assert\Length(max: ValidationLimits::USER_KEY_MAX)]
+    #[Assert\Regex(pattern: ValidationLimits::USER_KEY_PATTERN, message: 'Identifiant : lettres, chiffres, _, -, . uniquement (1–255 caractères).')]
     private ?string $userKey = null;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'La plateforme est obligatoire.')]
-    #[Assert\Length(max: 100)]
+    #[Assert\Choice(choices: ValidationLimits::SHARE_PLATFORMS, message: 'Plateforme de partage non reconnue.')]
     private ?string $platform = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]

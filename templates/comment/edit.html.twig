@@ -15,8 +15,7 @@
         <p class="tbn-kicker">Commentaire</p>
         <h1 class="tbn-page-title">Modifier le commentaire #{{ comment.id }}</h1>
     </header>
-    {{ form_start(form, { attr: { class: 'post-form' } }) }}
-        {{ form_row(form.userKey) }}
+    {{ form_start(form, { attr: { class: 'post-form', novalidate: 'novalidate' } }) }}
         {{ form_row(form.content) }}
         <div class="tbn-form-actions">
             <button type="submit" class="btn btn-primary">Enregistrer</button>

@@ -1,0 +1,52 @@
+{% extends 'pdf/base_pdf.html.twig' %}
+
+{% block pdf_body %}
+    <h1 class="pdf-doc-title">Rapport tableau de bord — administration</h1>
+    {% if pdf_source_url %}
+        <div class="pdf-source"><strong>Source (interface web) :</strong> {{ pdf_source_url }}</div>
+    {% endif %}
+
+    <p class="pdf-muted">Vue synthétique des indicateurs au moment de l’export.</p>
+
+    <table class="pdf-kpi-table">
+        <thead>
+            <tr><th>Indicateur</th><th>Valeur</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Publications (total)</td><td><strong>{{ post_count }}</strong></td></tr>
+            <tr><td>Commentaires (total)</td><td><strong>{{ comment_count }}</strong></td></tr>
+            <tr><td>Hashtags distincts (estimation)</td><td><strong>{{ hashtag_distinct_count }}</strong></td></tr>
+            <tr><td>Lignes de partage (shares)</td><td><strong>{{ share_count }}</strong></td></tr>
+            <tr><td>Bannissements actifs</td><td><strong>{{ ban_active_count }}</strong></td></tr>
+            <tr><td>Réactions « like » (posts)</td><td><strong>{{ pie_like }}</strong></td></tr>
+            <tr><td>Réactions « dislike » (posts)</td><td><strong>{{ pie_dislike }}</strong></td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="pdf-doc-title" style="font-size:11pt;">Activité récente (30 jours) — publications / jour</h2>
+    <table class="pdf-data-table">
+        <thead><tr><th>Date</th><th>Posts</th><th>Commentaires</th></tr></thead>
+        <tbody>
+        {% for row in daily_activity.posts %}
+            {% set i = loop.index0 %}
+            <tr>
+                <td>{{ row.date|date('d/m/Y') }}</td>
+                <td>{{ row.count }}</td>
+                <td>{{ daily_activity.comments[i].count ?? 0 }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 class="pdf-doc-title" style="font-size:11pt;">Top 10 hashtags</h2>
+    <table class="pdf-data-table">
+        <thead><tr><th>#</th><th>Hashtag</th><th>Occurrences</th></tr></thead>
+        <tbody>
+        {% for row in top_hashtags|slice(0, 10) %}
+            <tr><td>{{ loop.index }}</td><td>{{ row.tag }}</td><td>{{ row.count }}</td></tr>
+        {% else %}
+            <tr><td colspan="3">Aucune donnée.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

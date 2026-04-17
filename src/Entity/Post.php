@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
+use App\Validation\ValidationLimits;
+use App\Validator\Constraints\NoBadWords;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -21,14 +23,23 @@ class Post
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Le contenu est obligatoire.')]
-    #[Assert\Length(max: 65_535)]
+    #[Assert\Length(max: ValidationLimits::CONTENT_MAX)]
+    #[NoBadWords]
     private ?string $content = null;
+
+    #[ORM\Column(name: 'author_key', length: 255, nullable: true)]
+    #[Assert\Length(max: ValidationLimits::USER_KEY_MAX)]
+    #[Assert\Regex(
+        pattern: ValidationLimits::USER_KEY_PATTERN,
+        message: 'Identifiant auteur : lettres, chiffres, _, -, . uniquement (1–255 caractères).'
+    )]
+    private ?string $authorKey = null;
 
     #[ORM\Column(name: 'hashtags_index', type: Types::TEXT, nullable: true)]
     private ?string $hashtagsIndex = null;
 
     #[ORM\Column(name: 'video_path', type: Types::TEXT, nullable: true)]
-    #[Assert\Length(max: 65_535)]
+    #[Assert\Length(max: ValidationLimits::CONTENT_MAX)]
     private ?string $videoPath = null;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
@@ -64,6 +75,18 @@ class Post
     public function setContent(string $content): static
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getAuthorKey(): ?string
+    {
+        return $this->authorKey;
+    }
+
+    public function setAuthorKey(?string $authorKey): static
+    {
+        $this->authorKey = $authorKey;
 
         return $this;
     }

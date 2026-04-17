@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommentRepository;
+use App\Validation\ValidationLimits;
+use App\Validator\Constraints\NoBadWords;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,12 +25,14 @@ class Comment
 
     #[ORM\Column(name: 'user_key', length: 255)]
     #[Assert\NotBlank(message: 'L’identifiant utilisateur est obligatoire.')]
-    #[Assert\Length(max: 255)]
+    #[Assert\Length(max: ValidationLimits::USER_KEY_MAX)]
+    #[Assert\Regex(pattern: ValidationLimits::USER_KEY_PATTERN, message: 'Identifiant : lettres, chiffres, _, -, . uniquement (1–255 caractères).')]
     private ?string $userKey = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Le commentaire est obligatoire.')]
-    #[Assert\Length(max: 65_535)]
+    #[Assert\Length(max: ValidationLimits::CONTENT_MAX)]
+    #[NoBadWords]
     private ?string $content = null;
 
     #[ORM\Column(name: 'likes_count', options: ['default' => 0])]

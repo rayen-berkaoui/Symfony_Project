@@ -4,7 +4,7 @@ doctrine:
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
-        schema_filter: '~^(posts|post_images|comments|activities|shares|chat_messages|chat_bans|doctrine_migration_versions)$~'
+        schema_filter: '~^(posts|post_images|comments|activities|shares|chat_messages|chat_bans|notifications|app_users|doctrine_migration_versions)$~'
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

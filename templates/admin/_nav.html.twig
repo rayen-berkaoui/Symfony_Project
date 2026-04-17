@@ -1,0 +1,43 @@
+{% set r = app.request.attributes.get('_route') %}
+<header class="admin-topbar">
+    <div class="admin-topbar__inner">
+    <div class="admin-topbar__brand">
+        <span class="admin-topbar__logo" aria-hidden="true">◆</span>
+        <span class="admin-topbar__title">TABAANI · Administration</span>
+    </div>
+    <nav class="admin-topnav" aria-label="Navigation administration">
+        <a href="{{ path('app_admin_dashboard') }}" class="admin-topnav__link{% if r == 'app_admin_dashboard' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/chart.svg.twig' %}</span>
+            Dashboard
+        </a>
+        <a href="{{ path('app_admin_assistant') }}" class="admin-topnav__link{% if r == 'app_admin_assistant' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/sparkle.svg.twig' %}</span>
+            Briefing
+        </a>
+        <a href="{{ path('app_admin_posts') }}" class="admin-topnav__link{% if r == 'app_admin_posts' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/doc.svg.twig' %}</span>
+            Publications
+        </a>
+        <a href="{{ path('app_admin_comments') }}" class="admin-topnav__link{% if r == 'app_admin_comments' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/bubble.svg.twig' %}</span>
+            Commentaires
+        </a>
+        <a href="{{ path('app_admin_hashtags') }}" class="admin-topnav__link{% if r == 'app_admin_hashtags' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/hash.svg.twig' %}</span>
+            # Hashtags
+        </a>
+        <a href="{{ path('app_admin_chat') }}" class="admin-topnav__link{% if r == 'app_admin_chat' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/gamepad.svg.twig' %}</span>
+            Contrôle Chat
+        </a>
+        <a href="{{ path('app_admin_blocked') }}" class="admin-topnav__link{% if r == 'app_admin_blocked' %} is-active{% endif %}">
+            <span class="admin-topnav__ico" aria-hidden="true">{% include 'admin/_icons/blocked.svg.twig' %}</span>
+            Bloqués
+        </a>
+    </nav>
+    <div class="admin-topbar__actions">
+        <a href="{{ path('app_home') }}" class="admin-topbar__ghost">Site public</a>
+        <a href="{{ path('app_admin_logout') }}" class="admin-topbar__danger">Déconnexion</a>
+    </div>
+    </div>
+</header>
